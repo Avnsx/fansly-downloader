@@ -24,7 +24,7 @@ Else you'll need to install python (ticking pip in installer) and paste below th
 	pip install requests
 
 ## Disclaimer
-Of course I've never even used this code myself ever before and haven't experienced its intended functionality on my local machine. This was written purely for educational purposes, in a entirely theoretical environment. "Fansly" or fansly.com is operated by Select Media LLC as stated on their "Contact" page. This code (Avnsx/fansly) isn't in any way affiliated with, sponsored by, or endorsed by Select Media LLC or "Fansly". The developer of this code is not responsible for the end users actions.
+lol! Of course I've never even used this code myself ever before and haven't experienced its intended functionality on my local machine. This was written purely for educational purposes, in a entirely theoretical environment. "Fansly" or fansly.com is operated by Select Media LLC as stated on their "Contact" page. This code (Avnsx/fansly) isn't in any way affiliated with, sponsored by, or endorsed by Select Media LLC or "Fansly". The developer of this code is not responsible for the end users actions.
 
 Written with python 3.9.7 for Windows 10, Version 21H1 Build 19043.1237
 
