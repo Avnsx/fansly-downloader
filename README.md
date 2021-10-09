@@ -17,7 +17,7 @@ This is pretty useful for example; if you dislike the website theming and would 
 From now on, you'll only need to re-do step 6 for every future use case.
 
 ## Installation
-You can just install the [Executable version](https://github.com/Avnsx/fansly/releases) from the releases section on the right side on the github section.
+You can just install the [Executable version](https://github.com/Avnsx/fansly/releases).
 Else you'll need to install python (ticking pip in installer) and paste below through ``cmd.exe``.
 
 	pip install requests
