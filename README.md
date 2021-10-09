@@ -6,12 +6,13 @@ This is pretty useful for example; if you dislike the website theming and would 
 
 ## How To
 1. If you have Python installed download the GitHub repository, else use the [Executable version](https://github.com/Avnsx/fansly/releases)
-2. Go to whatever creators account page and open your browsers developer console (Most often Key: F12)
-3. Reload the website by using the rotating arrow symbol to the left of your browsers search bar(Key: F5), while the developer console is open. Now do the steps on the following picture:
-4. ![GitHub Banner](https://i.imgur.com/X2L9XFo.png)
-5. Now paste both of the strings - that were on the right side of ``authorization:`` & ``User-Agent:`` - which you just copied, as shown in the picture above. Into the configuration file (config.ini) and replace the two strings with their corresponding values. (1. ``[MyAccount]`` > ``Authorization_Token=`` paste the value for ``authorization:``; 2. ``[MyAccount]`` > ``User_Agent=`` paste the value for ``User-Agent:``.
-6. Replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
-7. Save the ``config.ini`` file with the changes you've done to it, close it & then start up fansly scraper.
+2. Make sure you have registered an account on fansly and are logged in with it in your browser or you'll not be able to get a authorization token from Developer Console.
+3. Go to whatever creators account page and open your browsers developer console (Most often Key: F12)
+4. Reload the website by using the rotating arrow symbol to the left of your browsers search bar(Key: F5), while the developer console is open. Now do the steps on the following picture:
+5. ![GitHub Banner](https://i.imgur.com/X2L9XFo.png)
+6. Now paste both of the strings - that were on the right side of ``authorization:`` & ``User-Agent:`` - which you just copied, as shown in the picture above. Into the configuration file (config.ini) and replace the two strings with their corresponding values. (1. ``[MyAccount]`` > ``Authorization_Token=`` paste the value for ``authorization:``; 2. ``[MyAccount]`` > ``User_Agent=`` paste the value for ``User-Agent:``.
+7. Replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
+8. Save the ``config.ini`` file with the changes you've done to it, close it & then start up fansly scraper.
 
 From now on, you'll only need to re-do step 6 for every future use case.
 
