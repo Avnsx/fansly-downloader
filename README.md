@@ -23,9 +23,15 @@ Else you'll need to install python (ticking pip in installer) and paste below th
 
 	pip install requests
 
+## Support
+Dependant on how many people show me that they're liking the code by giving ⭐'s on this repo, I'll expand functionality & push more quality of life updates.
+Would you like to help out more? Any crypto donations are welcome!
+
+BTC: bc1q82n68gmdxwp8vld524q5s7wzk2ns54yr27flst
+
+ETH: 0x645a734Db104B3EDc1FBBA3604F2A2D77AD3BDc5
+
 ## Disclaimer
-lol! Of course I've never even used this code myself ever before and haven't experienced its intended functionality on my local machine. This was written purely for educational purposes, in a entirely theoretical environment. "Fansly" or fansly.com is operated by Select Media LLC as stated on their "Contact" page. This code (Avnsx/fansly) isn't in any way affiliated with, sponsored by, or endorsed by Select Media LLC or "Fansly". The developer of this code is not responsible for the end users actions.
+"Fansly" or fansly.com is operated by Select Media LLC as stated on their "Contact" page. This code (Avnsx/fansly) isn't in any way affiliated with, sponsored by, or endorsed by Select Media LLC or "Fansly". The developer of this code is not responsible for the end users actions. Of course I've never even used this code myself ever before and haven't experienced its intended functionality on my local machine. This was written purely for educational purposes, in a entirely theoretical environment.
 
 Written with python 3.9.7 for Windows 10, Version 21H1 Build 19043.1237
-
-Dependant on how many people show me that they're liking the code by giving ⭐'s on this repo, I'll expand functionality & push more quality of life updates.
