@@ -1,4 +1,4 @@
-![Title Banner](https://i.imgur.com/s7HP8fp.png)
+![Title Banner](https://i.imgur.com/YZF0OYF.png)
 ## 
 ![UI Banner](https://i.imgur.com/Qzz7xke.png)
 ## Description
@@ -15,7 +15,11 @@ This is pretty useful for example; if you dislike the website theming and would 
 7. Replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
 8. Save the ``config.ini`` file with the changes you've done to it, close it & then start up fansly scraper.
 
-From now on, you'll only need to re-do step 6 for every future use case.
+From now on, you'll only need to re-do step 7 for every future use case.
+
+Not enough content downloaded? Enable media previews. (``Download_Media_Previews`` to ``True`` in the configuration file)
+
+You can turn ``Open_Folder_When_Finished`` to ``False``; if you no longer wish the download folder to automatically open after code completion.
 
 ## Installation
 You can just install the [Executable version](https://github.com/Avnsx/fansly/releases).
