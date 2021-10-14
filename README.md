@@ -23,7 +23,7 @@ You can turn ``Open_Folder_When_Finished`` to ``False``; if you no longer wish t
 
 ## Installation
 You can just install the [Executable version](https://github.com/Avnsx/fansly/releases).
-Else you'll need to install python (ticking pip in installer) and paste below through ``cmd.exe``.
+Else you'll need to install python (ticking pip in installer) and paste below in ``cmd.exe``.
 
 	pip install requests
 
