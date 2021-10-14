@@ -43,7 +43,7 @@ except KeyError:
     s(15)
     exit()
 
-print(' Targeted creator: "'+mycreator+'"\n Using authorisation token: "'+mytoken+'"\n Using user-agent(shortened): "'+myuseragent[:28]+' [...] '+myuseragent[-35:]+'"\n Open download folder when finished, is set to: "'+openwhenfinished+'"\n Downloading files marked as preview, is set to: "'+previews+'"\n')
+print(' Targeted creator: "'+mycreator+'"\n Using authorisation token: "'+mytoken+'"\n Using user-agent: "'+myuseragent[:28]+' [...] '+myuseragent[-35:]+'"\n Open download folder when finished, is set to: "'+openwhenfinished+'"\n Downloading files marked as preview, is set to: "'+previews+'"\n')
 if previews == 'True':print(' > WARNING: Previews downloading is enabled; repetitive and/or emoji spammed media might be downloaded!\n')
 
 try:
@@ -61,19 +61,20 @@ except Exception as e:
 pic_count=1
 vid_count=1
 def sort_download(filename,fileloc):
+    win_comp_name=re.sub(r'[\\/:*?"<>|]', '', repr(filename).replace("'",''))
     global pic_count, vid_count
     if re.findall(r'.jpeg|.png|.jpg|.tif|.tiff|.bmp', filename[-6:]):
-        with open(basedir+'/Pictures/'+str(pic_count)+'_'+filename, 'wb') as f:f.write(fileloc)
+        with open(basedir+'/Pictures/'+str(pic_count)+'_'+win_comp_name, 'wb') as f:f.write(fileloc)
         pic_count+=1
     elif re.findall(r'.mp4|.mkv|.mov|.gif|.wmv|.flv|.webm', filename[-6:]):
-        with open(basedir+'/Videos/'+str(vid_count)+'_'+filename, 'wb') as f:f.write(fileloc)
+        with open(basedir+'/Videos/'+str(vid_count)+'_'+win_comp_name, 'wb') as f:f.write(fileloc)
         vid_count+=1
     else:
         print('\n ERROR: Unknown filetype: "'+str(filename[-7:])+'" please report this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
         s(60)
         exit()
 
-print(' Starting media download ...')
+print(' Started media download; this could take a while dependant on the content size ...')
 cursor = 0
 while True:
     response = sess.get('https://apiv2.fansly.com/api/v1/timeline/'+creator_id+'?before='+str(cursor)+'&after=0', headers=headers)
