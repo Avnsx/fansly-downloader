@@ -1,4 +1,4 @@
-![Title Banner](https://i.imgur.com/mrbhd6y.png)
+![Title Banner](https://i.imgur.com/mrbhd6y.png) ![Downloads](https://img.shields.io/github/downloads/Avnsx/fansly/total?color=0078d7&label=🔽%20Compiled%20Version%20Downloads&style=flat-square) ![Stars](https://img.shields.io/github/stars/Avnsx/fansly?style=flat-square&label=⭐%20Stars&color=ffc83d)
 ## 
 ![UI Banner](https://i.imgur.com/jvpJQaJ.png)
 ## Description
