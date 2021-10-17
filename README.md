@@ -25,10 +25,7 @@ You can turn ``Open_Folder_When_Finished`` to ``False``; if you no longer wish t
 You can just install the [Executable version](https://github.com/Avnsx/fansly/releases).
 Else you'll need to install python (ticking pip in installer) and paste below in ``cmd.exe``.
 
-	pip install requests
-	pip install loguru
-	pip install imagehash
-	pip install pillow
+	pip install requests loguru imagehash pillow
 
 ## Support
 Dependant on how many people show me that they're liking the code by giving ⭐'s on this repo, I'll expand functionality & push more quality of life updates.
