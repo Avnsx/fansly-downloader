@@ -1,6 +1,6 @@
 ![Title Banner](https://i.imgur.com/mrbhd6y.png)
 ## 
-![UI Banner](https://i.imgur.com/Qzz7xke.png)
+![UI Banner](https://i.imgur.com/jvpJQaJ.png)
 ## Description
 On click code, to scrape your favorite fansly creators media content. After you've ran the code, it'll create a folder named ``CreatorName_fansly`` in the same directory you launched the code from. That folder will have two sub-folders called Pictures & Videos, which will contain the downloaded content sorted into them.
 This is pretty useful for example; if you dislike the website theming and would like to view the media on your local machine instead. This code does not bypass any paywalls & no end user information is collected during usage.
