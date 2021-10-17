@@ -17,7 +17,7 @@ This is pretty useful for example; if you dislike the website theming and would 
 
 From now on, you'll only need to re-do step 7 for every future use case.
 
-Not enough content downloaded? Enable media previews. (``Download_Media_Previews`` to ``True`` in the configuration file)
+**Not enough content downloaded? Enable media previews.** (``Download_Media_Previews`` to ``True`` in the configuration file)
 
 You can turn ``Open_Folder_When_Finished`` to ``False``; if you no longer wish the download folder to automatically open after code completion.
 
@@ -26,6 +26,9 @@ You can just install the [Executable version](https://github.com/Avnsx/fansly/re
 Else you'll need to install python (ticking pip in installer) and paste below in ``cmd.exe``.
 
 	pip install requests
+	pip install loguru
+	pip install imagehash
+	pip install pillow
 
 ## Support
 Dependant on how many people show me that they're liking the code by giving ⭐'s on this repo, I'll expand functionality & push more quality of life updates.
