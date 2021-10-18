@@ -1,0 +1,4 @@
+requests>=2.26.0
+loguru>=0.5.3
+imagehash>=4.2.1
+pillow>=8.4.0
