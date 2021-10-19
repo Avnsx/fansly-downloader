@@ -1,4 +1,4 @@
-## Fansly Downloader / Fansly Scraper ![Downloads](https://img.shields.io/github/downloads/Avnsx/fansly/total?color=0078d7&label=🔽%20Executable%20Downloads&style=flat-square) ![Compability](https://img.shields.io/static/v1?style=flat-square&label=%F0%9F%90%8D%20Python&message=3.6%2B&color=blue) ![Stars](https://img.shields.io/github/stars/Avnsx/fansly?style=flat-square&label=⭐%20Stars&color=ffc83d)
+## [ Fansly Downloader / Fansly Scraper ](https://github.com/Avnsx/fansly) ![Downloads](https://img.shields.io/github/downloads/Avnsx/fansly/total?color=0078d7&label=🔽%20Executable%20Downloads&style=flat-square) ![Compability](https://img.shields.io/static/v1?style=flat-square&label=%F0%9F%90%8D%20Python&message=3.6%2B&color=blue) ![Stars](https://img.shields.io/github/stars/Avnsx/fansly?style=flat-square&label=⭐%20Stars&color=ffc83d)
 
 ![UI Banner](https://i.imgur.com/EhL42m3.jpg)
 ## Description:
