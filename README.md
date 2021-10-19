@@ -4,7 +4,12 @@
 ## Description:
 On click code, to scrape your favorite fansly creators media content. After you've ran the code, it'll create a folder named ``CreatorName_fansly`` in the same directory you launched the code from. That folder will have two sub-folders called Pictures & Videos, which will contain the downloaded content sorted into them.
 This is pretty useful for example; if you dislike the website theming and would like to view the media on your local machine instead. This code does not bypass any paywalls & no end user information is collected during usage.
+## Installation
+You can just install the [Executable version](https://github.com/Avnsx/fansly/releases).
+Else you'll need to install python (ticking pip in installer) and paste below in ``cmd.exe``.
 
+	pip install requests loguru imagehash pillow
+or you can use [``requirements.txt``](https://github.com/Avnsx/fansly/blob/main/requirements.txt) to install the requirements above.
 ## How To
 1. If you have Python installed download the GitHub repository, else use the [Executable version](https://github.com/Avnsx/fansly/releases)
 2. Make sure you have registered an account on fansly and are logged in with it in your browser or you'll not be able to get a authorization token from Developer Console.
@@ -21,13 +26,7 @@ From now on, you'll only need to re-do step 7 for every future use case.
 
 You can turn ``Open_Folder_When_Finished`` to ``False``; if you no longer wish the download folder to automatically open after code completion.
 
-## Installation
-You can just install the [Executable version](https://github.com/Avnsx/fansly/releases).
-Else you'll need to install python (ticking pip in installer) and paste below in ``cmd.exe``.
-
-	pip install requests loguru imagehash pillow
-
-## Support
+## Funding
 Dependant on how many people show me that they're liking the code by giving ⭐'s on this repo, I'll expand functionality & push more quality of life updates.
 Would you like to help out more? Any crypto donations are welcome!
 
