@@ -19,7 +19,7 @@ or you can use [``requirements.txt``](https://github.com/Avnsx/fansly/blob/main/
 5. ![GitHub Banner](https://i.imgur.com/X2L9XFo.png)
 6. Now paste both of the strings - that were on the right side of ``authorization:`` & ``User-Agent:`` - which you just copied, as shown in the picture above. Into the configuration file (config.ini) and replace the two strings with their corresponding values. (1. ``[MyAccount]`` > ``Authorization_Token=`` paste the value for ``authorization:``; 2. ``[MyAccount]`` > ``User_Agent=`` paste the value for ``User-Agent:``.
 7. Replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
-8. Save the ``config.ini`` file with the changes you've done to it, close it & then start up fansly scraper.
+8. Save the ``config.ini`` file(into same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
 
 From now on, you'll only need to re-do step 7 for every future use case.
 
