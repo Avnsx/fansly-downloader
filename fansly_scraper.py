@@ -19,7 +19,10 @@ def output(level,type,color,mytext):
 
 output(1,'\n Info','<light-blue>','Reading config.ini file ...')
 config = ConfigParser()
-config.read('config.ini')
+if len(config.read('config.ini')) != 1:
+    output(2,'\n [1]ERROR','<red>', 'config.ini file not found or can not be read. Please download it & make sure it is in the same directory as Fansly Scraper.exe')
+    s(60)
+    exit()
 
 try:
     mycreator = config['TargetedCreator']['Username']
@@ -28,13 +31,13 @@ try:
     previews = config['Options']['Download_Media_Previews'].capitalize()
     openwhenfinished = config['Options']['Open_Folder_When_Finished'].capitalize()
 except (KeyError, NameError) as e:
-    output(2,'\n [1]ERROR','<red>', '"'+str(e)+'" is missing or malformed in the configuration file! Read the ReadMe file for assistance.')
+    output(2,'\n [2]ERROR','<red>', '"'+str(e)+'" is missing or malformed in the configuration file! Read the ReadMe file for assistance.')
     s(60)
     exit()
 
 for x in mycreator,mytoken,myuseragent,previews,openwhenfinished:
     if x == '' or x == 'ReplaceMe':
-        output(2,'\n [2]ERROR','<red>', '"'+str(x)+'" is unmodified, missing or malformed in the configuration file! Read the ReadMe file for assistance.')
+        output(2,'\n [3]ERROR','<red>', '"'+str(x)+'" is unmodified, missing or malformed in the configuration file! Read the ReadMe file for assistance.')
         s(60)
         exit()
 
@@ -43,12 +46,12 @@ try:
     newest_ver=requests.get('https://github.com/Avnsx/fansly/releases/latest', headers={'authority': 'github.com','user-agent': myuseragent,'accept-language': 'en-US,en;q=0.9',}).url.split('/v')[-1]
     if newest_ver > current_ver:output(3,' WARNING','<yellow>', 'Your version (v'+str(current_ver)+') of fansly scraper is outdated, please update! Newest version: v'+str(newest_ver))
 except requests.exceptions.ConnectionError as e:
-    output(2,'\n [3]ERROR','<red>', 'Update check failed, due to no internet connection! Closing in 60 seconds.')
+    output(2,'\n [4]ERROR','<red>', 'Update check failed, due to no internet connection! Closing in 60 seconds.')
     print('\n'+str(e))
     s(60)
     exit()
 except Exception as e:
-    output(2,'\n [4]ERROR','<red>', 'Update check failed, will try to continue ...')
+    output(2,'\n [5]ERROR','<red>', 'Update check failed, will try to continue ...')
     print('\n'+str(e))
     s(10)
     pass
@@ -67,15 +70,15 @@ try:
     creator_id = acc_req['avatar']['accountId']
 except KeyError as e:
     if raw_req.status_code == 401:
-        output(2,'\n [5]ERROR','<red>', 'API returned unauthorized. This is most likely because of a wrong authorization token, in the configuration file.')
+        output(2,'\n [6]ERROR','<red>', 'API returned unauthorized. This is most likely because of a wrong authorization token, in the configuration file.')
         print(f'{21*" "}Used authorization token: "'+mytoken+'" [DO NOT SHARE]')
-    else:output(2,'\n [6]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed.')
+    else:output(2,'\n [7]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed.')
     print('\n'+str(e))
     print(raw_req.text)
     s(60)
     exit()
 except IndexError as e:
-    output(2,'\n [7]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed; most likely misspelled the creator name.')
+    output(2,'\n [8]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed; most likely misspelled the creator name.')
     print('\n'+str(e))
     print(raw_req.text)
     s(60)
@@ -104,7 +107,7 @@ try:
     os.makedirs(basedir+'/Videos', exist_ok = True)
 except Exception:
     print('\n'+traceback.format_exc())
-    output(2,'\n [8]ERROR','<red>', 'Creating download directories ... Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
+    output(2,'\n [9]ERROR','<red>', 'Creating download directories ... Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
     s(60)
     exit()
 
@@ -131,7 +134,7 @@ def sort_download(filename,filebytes):
             vid_count+=1
         else:duplicates+=1
     else:
-        output(2,'\n [9]ERROR','<red>', 'Unknown filetype: "'+str(filename[-7:])+'" please report this on GitHub > Issues & provide a short explanation; continuing without that file in 60 seconds.')
+        output(2,'\n [10]ERROR','<red>', 'Unknown filetype: "'+str(filename[-7:])+'" please report this on GitHub > Issues & provide a short explanation; continuing without that file in 60 seconds.')
         s(60)
 
 output(1,' Info','<light-blue>','Started media download; this could take a while dependant on the content size ...')
@@ -163,7 +166,7 @@ while True:
                 pass
             except Exception:
                 print('\n'+traceback.format_exc())
-                output(2,'\n [10]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
+                output(2,'\n [11]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
                 s(60)
                 exit()
         # get next cursor
@@ -173,11 +176,11 @@ while True:
         except IndexError:break #break if end is reached
         except Exception:
             print('\n'+traceback.format_exc())
-            output(2,'\n [11]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
+            output(2,'\n [12]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
             s(60)
             exit()
     except KeyError:
-        output(2,'\n [12]ERROR','<red>', "Couldn't find any scrapeable media at all!\n This most likely happend because you're not following the creator, your authorisation token is wrong\n or the creator is not providing unlocked content. Closing in 60 Seconds.")
+        output(2,'\n [13]ERROR','<red>', "Couldn't find any scrapeable media at all!\n This most likely happend because you're not following the creator, your authorisation token is wrong\n or the creator is not providing unlocked content. Closing in 60 Seconds.")
         s(60)
         exit()
 
