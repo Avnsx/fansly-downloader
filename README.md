@@ -27,6 +27,18 @@ From now on, you'll only need to re-do step 7 for every future use case.
 
 You can turn ``Open_Folder_When_Finished`` to ``False``; if you no longer wish the download folder to automatically open after code completion.
 
+## FAQ
+Q: "Could you add X Feature"
+A: Funding or any kind of support on the project? <img src="https://cdn.betterttv.net/emote/5f5130616084af6c171975d8/3x" width="50" height="50" />
+
+Otherwise you could always [open a pull request](https://github.com/Avnsx/fansly/pulls)
+
+Q: "I'm lacking the brain cells, to follow basic instructions; please spoon-feed me!"
+A: <img src="https://c.tenor.com/Eqzbcyujjw0AAAAd/throw-child-throw-kid.gif" width="180" height="80" />
+
+Q: "I'm encountering an actual bug, that is actually pointing to a coding mistake."
+A: Open an Issue, I'll look at it asap
+
 ## Funding
 Dependent on how many people show me that they're liking the code by giving ⭐'s on this repo, I'll expand functionality & push more quality of life updates.
 Would you like to help out more? Any crypto donations are welcome!
