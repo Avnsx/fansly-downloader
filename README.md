@@ -29,7 +29,7 @@ You can turn ``Open_Folder_When_Finished`` to ``False``; if you no longer wish t
 
 ## FAQ
 Q: "Could you add X feature or do X change?"
-A: Funding or any kind of support on the project? <img src="https://cdn.betterttv.net/emote/5f5130616084af6c171975d8/3x" width="50" height="50" />
+A: Funding or any kind of support on the project? <img src="https://cdn.betterttv.net/emote/5f5130616084af6c171975d8/3x" width="40" height="40" />
 
 Otherwise you could always [open a pull request](https://github.com/Avnsx/fansly/pulls)
 
