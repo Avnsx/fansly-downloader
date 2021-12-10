@@ -29,12 +29,7 @@ You can turn ``Open_Folder_When_Finished`` to ``False``; if you no longer wish t
 
 ## FAQ
 Q: "Could you add X feature or do X change?"
-A: Funding or any kind of support on the project? <img src="https://cdn.betterttv.net/emote/5f5130616084af6c171975d8/3x" width="40" height="40" />
-
-Otherwise you could always [open a pull request](https://github.com/Avnsx/fansly/pulls)
-
-Q: "I'm lacking the brain cells, to follow basic instructions; please spoon-feed me!"
-A: <img src="https://c.tenor.com/Eqzbcyujjw0AAAAd/throw-child-throw-kid.gif" width="180" height="80" />
+A: Star the project and I'll think about it. Otherwise you could always [open a pull request](https://github.com/Avnsx/fansly/pulls)
 
 Q: "I'm encountering an actual bug, that is actually pointing to a coding mistake."
 A: Open an Issue, I'll look at it asap
