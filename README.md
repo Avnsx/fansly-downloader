@@ -37,9 +37,8 @@ This is a sophisticated, but invasive, way to automatically get your account's a
 1. Have python installed, have the additional requirements installed [from the requirements section](https://github.com/Avnsx/fansly#requirements-for-automatic-configuration-of-configini-experimental) and use one of the supported software mentioned above
 2. Make sure the browser you set as default browser in windows settings, is also the browser that you've browsed fansly with in the past
 3. Click on ``auto_config.py``
-4. If it was successful; replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish
-5. Open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
-6. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
+4. If it was successful; open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
+5. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
 ## Additional Usage Information
 If you completed the any of the usage ways explained in the How To; in the future you'll only need to change the targeted creator > username in config.ini for every further use case.
 
