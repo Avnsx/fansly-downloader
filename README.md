@@ -6,11 +6,19 @@
 On click code, to scrape your favorite fansly creators media content. After you've ran the code, it'll create a folder named ``CreatorName_fansly`` in the same directory you launched the code from. That folder will have two sub-folders called Pictures & Videos, which will contain the downloaded content sorted into them.
 This is pretty useful for example; if you dislike the website theming and would like to view the media on your local machine instead. This code does not bypass any paywalls & no end user information is collected during usage.
 ## Installation
+#### Requirements for Manual configuration of config.ini
 You can just install the [Executable version](https://github.com/Avnsx/fansly/releases).
 Else you'll need to install python (ticking pip in installer) and paste below in ``cmd.exe``.
 
 	pip install requests loguru imagehash pillow
 or you can use [``requirements.txt``](https://github.com/Avnsx/fansly/blob/main/requirements.txt) to install the requirements above.
+
+#### Requirements for Automatic Configuration of config.ini [Experimental]
+**For the automatic configuration (auto_config.py)**; you need to install the correct version of pywin32 that applies to your system specs.
+You either do that [through the pywin32 github page > relases](https://github.com/mhammond/pywin32/releases) or you might also be able to install that by doing ``pip install pywin32``or ``pip install pypiwin32`` or ``conda install pywin32``
+Also there's additional requirements for it:
+
+	pip install psutil keyboard
 ## How To
 If you have Python installed download the GitHub repository, else use the [Executable version](https://github.com/Avnsx/fansly/releases)
 #### Manual Way
@@ -22,12 +30,13 @@ If you have Python installed download the GitHub repository, else use the [Execu
 6. Replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
 7. Save the ``config.ini`` file(into same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
 ##
-#### Automatic Way
+#### Automatic Way [Experimental]
 This is a sophisticated, but invasive, way to automatically get your account's authentication token out of your browser. If it is successful, it will overwrite the config.ini file with the required token & user agent to run fansly scraper, for you. Afterwards, all you'll have to do is open config.ini and type in your targeted fansly creators username into it & save the file. **Only works with Windows and Chrome, Firefox, Opera, Brave & Microsoft Edge**. Let me know if it worked for you in [Discussions > auto_config Results](https://github.com/Avnsx/fansly/discussions/8). This will be a part, of the 0.3 update, if a lot of people report it to be working and then I'll provide an compiled release.
-1. Have python installed and use one of the supported software mentioned above
+1. Have python installed, have the additional requirements installed from the requirements section and use one of the supported software mentioned above
 2. Click on auto_config.py
 3. If it was sucessfull; replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish
 ##
+
 From now on, you'll only need to change the targeted creator > username in config.ini for every future use case.
 
 **Not enough content downloaded? Enable media previews.** (``Download_Media_Previews`` to ``True`` in the configuration file)
