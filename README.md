@@ -6,8 +6,9 @@
 On click code, to scrape your favorite fansly creators media content. After you've ran the code, it'll create a folder named ``CreatorName_fansly`` in the same directory you launched the code from. That folder will have two sub-folders called Pictures & Videos, which will contain the downloaded content sorted into them.
 This is pretty useful for example; if you dislike the website theming and would like to view the media on your local machine instead. This code does not bypass any paywalls & no end user information is collected during usage.
 ## Installation
+You can just install the [Executable version](https://github.com/Avnsx/fansly/releases) and you can skip the entire Installation section of this ReadMe.
+
 #### Requirements for Manual configuration of config.ini
-You can just install the [Executable version](https://github.com/Avnsx/fansly/releases).
 Else you'll need to install python (ticking pip in installer) and paste below in ``cmd.exe``.
 
 	pip install requests loguru imagehash pillow
@@ -37,9 +38,8 @@ This is a sophisticated, but invasive, way to automatically get your account's a
 3. If it was sucessfull; replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish
 4. Open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
 5. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
-##
-
-From now on, you'll only need to change the targeted creator > username in config.ini for every future use case.
+## Additional Usage Information
+If you completed the any of usage ways explained in the How To; in the future you'll only need to change the targeted creator > username in config.ini for every further use case.
 
 **Not enough content downloaded? Enable media previews.** (``Download_Media_Previews`` to ``True`` in the configuration file)
 
@@ -51,6 +51,9 @@ A: Star the project and I'll think about it. Otherwise you could always [open a 
 
 Q: "I'm encountering an actual bug, that is actually pointing to a coding mistake."
 A: Open an Issue, I'll look at it asap
+
+Q: "I used the automatic way and my browser now displays insecure on fansly.com!"
+A: That's a rare bug, just press on the lock icon in the left side of your url bar, while being on fansly.com > click on cookies > remove & refresh the site and you're good
 
 ## Funding
 Dependent on how many people show me that they're liking the code by giving ⭐'s on this repo, I'll expand functionality & push more quality of life updates.
