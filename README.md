@@ -23,6 +23,7 @@ Also there's additional requirements for it:
 ## How To
 If you have Python installed download the GitHub repository, else use the [Executable version](https://github.com/Avnsx/fansly/releases)
 #### Manual Way
+1. If you're **not using the executable version**, make sure you have [installed the requirements for the manual way](https://github.com/Avnsx/fansly#requirements-for-manual-configuration-of-configini)
 1. Make sure you have registered an account on fansly and are logged in with it in your browser, or you'll not be able to get an authorization token from Developer Console.
 2. Go to whatever creator's account page and open your browsers developer console (Most often Key: F12)
 3. Reload the website by using the rotating arrow symbol to the left of your browsers search bar(Key: F5), while the developer console is open. Now do the steps on the following picture:
@@ -36,7 +37,7 @@ This is a sophisticated, but invasive, way to automatically get your account's a
 1. Have python installed, have the additional requirements installed [from the requirements section](https://github.com/Avnsx/fansly#requirements-for-automatic-configuration-of-configini-experimental) and use one of the supported software mentioned above
 2. Make sure the browser you set as default browser in windows settings, is also the browser that you've browsed fansly with in the past
 3. Click on ``auto_config.py``
-4. If it was sucessfull; replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish
+4. If it was successful; replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish
 5. Open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
 6. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
 ## Additional Usage Information
