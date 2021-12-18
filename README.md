@@ -12,16 +12,23 @@ Else you'll need to install python (ticking pip in installer) and paste below in
 	pip install requests loguru imagehash pillow
 or you can use [``requirements.txt``](https://github.com/Avnsx/fansly/blob/main/requirements.txt) to install the requirements above.
 ## How To
-1. If you have Python installed download the GitHub repository, else use the [Executable version](https://github.com/Avnsx/fansly/releases)
-2. Make sure you have registered an account on fansly and are logged in with it in your browser, or you'll not be able to get an authorization token from Developer Console.
-3. Go to whatever creator's account page and open your browsers developer console (Most often Key: F12)
-4. Reload the website by using the rotating arrow symbol to the left of your browsers search bar(Key: F5), while the developer console is open. Now do the steps on the following picture:
-5. ![GitHub Banner](https://i.imgur.com/X2L9XFo.png)
-6. Now paste both of the strings - that were on the right side of ``authorization:`` & ``User-Agent:`` - which you just copied, as shown in the picture above. Into the configuration file (config.ini) and replace the two strings with their corresponding values. (1. ``[MyAccount]`` > ``Authorization_Token=`` paste the value for ``authorization:``; 2. ``[MyAccount]`` > ``User_Agent=`` paste the value for ``User-Agent:``.
-7. Replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
-8. Save the ``config.ini`` file(into same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
-
-From now on, you'll only need to re-do step 7 for every future use case.
+If you have Python installed download the GitHub repository, else use the [Executable version](https://github.com/Avnsx/fansly/releases)
+#### Manual Way
+1. Make sure you have registered an account on fansly and are logged in with it in your browser, or you'll not be able to get an authorization token from Developer Console.
+2. Go to whatever creator's account page and open your browsers developer console (Most often Key: F12)
+3. Reload the website by using the rotating arrow symbol to the left of your browsers search bar(Key: F5), while the developer console is open. Now do the steps on the following picture:
+4. ![GitHub Banner](https://i.imgur.com/X2L9XFo.png)
+5. Now paste both of the strings - that were on the right side of ``authorization:`` & ``User-Agent:`` - which you just copied, as shown in the picture above. Into the configuration file (config.ini) and replace the two strings with their corresponding values. (1. ``[MyAccount]`` > ``Authorization_Token=`` paste the value for ``authorization:``; 2. ``[MyAccount]`` > ``User_Agent=`` paste the value for ``User-Agent:``.
+6. Replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
+7. Save the ``config.ini`` file(into same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
+##
+#### Automatic Way
+This is a sophisticated, but invasive, way to automatically get your account's authentication token out of your browser. If it is successful, it will overwrite the config.ini file with the required token & user agent to run fansly scraper, for you. Afterwards, all you'll have to do is open config.ini and type in your targeted fansly creators username into it & save the file. **Only works with Windows and Chrome, Firefox, Opera, Brave & Microsoft Edge**. Let me know if it worked for you in Discussions > auto_config Results. This will be a part, of the 0.3 update, if a lot of people report it to be working and then I'll provide an compiled release.
+1. Have python installed and use one of the supported software mentioned above
+2. Click on auto_config.py
+3. If it was sucessfull; replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish
+##
+From now on, you'll only need to change the targeted creator > username in config.ini for every future use case.
 
 **Not enough content downloaded? Enable media previews.** (``Download_Media_Previews`` to ``True`` in the configuration file)
 
