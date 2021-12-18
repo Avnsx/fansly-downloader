@@ -34,10 +34,11 @@ If you have Python installed download the GitHub repository, else use the [Execu
 #### Automatic Way [Experimental, only for python users]
 This is a sophisticated, but invasive, way to automatically get your account's authentication token out of your browser. If it is successful, it will overwrite the config.ini file with the required token & user agent to run fansly scraper, for you. Afterwards, all you'll have to do is open config.ini and type in your targeted fansly creators username into it & save the file. **Only works with Windows and Chrome, Firefox, Opera, Brave & Microsoft Edge**. Let me know if it worked for you in [Discussions > auto_config Results](https://github.com/Avnsx/fansly/discussions/8). This will be a part, of the 0.3 update, if a lot of people report it to be working and then I'll provide an compiled release.
 1. Have python installed, have the additional requirements installed [from the requirements section](https://github.com/Avnsx/fansly#requirements-for-automatic-configuration-of-configini-experimental) and use one of the supported software mentioned above
-2. Click on ``auto_config.py``
-3. If it was sucessfull; replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish
-4. Open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
-5. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
+2. Make sure the browser you set as default browser in windows settings, is also the browser that you've browsed fansly with in the past
+3. Click on ``auto_config.py``
+4. If it was sucessfull; replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish
+5. Open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
+6. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
 ## Additional Usage Information
 If you completed the any of the usage ways explained in the How To; in the future you'll only need to change the targeted creator > username in config.ini for every further use case.
 
