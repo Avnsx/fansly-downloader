@@ -39,7 +39,7 @@ This is a sophisticated, but invasive, way to automatically get your account's a
 4. Open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
 5. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
 ## Additional Usage Information
-If you completed the any of usage ways explained in the How To; in the future you'll only need to change the targeted creator > username in config.ini for every further use case.
+If you completed the any of the usage ways explained in the How To; in the future you'll only need to change the targeted creator > username in config.ini for every further use case.
 
 **Not enough content downloaded? Enable media previews.** (``Download_Media_Previews`` to ``True`` in the configuration file)
 
