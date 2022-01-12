@@ -17,7 +17,7 @@ else:
 	exit()
 
 import time,psutil,re,sqlite3,traceback,os,json,win32con,win32api,win32gui,win32process,win32crypt,requests,keyboard,shutil,base64
-from seleniumwire.undetected_chromedriver import uc
+from seleniumwire.undetected_chromedriver.v2 import uc
 from time import sleep as s
 from re import search
 from winreg import HKEY_CURRENT_USER, OpenKey, QueryValueEx
