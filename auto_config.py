@@ -285,7 +285,7 @@ def interceptor(request):
 opts = uc.ChromeOptions()
 opts.headless = True
 opts.add_argument(r'--user-data-dir='+fp)
-driver = uc.Chrome(options=opts)
+driver = uc.Chrome(use_subprocess=True, options=opts)
 driver.execute_cdp_cmd('Network.setBlockedURLs', {"urls": ['*png','*jpeg','*woff','*woff2','*jpg','*gif','*jpeg','*css','*mp4','*mkv']})
 driver.execute_cdp_cmd('Network.enable', {})
 driver.request_interceptor = interceptor
