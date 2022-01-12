@@ -17,7 +17,7 @@ or you can use [``requirements.txt``](https://github.com/Avnsx/fansly/blob/main/
 You either do that [through the pywin32's github](https://github.com/mhammond/pywin32/releases) or you might also be able to install that by doing ``pip install pywin32``or ``pip install pypiwin32`` or ``conda install pywin32``
 Also there's additional requirements for it:
 
-	pip install psutil keyboard selenium-wire undetected_chromedriver==3.0.6
+	pip install psutil keyboard selenium-wire undetected_chromedriver==3.1.3
 ## How To
 If you have Python installed download the GitHub repository, else use the [Executable version](https://github.com/Avnsx/fansly/releases)
 #### Manual Way
