@@ -8,16 +8,16 @@ This is pretty useful for example; if you dislike the website theming and would 
 ## Installation
 You can just install the [Executable version](https://github.com/Avnsx/fansly/releases) and you can skip the entire Installation section of this ReadMe.
 
-#### Requirements for Manual configuration of config.ini
+#### General Requirements
 	pip install requests loguru imagehash pillow
 or you can use [``requirements.txt``](https://github.com/Avnsx/fansly/blob/main/requirements.txt) to install the requirements above.
 
 #### Requirements for Automatic Configuration of config.ini [Experimental]
-**For the automatic configuration (auto_config.py)**; you need to install the correct version of pywin32 that applies to your system specs.
-You either do that [through the pywin32's github](https://github.com/mhammond/pywin32/releases) or you might also be able to install that by doing ``pip install pywin32``or ``pip install pypiwin32`` or ``conda install pywin32``
-Also there's additional requirements for it:
 
-	pip install psutil keyboard selenium-wire undetected_chromedriver==3.0.6 pycryptodome
+	pip install psutil keyboard selenium-wire undetected_chromedriver==3.0.6 pycryptodome pywin32
+
+If copy pasting above into cmd doesn't work / you still get an error during execution; you'll need to install the correct version of pywin32 that applies to your system specs.
+You either do that [through the pywin32's github](https://github.com/mhammond/pywin32/releases) or you might also be able to install that by doing ``pip install pywin32``or ``pip install pypiwin32`` or ``conda install pywin32``
 ## How To
 If you have Python installed download the GitHub repository, else use the [Executable version](https://github.com/Avnsx/fansly/releases)
 #### Manual Way
