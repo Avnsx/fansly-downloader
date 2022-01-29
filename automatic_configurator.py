@@ -5,7 +5,6 @@ github.com/wbolster/plyvel/issues/137
 
 please do not use the code provided for malicious purposes
 """
-# https://github.com/wkeeling/selenium-wire/issues/402
 
 import platform
 os_v=platform.system()
