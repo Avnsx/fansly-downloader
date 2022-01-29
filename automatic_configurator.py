@@ -14,14 +14,16 @@ else:
 	s(60)
 	exit()
 
-import time,psutil,re,sqlite3,traceback,os,json,win32con,win32api,win32gui,win32process,win32crypt,requests,keyboard,shutil,base64,psutil
+import os
+os.system('title Automatic Configurator')
+
+import time,psutil,re,sqlite3,traceback,json,win32con,win32api,win32gui,win32process,win32crypt,requests,keyboard,shutil,base64,psutil
 from seleniumwire.undetected_chromedriver import uc
 from time import sleep as s
 from re import search
 from winreg import HKEY_CURRENT_USER, OpenKey, QueryValueEx
 from configparser import ConfigParser
 from Crypto.Cipher import AES
-os.system('title Automatic Configurator')
 sess = requests.Session()
 
 try:
