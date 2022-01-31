@@ -1,4 +1,6 @@
-import requests,os,re,base64,hashlib,imagehash,io,traceback,sys
+import requests,os,re,base64,hashlib,imagehash,io,traceback,sys,platform,subprocess,concurrent.futures
+import tkinter as tk
+from tkinter import filedialog
 from loguru import logger as log
 from functools import partialmethod
 from PIL import Image
@@ -28,6 +30,8 @@ try:
     mycreator = config['TargetedCreator']['Username']
     mytoken = config['MyAccount']['Authorization_Token']
     myuseragent = config['MyAccount']['User_Agent']
+    show = config['Options']['Show_Downloads'].capitalize()
+    remember = config['Options']['Update_Recent_Download'].capitalize()
     previews = config['Options']['Download_Media_Previews'].capitalize()
     openwhenfinished = config['Options']['Open_Folder_When_Finished'].capitalize()
 except (KeyError, NameError) as e:
@@ -41,7 +45,7 @@ for x in mycreator,mytoken,myuseragent,previews,openwhenfinished:
         s(60)
         exit()
 
-current_ver='0.2'
+current_ver='0.3'
 try:
     newest_ver=requests.get('https://github.com/Avnsx/fansly/releases/latest', headers={'authority': 'github.com','user-agent': myuseragent,'accept-language': 'en-US,en;q=0.9',}).url.split('/v')[-1]
     if newest_ver > current_ver:output(3,' WARNING','<yellow>', 'Your version (v'+str(current_ver)+') of fansly scraper is outdated, please update! Newest version: v'+str(newest_ver))
@@ -67,11 +71,11 @@ headers = {
 try:
     raw_req = sess.get('https://apiv2.fansly.com/api/v1/account?usernames='+mycreator, headers=headers)
     acc_req = raw_req.json()['response'][0]
-    creator_id = acc_req['avatar']['accountId']
+    creator_id = acc_req['id']
 except KeyError as e:
     if raw_req.status_code == 401:
         output(2,'\n [6]ERROR','<red>', 'API returned unauthorized. This is most likely because of a wrong authorization token, in the configuration file.')
-        print(f'{21*" "}Used authorization token: "'+mytoken+'" [DO NOT SHARE]')
+        print(f'{21*" "}Used authorization token: "'+mytoken+'"')
     else:output(2,'\n [7]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed.')
     print('\n'+str(e))
     print(raw_req.text)
@@ -98,48 +102,161 @@ output(1,' Info','<light-blue>','Open download folder when finished, is set to: 
 output(1,' Info','<light-blue>','Downloading files marked as preview, is set to: "'+previews+'"')
 
 if previews == 'True':output(3,' WARNING','<yellow>', 'Previews downloading is enabled; repetitive and/or emoji spammed media might be downloaded!')
+if remember == 'True':output(3,' WARNING','<yellow>', 'Update recent download is enabled')
 
-try:
-    output(1,'\n Info','<light-blue>','Creating download directories ...')
-    basedir=mycreator+'_fansly'
-    os.makedirs(basedir, exist_ok = True)
-    os.makedirs(basedir+'/Pictures', exist_ok = True)
-    os.makedirs(basedir+'/Videos', exist_ok = True)
-except Exception:
-    print('\n'+traceback.format_exc())
-    output(2,'\n [9]ERROR','<red>', 'Creating download directories ... Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
-    s(60)
-    exit()
+recent_photobyte_hashes=[]
+recent_videobyte_hashes=[]
+
+basedir=mycreator+'_fansly'
+
+def process_img(name):
+    recent_photobyte_hashes.append(str(imagehash.average_hash(Image.open(basedir+'/Pictures/'+name))))
+
+def process_vid(name):
+    with open(basedir+'/Videos/'+name, 'rb') as f:
+        recent_videobyte_hashes.append(hashlib.md5(f.read()).hexdigest())
+
+print('')
+if remember == 'True':
+    if os.path.isdir(basedir):
+        output(1,' Info','<light-blue>', f'"{basedir}" folder exists in local directory')
+    else:
+        output(3,' WARNING','<yellow>', f"'{basedir}' folder is not located in the local directory; but you launched in update recent download mode,\n{20*' '}so find & select the folder that contains recently downloaded 'Photos' & 'Videos' as subfolders (it should be called '{basedir}')")
+        root = tk.Tk()
+        root.withdraw()
+        basedir = filedialog.askdirectory()
+        if basedir:
+            output(1,' Info','<light-blue>', f'Chose folder path {basedir}')
+        else:
+            output(2,'\n [9}ERROR','<red>', f'Could not register your chosen folder path, please start all over again. Closing in 30 seconds')
+            s(30)
+            exit()
+
+    # pictures
+    output(1,' Info','<light-blue>', f"Hashing {mycreator}'s recently downloaded pictures ...")
+    list_of_futures=[]
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        for el in os.listdir(basedir+'/Pictures'):
+            list_of_futures.append(executor.submit(process_img, el))
+        concurrent.futures.wait(list_of_futures)
+
+    # videos
+    output(1,' Info','<light-blue>', f"Hashing {mycreator}'s recently downloaded videos ...")
+    list_of_futures=[]
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        for el in os.listdir(basedir+'/Videos'):
+            list_of_futures.append(executor.submit(process_vid, el))
+        concurrent.futures.wait(list_of_futures)
+
+    output(1,' Info','<light-blue>', f'Finished hashing! Will now compare each new download against {str(len(recent_photobyte_hashes))} photo & {str(len(recent_videobyte_hashes))} video hashes.')
+else:
+    try:
+        output(1,' Info','<light-blue>','Creating download directories ...')
+        os.makedirs(basedir, exist_ok = True)
+        os.makedirs(basedir+'/Pictures', exist_ok = True)
+        os.makedirs(basedir+'/Videos', exist_ok = True)
+    except Exception:
+        print('\n'+traceback.format_exc())
+        output(2,'\n [10]ERROR','<red>', 'Creating download directories ... Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
+        s(60)
+        exit()
 
 pic_count=1
 vid_count=1
 duplicates=0
+recent=0
 photobyte_hashes=[]
 videobyte_hashes=[]
 def sort_download(filename,filebytes):
-    global pic_count, vid_count, duplicates
-    win_comp_name=re.sub(r'[\\/:*?"<>|]', '', repr(filename).replace("'",'')) # better solution?
+    global pic_count, vid_count, duplicates, recent
+    win_comp_name=str(re.sub(r'[\\/:*?"<>|]', '', repr(filename).replace("'",''))).replace('..','.')[:150] # better solution?
     if re.findall(r'.jpeg|.png|.jpg|.tif|.tiff|.bmp', filename[-6:]):
-        photohash=imagehash.average_hash(Image.open(io.BytesIO(filebytes)))
-        if photohash not in photobyte_hashes:
-            with open(basedir+'/Pictures/'+str(pic_count)+'_'+win_comp_name, 'wb') as f:f.write(filebytes)
-            photobyte_hashes.append(photohash)
-            pic_count+=1
-        else:duplicates+=1
+        photohash=str(imagehash.average_hash(Image.open(io.BytesIO(filebytes))))
+        if photohash not in recent_photobyte_hashes:
+            if photohash not in photobyte_hashes:
+                if show == 'True':output(1,' Info','<light-blue>', f"Downloading Image '{win_comp_name}'")
+                with open(f"{basedir}/Pictures/{pic_count}_{win_comp_name}", 'wb') as f:f.write(filebytes)
+                photobyte_hashes.append(photohash)
+                pic_count+=1
+            else:duplicates+=1
+        else:recent+=1
     elif re.findall(r'.mp4|.mkv|.mov|.gif|.wmv|.flv|.webm', filename[-6:]):
         videohash=hashlib.md5(filebytes).hexdigest() # better solution?
-        if videohash not in videobyte_hashes:
-            with open(basedir+'/Videos/'+str(vid_count)+'_'+win_comp_name, 'wb') as f:f.write(filebytes)
-            videobyte_hashes.append(videohash)
-            vid_count+=1
-        else:duplicates+=1
+        if videohash not in recent_videobyte_hashes:
+            if videohash not in videobyte_hashes:
+                if show == 'True':output(1,' Info','<light-blue>', f"Downloading Video '{win_comp_name}'")
+                with open(f"{basedir}/Videos/{vid_count}_{win_comp_name}", 'wb') as f:f.write(filebytes)
+                videobyte_hashes.append(videohash)
+                vid_count+=1
+            else:duplicates+=1
+        else:recent+=1
     else:
-        output(2,'\n [10]ERROR','<red>', 'Unknown filetype: "'+str(filename[-7:])+'" please report this on GitHub > Issues & provide a short explanation; continuing without that file in 60 seconds.')
-        s(60)
+        output(2,'\n [11]ERROR','<red>', 'Unknown filetype: "'+str(filename[-7:])+'" please report this on GitHub > Issues & provide a short explanation; continuing without that file ...')
 
-output(1,' Info','<light-blue>','Started media download; this could take a while dependant on the content size ...')
+
+# scrape messages
+groups = sess.get('https://apiv2.fansly.com/api/v1/group', headers=headers).json()['response']['groups']
+for x in range(len(groups)):
+    if groups[x]['users'][0]['userId'] == creator_id:
+        group_id = groups[x]['id']
+        break
+
+# lol
+output(1,' Info','<light-blue>','Started messages media download ...')
+msg_cursor = None
+while True:
+    if not msg_cursor:
+        output(1,' Info','<light-blue>', f'Inspecting message: {group_id}')
+        resp = sess.get('https://apiv2.fansly.com/api/v1/message', headers=headers, params=(('groupId', group_id),('limit', '50'),)).json()
+    else:
+        output(1,' Info','<light-blue>', f'Inspecting message: {msg_cursor}')
+        resp = sess.get('https://apiv2.fansly.com/api/v1/message', headers=headers, params=(('groupId', group_id),('before', msg_cursor),('limit', '50'),)).json()
+    try:
+        for x in resp['response']['accountMedia']:
+            # message media previews
+            if previews == 'True':
+                try:
+                    if x['access'] != False:
+                        sort_download(x['media']['filename'], sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                    if x['access'] == False:
+                        sort_download(x['preview']['filename'], sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                except:pass
+            # unlocked meda in messages
+            try:
+                locurl=x['media']['locations'][0]['location']
+                sort_download(x['media']['filename'], sess.get(locurl, headers=headers).content)
+            # unlocked messages without corresponding location url
+            except IndexError:
+                for f in range(0,len(x['media']['variants'])):
+                    try:
+                        locurl=x['media']['variants'][f]['locations'][0]['location']
+                        sort_download(x['media']['variants'][f]['filename'], sess.get(locurl, headers=headers).content)
+                        break
+                    except:pass # silently passing locked media in messages
+                pass
+            except Exception:
+                print('\n'+traceback.format_exc())
+                output(2,'\n [12]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
+                s(60)
+                exit()
+        # get next cursor
+        try:
+            msg_cursor = resp['response']['messages'][-1]['id']
+        except IndexError:break # break if end is reached
+        except Exception:
+            print('\n'+traceback.format_exc())
+            output(2,'\n [13]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
+            s(60)
+            exit()
+    except KeyError:
+        output(3,' WARNING','<yellow>', "Couldn't find any scrapeable media in messages")
+        pass
+
+output(1,' Info','<light-blue>','Started profile media download; this could take a while dependant on the content size ...')
 cursor = 0
 while True:
+    if cursor == 0:output(1,' Info','<light-blue>', f'Inspecting most recent page')
+    else:output(1,' Info','<light-blue>', f'Inspecting page: {cursor}')
     response = sess.get('https://apiv2.fansly.com/api/v1/timeline/'+creator_id+'?before='+str(cursor)+'&after=0', headers=headers)
     try:
         for x in response.json()['response']['accountMedia']:
@@ -166,22 +283,25 @@ while True:
                 pass
             except Exception:
                 print('\n'+traceback.format_exc())
-                output(2,'\n [11]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
+                output(2,'\n [14]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
                 s(60)
                 exit()
         # get next cursor
         try:
             cursor = response.json()['response']['posts'][-1]['id']
-            output(1,' Info','<light-blue>','Downloading media from page: '+cursor)
-        except IndexError:break #break if end is reached
+        except IndexError:break # break if end is reached
         except Exception:
             print('\n'+traceback.format_exc())
-            output(2,'\n [12]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
+            output(2,'\n [15]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
             s(60)
             exit()
     except KeyError:
-        output(2,'\n [13]ERROR','<red>', "Couldn't find any scrapeable media at all!\n This most likely happend because you're not following the creator, your authorisation token is wrong\n or the creator is not providing unlocked content. Closing in 60 Seconds.")
+        output(2,'\n [16]ERROR','<red>', "Couldn't find any scrapeable media at all!\n This most likely happend because you're not following the creator, your authorisation token is wrong\n or the creator is not providing unlocked content. Closing in 60 Seconds.")
         s(60)
+        exit()
+    if remember == 'True' and recent > int(total_photos+total_videos) * 0.2:
+        print(f"\n╔═\n  Finished download; it looks like we've had already or have just downloaded all possible new content.\n\t\t  ✶ Please leave a Star on the GitHub Repository, if you are satisfied! ✶{10*' '}═╝")
+        s(120)
         exit()
 
 print('')
@@ -201,8 +321,18 @@ if issue == True:
     print('')
 
 full_path=os.getcwd()+'\\'+basedir
-if openwhenfinished == 'True':os.startfile(full_path)
-print('╔═\n  Done! Downloaded '+str(pic_count-1)+' pictures & '+str(vid_count-1)+' videos ('+str(duplicates)+' duplicates declined)\n  Saved in directory: "'+full_path+'"\n  Please leave a Star on the GitHub Repository if you like the code!\n  Would appreciate it; if you spread the word/support with Crypto:\n  BTC: bc1q82n68gmdxwp8vld524q5s7wzk2ns54yr27flst\n  ETH: 0x645a734Db104B3EDc1FBBA3604F2A2D77AD3BDc5'+f'{20*" "}'+'═╝')
+if openwhenfinished == 'True':
+    os_v=platform.system()
+    if os_v == 'Windows':
+        os.startfile(full_path)
+    if os_v == 'Linux':
+        subprocess.Popen(['xdg-open', full_path])
+    if os_v == 'Darwin':
+        subprocess.Popen(['open', full_path])
+    else:
+        output(3,' WARNING','<yellow>', 'WARNING: Functionality open when finished, is not supported on this Operating System.')
+
+print('╔═\n  Done! Downloaded '+str(pic_count-1)+' pictures & '+str(vid_count-1)+' videos ('+str(duplicates)+' duplicates declined)\n  Saved in directory: "'+full_path+'"\n  ✶ Please leave a Star on the GitHub Repository, if you are satisfied! ✶'+f'{12*" "}'+'═╝')
 
 s(120)
 exit()
