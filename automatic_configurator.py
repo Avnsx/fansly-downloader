@@ -22,7 +22,7 @@ from seleniumwire.undetected_chromedriver import uc
 from time import sleep as s
 from re import search
 from winreg import HKEY_CURRENT_USER, OpenKey, QueryValueEx
-from configparser import ConfigParser
+from configparser import RawConfigParser
 from Crypto.Cipher import AES
 sess = requests.Session()
 
@@ -31,10 +31,10 @@ try:
 	if uc_ver > '3.0.6':
 		print(f'\nERROR: Version missmatch! Your version({uc_ver}) of the python library "undetected chromedriver" is too high!\n\n!!! Please install undetected chromedriver version 3.0.6 to run this code, if you have pip installed: "pip install undetected_chromedriver==3.0.6" !!!\n\nYou could also just use the executable(.exe) version of "automatic_configurator.py", or manually configure "config.ini"')
 		s(20)
-		exit()
+		os._exit(1)
 
 	print('Reading config.ini file ...')
-	config = ConfigParser()
+	config = RawConfigParser()
 	if len(config.read('config.ini')) != 1:
 		print('config.ini file not found or can not be read. Please download it & make sure it is in the same directory as Fansly Scraper & auto_config')
 		s(60)
@@ -69,7 +69,7 @@ try:
 			try:shutil.rmtree(selenium_wire_storage)
 			except:pass
 			s(60)
-			os._exit(1)
+			os._exit(0)
 		if ti == 0:
 			print(f'\nFound required strings with {compatible}!\nAuthorization_Token = {auth}\nUser_Agent = {arg2}\n\nOverwriting config.ini ...')
 			ti+=1
