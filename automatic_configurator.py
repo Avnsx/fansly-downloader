@@ -17,7 +17,7 @@ else:
 import os
 os.system('title Automatic Configurator')
 
-import time,psutil,re,sqlite3,traceback,json,win32con,win32api,win32gui,win32process,win32crypt,requests,keyboard,shutil,base64,psutil
+import time,psutil,re,sqlite3,traceback,json,win32con,win32api,win32gui,win32process,win32crypt,requests,keyboard,shutil,base64,psutil,sys
 from seleniumwire.undetected_chromedriver import uc
 from time import sleep as s
 from re import search
@@ -26,12 +26,14 @@ from configparser import RawConfigParser
 from Crypto.Cipher import AES
 sess = requests.Session()
 
+def exit():sys.exit(0) # pyinstaller
+
 try:
 	uc_ver = uc.__version__
 	if uc_ver > '3.0.6':
 		print(f'\nERROR: Version missmatch! Your version({uc_ver}) of the python library "undetected chromedriver" is too high!\n\n!!! Please install undetected chromedriver version 3.0.6 to run this code, if you have pip installed: "pip install undetected_chromedriver==3.0.6" !!!\n\nYou could also just use the executable(.exe) version of "automatic_configurator.py", or manually configure "config.ini"')
 		s(20)
-		os._exit(1)
+		exit()
 
 	print('Reading config.ini file ...')
 	config = RawConfigParser()
@@ -69,7 +71,7 @@ try:
 			try:shutil.rmtree(selenium_wire_storage)
 			except:pass
 			s(60)
-			os._exit(0)
+			exit()
 		if ti == 0:
 			print(f'\nFound required strings with {compatible}!\nAuthorization_Token = {auth}\nUser_Agent = {arg2}\n\nOverwriting config.ini ...')
 			ti+=1
@@ -183,10 +185,10 @@ try:
 			pw=fns_acc.split(':')[1]
 			print(f'\nWill use "{usr}"!')
 			# get device id
-			ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'
+			ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'
 			headers = {
 				'authority': 'apiv2.fansly.com',
-				'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"',
+				'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="97", "Google Chrome";v="97"',
 				'accept': 'application/json, text/plain, */*',
 				'sec-ch-ua-mobile': '?0',
 				'user-agent': ua,
@@ -206,7 +208,7 @@ try:
 				pass
 			# send login request to get token
 			headers = {
-				'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"',
+				'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="97", "Google Chrome";v="97"',
 				'Accept': 'application/json, text/plain, */*',
 				'Referer': 'https://fansly.com/',
 				'Content-Type': 'application/json',
@@ -351,4 +353,4 @@ except:
 	print('\nERROR: General Exception')
 	print('\n'+traceback.format_exc())
 	s(60)
-	os._exit(1)
+	exit()
