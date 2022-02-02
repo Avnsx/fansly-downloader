@@ -1,13 +1,14 @@
 import requests,os,re,base64,hashlib,imagehash,io,traceback,sys,platform,subprocess,concurrent.futures
-import tkinter as tk
-from tkinter import filedialog
+from tkinter import Tk, filedialog
 from loguru import logger as log
 from functools import partialmethod
 from PIL import Image
 from time import sleep as s
-from configparser import ConfigParser
+from configparser import RawConfigParser
 os.system('title Fansly Scraper')
 sess = requests.Session()
+
+def exit():sys.exit(0) # pyinstaller
 
 print(base64.b64decode('IC5kODg4ICAgICAgICAgICAgICAgICAgICAgICAgIDg4ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKIDg4UCIgICAgICAgICAgICAgICAgICAgICAgICAgIDg4ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKIDg4ICAgICAgICAgICAgICAgICAgICAgICAgICAgIDg4ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKIDg4ODg4IDg4ODhiLiA4ODg4Yi4gIC5kODg4OGIgIDg4IDg4ICA4OCAgICAgIC5kODg4OGIgIC5kODg4OGIgLjhkODg4IDg4ODhiLiAuODg4OGIuICAuZDg4Yi4gIC44OGQ4ODgKIDg4ICAgICAgICI4OCA4OCAiODhiIDg4SyAgICAgIDg4IDg4ICA4OCAgICAgIDg4SyAgICAgIDg4UCIgICAgODhQIiAgICAgICI4OCA4OCAiODhiIGQ4UCAgWThiIDg4UCIgICAKIDg4ICAgLmQ4ODg4OCA4OCAgODg4ICJZODg4OGIuIDg4IDg4ICA4OCAgICAgICJZODg4OGIuIDg4ICAgICAgODggICAgLmQ4ODg4OCA4OCAgODg4IDg4ODg4ODg4IDg4ICAgICAKIDg4ICAgODg4ICA4OCA4OCAgODg4ICAgICAgWDg4IDg4IDg4YiA4OCAgICAgICAgICAgWDg4IDg4Yi4gICAgODggICAgODg4ICA4OCA4OCBkODhQIFk4Yi4gICAgIDg4ICAgICAKIDg4ICAgIlk4ODg4OCA4OCAgODg4ICA4ODg4OFAnIDg4IFk4ODg4OCAgICAgICA4ODg4OFAnICJZODg4OFAgODggICAgIlk4ODg4OCA4ODg4UCIgICAiWTg4ODggIDg4ICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA4OCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA4OCAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDhiIGQ4OCAgICBodHRwczovL2dpdGh1Yi5jb20vQXZuc3gvZmFuc2x5ICA4OCAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJZODhQIiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA4OCAgICAgICAgICAgICAgICAgICAgICA=').decode('ascii'))
 
@@ -20,7 +21,7 @@ def output(level,type,color,mytext):
     log.type(mytext)
 
 output(1,'\n Info','<light-blue>','Reading config.ini file ...')
-config = ConfigParser()
+config = RawConfigParser()
 if len(config.read('config.ini')) != 1:
     output(2,'\n [1]ERROR','<red>', 'config.ini file not found or can not be read. Please download it & make sure it is in the same directory as Fansly Scraper.exe')
     s(60)
@@ -34,28 +35,56 @@ try:
     remember = config['Options']['Update_Recent_Download'].capitalize()
     previews = config['Options']['Download_Media_Previews'].capitalize()
     openwhenfinished = config['Options']['Open_Folder_When_Finished'].capitalize()
+    current_ver = config['Other']['version']
 except (KeyError, NameError) as e:
-    output(2,'\n [2]ERROR','<red>', '"'+str(e)+'" is missing or malformed in the configuration file! Read the ReadMe file for assistance.')
+    output(2,'\n [2]ERROR','<red>', f'"{e}" is missing or malformed in the configuration file!\n{21*" "}Read the ReadMe file for assistance.')
     s(60)
     exit()
 
 for x in mycreator,mytoken,myuseragent,previews,openwhenfinished:
     if x == '' or x == 'ReplaceMe':
-        output(2,'\n [3]ERROR','<red>', '"'+str(x)+'" is unmodified, missing or malformed in the configuration file! Read the ReadMe file for assistance.')
+        output(2,'\n [3]ERROR','<red>', f'"{x}" is unmodified, missing or malformed in the configuration file!\n{21*" "}Read the ReadMe file for assistance.')
         s(60)
         exit()
 
-current_ver='0.3'
+def open_file(myfile):
+    os_v=platform.system()
+    try:
+        if os_v == 'Windows':os.startfile(myfile)
+        elif os_v == 'Linux':subprocess.Popen(['xdg-open', myfile])
+        elif os_v == 'Darwin':subprocess.Popen(['open', myfile])
+        else:
+            if openwhenfinished == 'True':
+                output(2,'\n [4]ERROR','<red>', f'Fansly scraper could not open "{myfile}"; if this happens again turn Open_Folder_When_Finished to "False" in the file "config.ini".\n{21*" "}Will try to continue ...')
+                s(5)
+            else:
+                output(2,'\n [4]ERROR','<red>', f'Fansly scraper could not open "{myfile}"; this happend while trying to do an required update!\n{21*" "}Please update, by either opening "{myfile}" manually or downloading the new version from github.com/Avnsx/Fansly')
+                s(30)
+                exit()
+    except:
+        if openwhenfinished == 'True':
+            output(2,'\n [4]ERROR','<red>', f'Fansly scraper could not open "{myfile}"; if this happens again turn Open_Folder_When_Finished to "False" in the file "config.ini".\n{21*" "}Will try to continue ...')
+            s(5)
+        else:
+            output(2,'\n [4]ERROR','<red>', f'Fansly scraper could not open "{myfile}"; this happend while trying to do an required update!\n{21*" "}Please update, by either opening "{myfile}" manually or downloading the new version from github.com/Avnsx/Fansly')
+            s(30)
+            exit()
+
 try:
-    newest_ver=requests.get('https://github.com/Avnsx/fansly/releases/latest', headers={'authority': 'github.com','user-agent': myuseragent,'accept-language': 'en-US,en;q=0.9',}).url.split('/v')[-1]
-    if newest_ver > current_ver:output(3,' WARNING','<yellow>', 'Your version (v'+str(current_ver)+') of fansly scraper is outdated, please update! Newest version: v'+str(newest_ver))
+    newest_ver=requests.get('https://github.com/Avnsx/fansly/releases/latest', headers={'authority': 'github.com','user-agent': myuseragent,'referer':f'Fansly Scraper {current_ver}','accept-language': 'en-US,en;q=0.9',}).url.split('/v')[-1]
+    if newest_ver > current_ver:
+        output(3,' WARNING','<yellow>', f'Your version (v{current_ver}) of fansly scraper is outdated; starting updater ...')
+        s(3)
+        open_file('updater.exe')
+        s(10)
+        exit()
 except requests.exceptions.ConnectionError as e:
-    output(2,'\n [4]ERROR','<red>', 'Update check failed, due to no internet connection! Closing in 60 seconds.')
+    output(2,'\n [5]ERROR','<red>', 'Update check failed, due to no internet connection! Closing in 60 seconds.')
     print('\n'+str(e))
     s(60)
     exit()
 except Exception as e:
-    output(2,'\n [5]ERROR','<red>', 'Update check failed, will try to continue ...')
+    output(2,'\n [6]ERROR','<red>', 'Update check failed, will try to continue ...')
     print('\n'+str(e))
     s(10)
     pass
@@ -74,15 +103,15 @@ try:
     creator_id = acc_req['id']
 except KeyError as e:
     if raw_req.status_code == 401:
-        output(2,'\n [6]ERROR','<red>', 'API returned unauthorized. This is most likely because of a wrong authorization token, in the configuration file.')
+        output(2,'\n [7]ERROR','<red>', 'API returned unauthorized. This is most likely because of a wrong authorization token, in the configuration file.')
         print(f'{21*" "}Used authorization token: "'+mytoken+'"')
-    else:output(2,'\n [7]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed.')
+    else:output(2,'\n [8]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed.')
     print('\n'+str(e))
     print(raw_req.text)
     s(60)
     exit()
 except IndexError as e:
-    output(2,'\n [8]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed; most likely misspelled the creator name.')
+    output(2,'\n [9]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed; most likely misspelled the creator name.')
     print('\n'+str(e))
     print(raw_req.text)
     s(60)
@@ -122,13 +151,13 @@ if remember == 'True':
         output(1,' Info','<light-blue>', f'"{basedir}" folder exists in local directory')
     else:
         output(3,' WARNING','<yellow>', f"'{basedir}' folder is not located in the local directory; but you launched in update recent download mode,\n{20*' '}so find & select the folder that contains recently downloaded 'Photos' & 'Videos' as subfolders (it should be called '{basedir}')")
-        root = tk.Tk()
+        root = Tk()
         root.withdraw()
         basedir = filedialog.askdirectory()
         if basedir:
             output(1,' Info','<light-blue>', f'Chose folder path {basedir}')
         else:
-            output(2,'\n [9}ERROR','<red>', f'Could not register your chosen folder path, please start all over again. Closing in 30 seconds')
+            output(2,'\n [10}ERROR','<red>', f'Could not register your chosen folder path, please start all over again. Closing in 30 seconds')
             s(30)
             exit()
 
@@ -148,7 +177,7 @@ if remember == 'True':
             list_of_futures.append(executor.submit(process_vid, el))
         concurrent.futures.wait(list_of_futures)
 
-    output(1,' Info','<light-blue>', f'Finished hashing! Will now compare each new download against {str(len(recent_photobyte_hashes))} photo & {str(len(recent_videobyte_hashes))} video hashes.')
+    output(1,' Info','<light-blue>', f'Finished hashing! Will now compare each new download against {len(recent_photobyte_hashes)} photo & {len(recent_videobyte_hashes)} video hashes.')
 else:
     try:
         output(1,' Info','<light-blue>','Creating download directories ...')
@@ -157,7 +186,7 @@ else:
         os.makedirs(basedir+'/Videos', exist_ok = True)
     except Exception:
         print('\n'+traceback.format_exc())
-        output(2,'\n [10]ERROR','<red>', 'Creating download directories ... Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
+        output(2,'\n [11]ERROR','<red>', 'Creating download directories ... Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
         s(60)
         exit()
 
@@ -191,7 +220,7 @@ def sort_download(filename,filebytes):
             else:duplicates+=1
         else:recent+=1
     else:
-        output(2,'\n [11]ERROR','<red>', 'Unknown filetype: "'+str(filename[-7:])+'" please report this on GitHub > Issues & provide a short explanation; continuing without that file ...')
+        output(2,'\n [12]ERROR','<red>', 'Unknown filetype: "'+str(filename[-7:])+'" please report this on GitHub > Issues & provide a short explanation; continuing without that file ...')
 
 
 # scrape messages
@@ -200,57 +229,58 @@ for x in range(len(groups)):
     if groups[x]['users'][0]['userId'] == creator_id:
         group_id = groups[x]['id']
         break
+    else:group_id = None
 
-# lol
-output(1,' Info','<light-blue>','Started messages media download ...')
-msg_cursor = None
-while True:
-    if not msg_cursor:
-        output(1,' Info','<light-blue>', f'Inspecting message: {group_id}')
-        resp = sess.get('https://apiv2.fansly.com/api/v1/message', headers=headers, params=(('groupId', group_id),('limit', '50'),)).json()
-    else:
-        output(1,' Info','<light-blue>', f'Inspecting message: {msg_cursor}')
-        resp = sess.get('https://apiv2.fansly.com/api/v1/message', headers=headers, params=(('groupId', group_id),('before', msg_cursor),('limit', '50'),)).json()
-    try:
-        for x in resp['response']['accountMedia']:
-            # message media previews
-            if previews == 'True':
-                try:
-                    if x['access'] != False:
-                        sort_download(x['media']['filename'], sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
-                    if x['access'] == False:
-                        sort_download(x['preview']['filename'], sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
-                except:pass
-            # unlocked meda in messages
-            try:
-                locurl=x['media']['locations'][0]['location']
-                sort_download(x['media']['filename'], sess.get(locurl, headers=headers).content)
-            # unlocked messages without corresponding location url
-            except IndexError:
-                for f in range(0,len(x['media']['variants'])):
+if group_id:
+    output(1,' Info','<light-blue>','Started messages media download ...')
+    msg_cursor = None
+    while True:
+        if not msg_cursor:
+            output(1,' Info','<light-blue>', f'Inspecting message: {group_id}')
+            resp = sess.get('https://apiv2.fansly.com/api/v1/message', headers=headers, params=(('groupId', group_id),('limit', '50'),)).json()
+        else:
+            output(1,' Info','<light-blue>', f'Inspecting message: {msg_cursor}')
+            resp = sess.get('https://apiv2.fansly.com/api/v1/message', headers=headers, params=(('groupId', group_id),('before', msg_cursor),('limit', '50'),)).json()
+        try:
+            for x in resp['response']['accountMedia']:
+                # message media previews
+                if previews == 'True':
                     try:
-                        locurl=x['media']['variants'][f]['locations'][0]['location']
-                        sort_download(x['media']['variants'][f]['filename'], sess.get(locurl, headers=headers).content)
-                        break
-                    except:pass # silently passing locked media in messages
-                pass
+                        if x['access'] != False:
+                            sort_download(x['media']['filename'], sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                        if x['access'] == False:
+                            sort_download(x['preview']['filename'], sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                    except:pass
+                # unlocked meda in messages
+                try:
+                    locurl=x['media']['locations'][0]['location']
+                    sort_download(x['media']['filename'], sess.get(locurl, headers=headers).content)
+                # unlocked messages without corresponding location url
+                except IndexError:
+                    for f in range(0,len(x['media']['variants'])):
+                        try:
+                            locurl=x['media']['variants'][f]['locations'][0]['location']
+                            sort_download(x['media']['variants'][f]['filename'], sess.get(locurl, headers=headers).content)
+                            break
+                        except:pass # silently passing locked media in messages
+                    pass
+                except Exception:
+                    print('\n'+traceback.format_exc())
+                    output(2,'\n [13]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
+                    s(60)
+                    exit()
+            # get next cursor
+            try:
+                msg_cursor = resp['response']['messages'][-1]['id']
+            except IndexError:break # break if end is reached
             except Exception:
                 print('\n'+traceback.format_exc())
-                output(2,'\n [12]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
+                output(2,'\n [14]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
                 s(60)
                 exit()
-        # get next cursor
-        try:
-            msg_cursor = resp['response']['messages'][-1]['id']
-        except IndexError:break # break if end is reached
-        except Exception:
-            print('\n'+traceback.format_exc())
-            output(2,'\n [13]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
-            s(60)
-            exit()
-    except KeyError:
-        output(3,' WARNING','<yellow>', "Couldn't find any scrapeable media in messages")
-        pass
+        except KeyError:
+            output(3,' WARNING','<yellow>', "Couldn't find any scrapeable media in messages")
+            pass
 
 output(1,' Info','<light-blue>','Started profile media download; this could take a while dependant on the content size ...')
 cursor = 0
@@ -283,7 +313,7 @@ while True:
                 pass
             except Exception:
                 print('\n'+traceback.format_exc())
-                output(2,'\n [14]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
+                output(2,'\n [15]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
                 s(60)
                 exit()
         # get next cursor
@@ -292,11 +322,11 @@ while True:
         except IndexError:break # break if end is reached
         except Exception:
             print('\n'+traceback.format_exc())
-            output(2,'\n [15]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
+            output(2,'\n [16]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
             s(60)
             exit()
     except KeyError:
-        output(2,'\n [16]ERROR','<red>', "Couldn't find any scrapeable media at all!\n This most likely happend because you're not following the creator, your authorisation token is wrong\n or the creator is not providing unlocked content. Closing in 60 Seconds.")
+        output(2,'\n [17]ERROR','<red>', "Couldn't find any scrapeable media at all!\n This most likely happend because you're not following the creator, your authorisation token is wrong\n or the creator is not providing unlocked content. Closing in 60 Seconds.")
         s(60)
         exit()
     if remember == 'True' and recent > int(total_photos+total_videos) * 0.2:
@@ -321,16 +351,7 @@ if issue == True:
     print('')
 
 full_path=os.getcwd()+'\\'+basedir
-if openwhenfinished == 'True':
-    os_v=platform.system()
-    if os_v == 'Windows':
-        os.startfile(full_path)
-    if os_v == 'Linux':
-        subprocess.Popen(['xdg-open', full_path])
-    if os_v == 'Darwin':
-        subprocess.Popen(['open', full_path])
-    else:
-        output(3,' WARNING','<yellow>', 'WARNING: Functionality open when finished, is not supported on this Operating System.')
+if openwhenfinished == 'True':open_file(full_path)
 
 print('╔═\n  Done! Downloaded '+str(pic_count-1)+' pictures & '+str(vid_count-1)+' videos ('+str(duplicates)+' duplicates declined)\n  Saved in directory: "'+full_path+'"\n  ✶ Please leave a Star on the GitHub Repository, if you are satisfied! ✶'+f'{12*" "}'+'═╝')
 
