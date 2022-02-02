@@ -9,7 +9,7 @@ This is pretty useful for example; if you dislike the website theming and would 
 You can just install the [Executable version](https://github.com/Avnsx/fansly/releases) and you can skip the entire Installation section of this ReadMe.
 
 #### General Requirements
-	pip install requests loguru imagehash pillow
+	pip install requests loguru imagehash pillow python-dateutil
 or you can use [``requirements.txt``](https://github.com/Avnsx/fansly/blob/main/requirements.txt) to install the requirements above.
 
 #### Requirements for Automatic Configuration of config.ini [Experimental]
