@@ -2,49 +2,37 @@
 ![Downloads](https://img.shields.io/github/downloads/Avnsx/fansly/total?color=0078d7&label=🔽%20Downloads.exe&style=flat-square) ![Compatibility](https://img.shields.io/static/v1?style=flat-square&label=%F0%9F%90%8D%20Python&message=3.6%2B&color=blue) [![Discord](https://img.shields.io/discord/522310203828338701?color=6A7EC2&label=Discord&logo=discord&logoColor=ffffff&style=flat-square)](https://discord.gg/Dr8wt84z2E) ![Stars](https://img.shields.io/github/stars/Avnsx/fansly?style=flat-square&label=⭐%20Stars&color=ffc83d)
 
 ![UI Banner](https://i.imgur.com/EhL42m3.jpg)
+
 ## Description:
 On click code, to scrape your favorite fansly creators media content. After you've ran the code, it'll create a folder named ``CreatorName_fansly`` in the same directory you launched the code from. That folder will have two sub-folders called Pictures & Videos, which will contain the downloaded content sorted into them.
 This is pretty useful for example; if you dislike the website theming and would like to view the media on your local machine instead. This code does not bypass any paywalls & no end user information is collected during usage.
-## Installation
-You can just install the [Executable version](https://github.com/Avnsx/fansly/releases) and you can skip the entire Installation section of this ReadMe.
 
-#### General Requirements
-	pip install requests loguru imagehash pillow python-dateutil
+[Click me if you want a detailed description on each of the components of this software!](https://github.com/Avnsx/fansly/wiki/Explanation-of-provided-programs-&-their-functionality)
+
+## Installation
+You can just install the [Executable version](https://github.com/Avnsx/fansly/releases/latest), skip the entire installation section & go to [Quick Start](https://github.com/Avnsx/fansly/edit/main/README.md#quick-start)
+
+#### Requirements
+	pip install requests loguru imagehash pillow python-dateutil psutil keyboard selenium-wire undetected_chromedriver==3.0.6 pycryptodome pywin32
 or you can use [``requirements.txt``](https://github.com/Avnsx/fansly/blob/main/requirements.txt) to install the requirements above.
 
-#### Requirements for Automatic Configuration of config.ini [Experimental]
+If you get an error while installing requirements with ``pywin32``; it is a windows only library and is not definitely required for the scraper itsself. Only ``automatic_configurator.py`` needs it. If for some reason you can't install it with pip, you can also install it [through pywin32's github](https://github.com/mhammond/pywin32/releases) or you might also be able to install that by ``pip install pypiwin32`` or ``conda install pywin32``
 
-	pip install psutil keyboard selenium-wire undetected_chromedriver==3.0.6 pycryptodome pywin32
+## Quick Start
+**Quick start is only compatible with Windows & you to have to have recently logged into fansly in any of the following browsers: Chrome, FireFox, Opera, Brave or Microsoft Edge and one of those browsers has to be set as your default browser in windows settings.**
+1. Make sure the browser you set as default browser in windows settings, is also the browser that you've browsed fansly with in the past
+2. Click on Automatic Configurator and wait for it [to do its thing](https://github.com/Avnsx/fansly/wiki/Explanation-of-provided-programs-&-their-functionality#2-automatic-configurator)
+3. If it was successful; open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish
+4. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
 
-If copy pasting above into cmd doesn't work / you still get an error during execution; you'll need to install the correct version of pywin32 that applies to your system specs.
-You either do that [through the pywin32's github](https://github.com/mhammond/pywin32/releases) or you might also be able to install that by doing ``pip install pywin32``or ``pip install pypiwin32`` or ``conda install pywin32``
-## How To
-If you have Python installed download the GitHub repository, else use the [Executable version](https://github.com/Avnsx/fansly/releases)
-#### Manual Way
-1. If you're **not using the executable version**, make sure you have [installed the requirements for the manual way](https://github.com/Avnsx/fansly#requirements-for-manual-configuration-of-configini)
-1. Make sure you have registered an account on fansly and are logged in with it in your browser, or you'll not be able to get an authorization token from Developer Console.
-2. Go to whatever creator's account page and open your browsers developer console (Most often Key: F12)
-3. Reload the website by using the rotating arrow symbol to the left of your browsers search bar(Key: F5), while the developer console is open. Now do the steps on the following picture:
-4. ![GitHub Banner](https://i.imgur.com/X2L9XFo.png)
-5. Now paste both of the strings - that were on the right side of ``authorization:`` & ``User-Agent:`` - which you just copied, as shown in the picture above. Into the configuration file (config.ini) and replace the two strings with their corresponding values. (1. ``[MyAccount]`` > ``Authorization_Token=`` paste the value for ``authorization:``; 2. ``[MyAccount]`` > ``User_Agent=`` paste the value for ``User-Agent:``.
-6. Replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
-7. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
-##
-#### Automatic Way [Experimental, only for python users]
-This is a sophisticated, but invasive, way to automatically get your account's authentication token out of your browser. If it is successful, it will overwrite the config.ini file with the required token & user agent to run fansly scraper, for you. Afterwards, all you'll have to do is open config.ini and type in your targeted fansly creators username into it & save the file. **Only works with Windows and Chrome, Firefox, Opera, Brave & Microsoft Edge**. Let me know if it worked for you in [Discussions > auto_config Results](https://github.com/Avnsx/fansly/discussions/8). This will be a part, of the 0.3 update, if a lot of people report it to be working and then I'll provide an compiled release.
-1. Have python installed, have the additional requirements installed [from the requirements section](https://github.com/Avnsx/fansly#requirements-for-automatic-configuration-of-configini-experimental) and use one of the supported software mentioned above
-2. Make sure the browser you set as default browser in windows settings, is also the browser that you've browsed fansly with in the past
-3. Click on ``auto_config.py``
-4. If it was successful; open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish.
-5. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
-## Additional Usage Information
-If you completed any of the usage ways explained in the How To; in the future you'll only need to change the targeted creator > username in config.ini for every further use case.
+**!!! If you are using a different OS or are encountering a bug with quick start please head over to [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started) instead !!!**
 
-**Not enough content downloaded? Enable media previews.** (``Download_Media_Previews`` to ``True`` in the configuration file)
+After completing any of the configuration tutorials [Quick Start](https://github.com/Avnsx/fansly/edit/main/README.md#quick-start) / [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started); in the future you'll only need to change the creator name for Targeted Creator > Username in ``config.ini`` for every further use case on other creators.
 
-You can turn ``Open_Folder_When_Finished`` to ``False``; if you no longer wish the download folder to automatically open after code completion.
 
 ## FAQ
+Do you have any unanswered questions or want to know more about fansly scraper? Head over to the [Wiki](https://github.com/Avnsx/fansly/wiki)
+
 Q: "Could you add X feature or do X change?"
 A: Star the project and I'll think about it. Otherwise you could always [open a pull request](https://github.com/Avnsx/fansly/pulls)
 
@@ -52,7 +40,7 @@ Q: "I'm encountering an actual bug, that is actually pointing to a coding mistak
 A: Open an Issue, I'll look at it asap
 
 Q: "I used the automatic way and my browser now displays insecure on fansly.com!"
-A: That's a rare bug, just press on the lock icon in the left side of your url bar, while being on fansly.com > click on cookies > remove & refresh the site and you're good
+A: That's a rare bug, caused by automatic configurator just press on the lock icon in the left side of your url bar, while being on fansly.com > click on cookies > remove & refresh the site and you're good
 
 ## Funding
 Dependent on how many people show me that they're liking the code by giving ⭐'s on this repo, I'll expand functionality & push more quality of life updates.
