@@ -22,8 +22,8 @@ If you get an error while installing requirements with ``pywin32``; it is a wind
 **Quick start is only compatible with Windows & you to have to have recently logged into fansly in any of the following browsers: Chrome, FireFox, Opera, Brave or Microsoft Edge and one of those browsers has to be set as your default browser in windows settings.**
 1. Make sure the browser you set as default browser in windows settings, is also the browser that you've browsed fansly with in the past
 2. Click on Automatic Configurator and wait for it [to do its thing](https://github.com/Avnsx/fansly/wiki/Explanation-of-provided-programs-&-their-functionality#2-automatic-configurator)
-3. If it was successful; open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username=`` with whatever content creator you wish
-4. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up fansly scraper.
+3. If it was successful(``config.ini`` should now only show a ``ReplaceMe`` for ``[TargetedCreator]`` > ``Username =``) open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username =`` with whatever content creator you wish
+4. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up Fansly Scraper by clicking on it
 
 **!!! If you are using a different OS or are encountering a bug with quick start please head over to [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started) instead !!!**
 
