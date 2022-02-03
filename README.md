@@ -10,7 +10,7 @@ This is pretty useful for example; if you dislike the website theming and would 
 [Click me if you want a detailed description on each of the components of this software!](https://github.com/Avnsx/fansly/wiki/Explanation-of-provided-programs-&-their-functionality)
 
 ## Installation
-You can just install the [Executable version](https://github.com/Avnsx/fansly/releases/latest), skip the entire installation section & go to [Quick Start](https://github.com/Avnsx/fansly/edit/main/README.md#quick-start)
+You can just install the [Executable version](https://github.com/Avnsx/fansly/releases/latest), skip the entire installation section & go to [Quick Start](https://github.com/Avnsx/fansly#quick-start)
 
 #### Requirements
 	pip install requests loguru imagehash pillow python-dateutil psutil keyboard selenium-wire undetected_chromedriver==3.0.6 pycryptodome pywin32
@@ -27,7 +27,7 @@ If you get an error while installing requirements with ``pywin32``; it is a wind
 
 **!!! If you are using a different OS or are encountering a bug with quick start please head over to [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started) instead !!!**
 
-After completing any of the configuration tutorials [Quick Start](https://github.com/Avnsx/fansly/edit/main/README.md#quick-start) / [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started); in the future you'll only need to change the creator name for Targeted Creator > Username in ``config.ini`` for every further use case on other creators.
+After completing any of the configuration tutorials [Quick Start](https://github.com/Avnsx/fansly#quick-start) / [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started); in the future you'll only need to change the creator name for Targeted Creator > Username in ``config.ini`` for every further use case on other creators.
 
 
 ## FAQ
