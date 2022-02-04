@@ -6,7 +6,7 @@ from configparser import RawConfigParser
 from tkinter import Tk
 from tkinter.messagebox import askyesno, showinfo, showerror
 
-def exit():sys.exit(0) # pyinstaller
+def exit():os._exit(0) # pyinstaller
 
 plat = platform.system()
 config = RawConfigParser()
