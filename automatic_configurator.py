@@ -7,26 +7,33 @@ please do not use the code provided for malicious purposes
 """
 
 import platform
+from time import sleep as s
+
 os_v=platform.system()
-if os_v == 'Windows':print('Detected Supported OS; Windows')
+get_started='https://github.com/Avnsx/fansly/wiki/Get-Started'
+if os_v == 'Windows':print('\nDetected Supported OS; Windows')
 else:
-	print(f'Detected Unsupported OS; {os_v} - please enter data manually into config.ini')
-	s(60)
+	print(f'\nDetected Unsupported OS; {os_v} - please enter data manually into config.ini\n\nPlease read Get Started {get_started}\n\nTrying to open browser on Get Started')
+	try:
+		import webbrowser
+		webbrowser.open(get_started, new=0, autoraise=True)
+	except:
+		print('Unfortunately that did not work, please navigate manually ...')
+	s(180)
 	exit()
 
 import os
 os.system('title Automatic Configurator')
 
-import time,psutil,re,sqlite3,traceback,json,win32con,win32api,win32gui,win32process,win32crypt,requests,keyboard,shutil,base64,psutil,sys
+import psutil,re,sqlite3,traceback,json,win32con,win32api,win32gui,win32process,win32crypt,requests,keyboard,shutil,base64
 from seleniumwire.undetected_chromedriver import uc
-from time import sleep as s
 from re import search
 from winreg import HKEY_CURRENT_USER, OpenKey, QueryValueEx
 from configparser import RawConfigParser
 from Crypto.Cipher import AES
 sess = requests.Session()
 
-def exit():sys.exit(0) # pyinstaller
+def exit():os._exit(0) # pyinstaller
 
 try:
 	uc_ver = uc.__version__
@@ -39,7 +46,7 @@ try:
 	config = RawConfigParser()
 	if len(config.read('config.ini')) != 1:
 		print('config.ini file not found or can not be read. Please download it & make sure it is in the same directory as Fansly Scraper & auto_config')
-		s(60)
+		s(180)
 		exit()
 
 	def ApplicationRunning(processName):
@@ -70,7 +77,7 @@ try:
 			except:pass
 			try:shutil.rmtree(selenium_wire_storage)
 			except:pass
-			s(60)
+			s(180)
 			exit()
 		if ti == 0:
 			print(f'\nFound required strings with {compatible}!\nAuthorization_Token = {auth}\nUser_Agent = {arg2}\n\nOverwriting config.ini ...')
@@ -89,7 +96,7 @@ try:
 	if compatible:print(f'Good News! Your default browser is {compatible} -> a compatible browser for auto configuration!')
 	if not compatible:
 		print(f'Your browser ({used_browser}) is not supported, please enter data manually into config.ini')
-		s(60)
+		s(180)
 		exit()
 
 	if compatible == 'Chrome':
@@ -106,7 +113,7 @@ try:
 		for file in os.listdir(bp):myprofiles.append(os.path.join(file))
 		if len(myprofiles) == 0:
 			print('\nERROR: Required files were not found at all, enter data manually into config.ini')
-			s(60)
+			s(180)
 			exit()
 		prf_c=1
 		for prf in myprofiles:
@@ -126,14 +133,14 @@ try:
 				print(f'\nERROR: Required token was not found in file; please browse fansly - while logged in with {compatible} - & execute again or enter data manually into config.ini')
 				try:cur.close()
 				except:pass
-				s(60)
+				s(180)
 				exit()
 			except sqlite3.OperationalError:
 				if prf_c == len(myprofiles):
 					print(f'\nERROR: Required token was not found in profile directories, enter data manually into config.ini')
 					try:cur.close()
 					except:pass
-					s(60)
+					s(180)
 					exit()
 				elif prf_c < len(myprofiles):
 					prf_c+=1
@@ -251,7 +258,7 @@ try:
 
 	if compatible == 'Opera':
 		print('Unfortunately, you will have to enter your data manually, please read the ReadMe > Manual part of the ReadMe file to know how to.')
-		s(60)
+		s(180)
 		exit()
 	else:print('\n\n\t >>> Well that did not work as intended; but do not worry, we will try something else! <<<\n')
 
@@ -263,7 +270,7 @@ try:
 		except Exception:
 			print('\nERROR: Unexpected error in modify_process')
 			print('\n'+traceback.format_exc())
-			s(60)
+			s(180)
 			exit()
 
 	def proc_name(name):
@@ -343,7 +350,7 @@ try:
 			except:pass
 			try:os.remove('chromedriver.exe')
 			except:pass
-			s(60)
+			s(180)
 			exit()
 		s(.3)
 		itr+=.3
@@ -352,5 +359,5 @@ try:
 except:
 	print('\nERROR: General Exception')
 	print('\n'+traceback.format_exc())
-	s(60)
+	s(180)
 	exit()
