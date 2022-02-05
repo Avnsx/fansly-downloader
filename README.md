@@ -39,7 +39,7 @@ After completing any of the configuration tutorials [Quick Start](https://github
 Do you have any unanswered questions or want to know more about fansly scraper? Head over to the [Wiki](https://github.com/Avnsx/fansly/wiki)
 
 + **Q**: "Why do some executables show detections on them in VirusTotal?"
-**A**: They are false positives (invalid detections). I literally e-mail each release of the scraper, for manual analysis to antivirus providers and the not 💩 providers actually analyse and delist them, while others don't even bother reading their e-mails, but for some reason managed to get on VirusTotals file scanning system.
+**A**: They are false positives (invalid detections). I literally e-mail each release of the scraper, for manual analysis to antivirus providers and the not 💩 providers actually analyse and unflag them, while others don't even bother reading their e-mails, but for some reason managed to get on VirusTotals file scanning system.
 
 + **Q**: "Could you add X feature or do X change?"
 **A**: Star the project and I'll think about it. Otherwise you could always [open a pull request](https://github.com/Avnsx/fansly/pulls)
