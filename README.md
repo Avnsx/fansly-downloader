@@ -25,7 +25,7 @@ or you can use [``requirements.txt``](https://github.com/Avnsx/fansly/blob/main/
 If you get an error while installing requirements with ``pywin32``; it is a windows only library and is not definitely required for the scraper itsself. Only ``automatic_configurator.py`` needs it. If for some reason you can't install it with pip, you can also install it [through pywin32's github](https://github.com/mhammond/pywin32/releases) or you might also be able to install that by ``pip install pypiwin32`` or ``conda install pywin32``. If you can't install pywin32 that obviously means that you won't be able to run automatic configurator and need to use [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started) instead to set it up.
 
 ## 🚀 Quick Start
-**Quick start is only compatible with Windows & you to have to have recently logged into fansly in any of the following browsers: Chrome, FireFox, Opera, Brave or Microsoft Edge and one of those browsers has to be set as your default browser in windows settings.**
+**Quick start is only compatible with Windows & you to have to have recently logged into fansly in any of the following browsers: Chrome, FireFox, Opera, Brave or Microsoft Edge and that browser has to be [set as your default browser in windows settings](https://www.avast.com/c-change-default-browser-windows#:~:text=Open%20the%20Start%20menu%20and,is%20the%20current%20default%20browser.).**
 1. Make sure the browser you set as default browser [in windows settings](https://www.avast.com/c-change-default-browser-windows#:~:text=Open%20the%20Start%20menu%20and,is%20the%20current%20default%20browser.), is also the browser that you've browsed fansly with in the past
 2. Click on Automatic Configurator and wait for it [to do its thing](https://github.com/Avnsx/fansly/wiki/Explanation-of-provided-programs-&-their-functionality#2-automatic-configurator)
 3. If it was successful(``config.ini`` should now *only* show a *single* ``ReplaceMe`` the targeted creator name) open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username =`` with whatever content creator you wish to have scraped
@@ -38,11 +38,17 @@ After completing any of the configuration tutorials [Quick Start](https://github
 ## 🤔 FAQ
 Do you have any unanswered questions or want to know more about fansly scraper? Head over to the [Wiki](https://github.com/Avnsx/fansly/wiki)
 
-Q: "Could you add X feature or do X change?"
-A: Star the project and I'll think about it. Otherwise you could always [open a pull request](https://github.com/Avnsx/fansly/pulls)
++ **Q**: "Why do some executables show detections on them in VirusTotal?"
+**A**: They are false positives (invalid detections). I literally e-mail each release of the scraper, for manual analysis to antivirus providers and the not 💩 providers actually analyse and delist them, while others don't even bother reading their e-mails, but for some reason managed to get on VirusTotals file scanning system.
 
-Q: "I used the automatic configurator and my browser now displays insecure on fansly.com!"
-A: That's a rare bug, caused by automatic configurator just press on the lock icon in the left side of your url bar, while being on fansly.com > click on cookies > remove & refresh the site and you're good
++ **Q**: "Could you add X feature or do X change?"
+**A**: Star the project and I'll think about it. Otherwise you could always [open a pull request](https://github.com/Avnsx/fansly/pulls)
+
++ **Q**: "I used the automatic configurator and my browser now displays insecure on fansly.com!"
+**A**: That's a rare bug, caused by automatic configurator just press on the lock icon in the left side of your url bar, while being on fansly.com > click on cookies > remove & refresh the site and you're good
+
++ **Q**: "Will you add any payment bypassing features to fansly scraper?"
+**A**: No, as the intention of this repository is not to harm fansly
 
 ## 🤝 Contributing to `Fansly Scraper`
 Any kind of positive contribution is welcome! Please help it grow by contributing to the project.
