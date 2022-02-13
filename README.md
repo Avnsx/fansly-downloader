@@ -4,7 +4,7 @@
 ![UI Banner](https://i.imgur.com/EhL42m3.jpg)
 
 ## 👋 Introducing ``Fansly Scraper``
-On click code, to scrape your favorite fansly creators media content. After you've ran the code, it'll create a folder named ``CreatorName_fansly`` in the same directory you launched the code from. That folder will have two sub-folders called Pictures & Videos, which will contain the downloaded content sorted into them.
+Easy to use Fansly Downloader for Videos and Photos from your favorite fansly creators. After you've launched the program, it'll create a folder named ``CreatorName_fansly`` in the same directory you launched it from. That folder will have two sub-folders called Pictures & Videos, which will contain the downloaded content sorted into them.
 This is pretty useful for example; if you dislike the website theming and would like to view the media on your local machine instead. This code does not bypass any paywalls & no end user information is collected during usage.
 
 [Click me if you want a detailed description on each of the components of this software!](https://github.com/Avnsx/fansly/wiki/Explanation-of-provided-programs-&-their-functionality)
@@ -63,7 +63,7 @@ Less important:
 Please open a [open a pull request](https://github.com/Avnsx/fansly/pulls)!
 
 ## 🙏 Support
-We all need support and motivation. Fansly Scraper is not an exception. Please give this project a ⭐️ to encourage and show that you liked it.
+We all need support and motivation. This downloader for fansly is not an exception. Please give this project a ⭐️ to encourage and show that you liked it.
 
 If you found the programs helpful, consider supporting me with crypto
 
