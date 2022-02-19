@@ -9,9 +9,8 @@ This is pretty useful for example; if you dislike the website theming and would 
 
 [Click me if you want a detailed description on each of the components of this software!](https://github.com/Avnsx/fansly/wiki/Explanation-of-provided-programs-&-their-functionality)
 
-### Many Thanks to all the `Stargazers` who have supported this project with stars(⭐)
-
-[![Stargazers repo roster for @Avnsx/fansly](https://reporoster.com/stars/Avnsx/fansly)](https://github.com/Avnsx/fansly/stargazers)
+## 🙏 Please check out my GoFundMe!
+<a href="https://gofund.me/c356184b"><img src="https://i.imgur.com/q88R34U.jpeg" alt="drawing" width="400"/></a>
 
 ## 🏗️ Set up
 You can just install the [Executable version](https://github.com/Avnsx/fansly/releases/latest), skip the entire set up section & go to [Quick Start](https://github.com/Avnsx/fansly#-quick-start)
@@ -63,6 +62,10 @@ Less important:
 Please open a [open a pull request](https://github.com/Avnsx/fansly/pulls)!
 
 ## 🙏 Support
+### Many Thanks to all the `Stargazers` who have supported this project with stars(⭐)
+
+[![Stargazers repo roster for @Avnsx/fansly](https://reporoster.com/stars/Avnsx/fansly)](https://github.com/Avnsx/fansly/stargazers)
+
 We all need support and motivation. This downloader for fansly is not an exception. Please give this project a ⭐️ to encourage and show that you liked it.
 
 If you found the programs helpful, consider supporting me with crypto
