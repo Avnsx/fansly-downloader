@@ -9,8 +9,9 @@ This is pretty useful for example; if you dislike the website theming and would 
 
 [Click me if you want a detailed description on each of the components of this software!](https://github.com/Avnsx/fansly/wiki/Explanation-of-provided-programs-&-their-functionality)
 
-## 🙏 Please check out my GoFundMe!
-<a href="https://gofund.me/c356184b"><img src="https://i.imgur.com/q88R34U.jpeg" alt="drawing" width="400"/></a>
+### Many Thanks to all the `Stargazers` who have supported this project with stars(⭐)
+
+[![Stargazers repo roster for @Avnsx/fansly](https://reporoster.com/stars/Avnsx/fansly)](https://github.com/Avnsx/fansly/stargazers)
 
 ## 🏗️ Set up
 You can just install the [Executable version](https://github.com/Avnsx/fansly/releases/latest), skip the entire set up section & go to [Quick Start](https://github.com/Avnsx/fansly#-quick-start)
@@ -62,10 +63,6 @@ Less important:
 Please open a [open a pull request](https://github.com/Avnsx/fansly/pulls)!
 
 ## 🙏 Support
-### Many Thanks to all the `Stargazers` who have supported this project with stars(⭐)
-
-[![Stargazers repo roster for @Avnsx/fansly](https://reporoster.com/stars/Avnsx/fansly)](https://github.com/Avnsx/fansly/stargazers)
-
 We all need support and motivation. This downloader for fansly is not an exception. Please give this project a ⭐️ to encourage and show that you liked it.
 
 If you found the programs helpful, consider supporting me with crypto
@@ -85,4 +82,3 @@ This project (including executables) is licensed under the GPL-3.0 License - see
 "Fansly" or fansly.com is operated by Select Media LLC as stated on their "Contact" page. This repository (Avnsx/"fansly") and the provided content in it isn't in any way affiliated with, sponsored by, or endorsed by Select Media LLC or "Fansly". The developer(referred to: "Avnsx" in the following) of this code is not responsible for the end users actions, no unlawful activities of any kind are being encouraged. Statements and processes described in this repository only represent best practice guidance aimed at fostering an effective software usage. The repository was written purely for educational purposes, in an entirely theoretical environment. Thus, any information is presented on the condition that the developer of this code shall not be held liable in no event to you or anyone else for any direct, special, incidental, indirect or consequential damages of any kind, or any damages whatsoever, including without limitation, loss of profit, loss of use, savings or revenue, or the claims of third parties, whether the developer has advised of the possibility of such loss, however caused and on any theory of liability, arising out of or in connection with the possession, use or performance of this software. The material embodied in this repository is supplied to you "as-is" and without warranty of any kind, express, implied or otherwise, including without limitation, any warranty of fitness. This disclaimer is preliminary and is subject to revision.
 ##
 Written with python 3.8.10 for Windows 10
-
