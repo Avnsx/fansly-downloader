@@ -1,4 +1,6 @@
 import requests,os,re,base64,hashlib,imagehash,io,traceback,sys,platform,subprocess,concurrent.futures
+from string import digits
+from random import choices, randint
 from tkinter import Tk, filedialog
 from loguru import logger as log
 from functools import partialmethod
@@ -24,7 +26,7 @@ output(1,'\n Info','<light-blue>','Reading config.ini file ...')
 config = RawConfigParser()
 if len(config.read('config.ini')) != 1:
     output(2,'\n [1]ERROR','<red>', 'config.ini file not found or can not be read. Please download it & make sure it is in the same directory as Fansly Scraper.exe')
-    s(180)
+    input('\nPress any key to close ...')
     exit()
 
 try:
@@ -35,16 +37,24 @@ try:
     remember = config['Options']['Update_Recent_Download'].capitalize()
     previews = config['Options']['Download_Media_Previews'].capitalize()
     openwhenfinished = config['Options']['Open_Folder_When_Finished'].capitalize()
-    current_ver = config['Other']['version']
+    curent_ver = config['Other']['version']
 except (KeyError, NameError) as e:
-    output(2,'\n [2]ERROR','<red>', f'"{e}" is missing or malformed in the configuration file!\n{21*" "}Read the ReadMe file for assistance.')
-    s(180)
+    output(2,'\n [2]ERROR','<red>', f'"{e}" is missing or malformed in the configuration file!\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
+    input('\nPress any key to close ...')
     exit()
 
-for x in mycreator,mytoken,myuseragent,previews,openwhenfinished:
+os.system(f'title Fansly Scraper v{curent_ver}')
+
+for x in mycreator,mytoken,myuseragent:
     if x == '' or x == 'ReplaceMe':
-        output(2,'\n [3]ERROR','<red>', f'"{x}" is unmodified, missing or malformed in the configuration file!\n{21*" "}Read the ReadMe file for assistance.')
-        s(180)
+        output(2,'\n [3]ERROR','<red>', f'"{x}" is unmodified, missing or malformed in the configuration file!\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
+        input('\nPress any key to close ...')
+        exit()
+
+for x in show,remember,previews,openwhenfinished:
+    if x != 'True' and x != 'False':
+        output(2,'\n [4]ERROR','<red>', f'"{x}" is malformed in the configuration file! This value can only be True or False\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
+        input('\nPress any key to close ...')
         exit()
 
 def open_file(myfile):
@@ -55,39 +65,43 @@ def open_file(myfile):
         elif os_v == 'Darwin':subprocess.Popen(['open', myfile])
         else:
             if openwhenfinished == 'True':
-                output(2,'\n [4]ERROR','<red>', f'Fansly scraper could not open "{myfile}"; if this happens again turn Open_Folder_When_Finished to "False" in the file "config.ini".\n{21*" "}Will try to continue ...')
+                output(2,'\n [5]ERROR','<red>', f'Fansly scraper could not open "{myfile}"; if this happens again turn Open_Folder_When_Finished to "False" in the file "config.ini".\n{21*" "}Will try to continue ...')
                 s(5)
             else:
-                output(2,'\n [5]ERROR','<red>', f'Fansly scraper could not open "{myfile}"; this happend while trying to do an required update!\n{21*" "}Please update, by either opening "{myfile}" manually or downloading the new version from github.com/Avnsx/Fansly')
+                output(2,'\n [6]ERROR','<red>', f'Fansly scraper could not open "{myfile}"; this happend while trying to do an required update!\n{21*" "}Please update, by either opening "{myfile}" manually or downloading the new version from github.com/Avnsx/Fansly')
                 s(30)
                 exit()
     except:
         if openwhenfinished == 'True':
-            output(2,'\n [6]ERROR','<red>', f'Fansly scraper could not open "{myfile}"; if this happens again turn Open_Folder_When_Finished to "False" in the file "config.ini".\n{21*" "}Will try to continue ...')
+            output(2,'\n [7]ERROR','<red>', f'Fansly scraper could not open "{myfile}"; if this happens again turn Open_Folder_When_Finished to "False" in the file "config.ini".\n{21*" "}Will try to continue ...')
             s(5)
         else:
-            output(2,'\n [7]ERROR','<red>', f'Fansly scraper could not open "{myfile}"; this happend while trying to do an required update!\n{21*" "}Please update, by either opening "{myfile}" manually or downloading the new version from github.com/Avnsx/Fansly')
+            output(2,'\n [8]ERROR','<red>', f'Fansly scraper could not open "{myfile}"; this happend while trying to do an required update!\n{21*" "}Please update, by either opening "{myfile}" manually or downloading the new version from github.com/Avnsx/Fansly')
             s(30)
             exit()
 
+
+tot_downs=0
 try:
-    newest_ver=requests.get('https://github.com/Avnsx/fansly/releases/latest', headers={'authority': 'github.com','user-agent': myuseragent,'referer':f'Fansly Scraper {current_ver}','accept-language': 'en-US,en;q=0.9',}).url.split('/v')[-1]
-    if newest_ver > current_ver:
-        output(3,' WARNING','<yellow>', f'Your version (v{current_ver}) of fansly scraper is outdated; starting updater ...')
+    api_req=requests.get('https://api.github.com/repos/avnsx/fansly/releases', headers={'user-agent': f'Fansly Scraper {curent_ver}','referer':f'Fansly Scraper {curent_ver}', 'accept-language': 'en-US,en;q=0.9','accept-language': 'en-US,en;q=0.9',}).json()
+    for x in api_req:tot_downs+=x['assets'][0]['download_count']
+    if api_req[0]['tag_name'].lstrip('v') > curent_ver:
+        output(3,' WARNING','<yellow>', f'Your version (v{curent_ver}) of fansly scraper is outdated; starting updater ...')
         s(3)
         open_file('updater.exe')
         s(10)
         exit()
 except requests.exceptions.ConnectionError as e:
-    output(2,'\n [8]ERROR','<red>', 'Update check failed, due to no internet connection! Closing in 60 seconds.')
+    output(2,'\n [9]ERROR','<red>', 'Update check failed, due to no internet connection!')
     print('\n'+str(e))
-    s(180)
+    input('\nPress any key to close ...')
     exit()
 except Exception as e:
-    output(2,'\n [9]ERROR','<red>', 'Update check failed, will try to continue ...')
+    output(2,'\n [10]ERROR','<red>', 'Update check failed, will try to continue ...')
     print('\n'+str(e))
-    s(10)
+    s(3)
     pass
+
 
 headers = {
     'Accept': 'application/json, text/plain, */*',
@@ -103,18 +117,18 @@ try:
     creator_id = acc_req['id']
 except KeyError as e:
     if raw_req.status_code == 401:
-        output(2,'\n [10]ERROR','<red>', 'API returned unauthorized. This is most likely because of a wrong authorization token, in the configuration file.')
+        output(2,'\n [11]ERROR','<red>', 'API returned unauthorized. This is most likely because of a wrong authorization token, in the configuration file.')
         print(f'{21*" "}Used authorization token: "'+mytoken+'"')
-    else:output(2,'\n [11]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed.')
+    else:output(2,'\n [12]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed.')
     print('\n'+str(e))
     print(raw_req.text)
-    s(180)
+    input('\nPress any key to close ...')
     exit()
 except IndexError as e:
-    output(2,'\n [12]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed; most likely misspelled the creator name.')
+    output(2,'\n [13]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed; most likely misspelled the creator name.')
     print('\n'+str(e))
     print(raw_req.text)
-    s(180)
+    input('\nPress any key to close ...')
     exit()
 
 try:following = acc_req['following']
@@ -132,6 +146,10 @@ output(1,' Info','<light-blue>','Downloading files marked as preview, is set to:
 
 if previews == 'True':output(3,' WARNING','<yellow>', 'Previews downloading is enabled; repetitive and/or emoji spammed media might be downloaded!')
 if remember == 'True':output(3,' WARNING','<yellow>', 'Update recent download is enabled')
+
+if randint(1,100) <= 19:
+    output(4,'\n lnfo','<light-red>', f"Fansly scraper was downloaded {tot_downs} times, but only {round(requests.get('https://api.github.com/repos/avnsx/fansly', headers={'User-Agent':'Fansly Scraper'}).json()['stargazers_count']/tot_downs*100, 2)} % of You(!) have starred it\n{19*' '}Stars directly influence my willingness to continue maintaining the project\n{23*' '}Help the repository grow today, by leaving a star on it!")
+    s(15)
 
 recent_photobyte_hashes=[]
 recent_videobyte_hashes=[]
@@ -157,7 +175,7 @@ if remember == 'True':
         if basedir:
             output(1,' Info','<light-blue>', f'Chose folder path {basedir}')
         else:
-            output(2,'\n [13}ERROR','<red>', f'Could not register your chosen folder path, please start all over again. Closing in 30 seconds')
+            output(2,'\n [14]ERROR','<red>', f'Could not register your chosen folder path, please start all over again. Closing in 30 seconds')
             s(30)
             exit()
 
@@ -186,8 +204,8 @@ else:
         os.makedirs(basedir+'/Videos', exist_ok = True)
     except Exception:
         print('\n'+traceback.format_exc())
-        output(2,'\n [14]ERROR','<red>', 'Creating download directories ... Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
-        s(180)
+        output(2,'\n [15]ERROR','<red>', 'Creating download directories ... Please copy & paste this on GitHub > Issues & provide a short explanation.')
+        input('\nPress any key to close ...')
         exit()
 
 pic_count=1
@@ -198,13 +216,14 @@ photobyte_hashes=[]
 videobyte_hashes=[]
 def sort_download(filename,filebytes):
     global pic_count, vid_count, duplicates, recent
-    win_comp_name=str(re.sub(r'[\\/:*?"<>|]', '', repr(filename).replace("'",''))).replace('..','.')[:150]
+    win_comp_name=str(re.sub(r'[\\/:*?"<>|]', '', repr(filename).replace("'",''))).replace('..','.')
+    randints=''.join(choices(digits, k=3))
     if re.findall(r'.jpeg|.png|.jpg|.tif|.tiff|.bmp', filename[-6:]):
         photohash=str(imagehash.average_hash(Image.open(io.BytesIO(filebytes))))
         if photohash not in recent_photobyte_hashes:
             if photohash not in photobyte_hashes:
                 if show == 'True':output(1,' Info','<light-blue>', f"Downloading Image '{win_comp_name}'")
-                with open(f"{basedir}/Pictures/{pic_count}_{win_comp_name}", 'wb') as f:f.write(filebytes)
+                with open(f"{basedir}/Pictures/{pic_count}-{randints}_{win_comp_name}", 'wb') as f:f.write(filebytes)
                 photobyte_hashes.append(photohash)
                 pic_count+=1
             else:duplicates+=1
@@ -214,13 +233,13 @@ def sort_download(filename,filebytes):
         if videohash not in recent_videobyte_hashes:
             if videohash not in videobyte_hashes:
                 if show == 'True':output(1,' Info','<light-blue>', f"Downloading Video '{win_comp_name}'")
-                with open(f"{basedir}/Videos/{vid_count}_{win_comp_name}", 'wb') as f:f.write(filebytes)
+                with open(f"{basedir}/Videos/{vid_count}-{randints}_{win_comp_name}", 'wb') as f:f.write(filebytes)
                 videobyte_hashes.append(videohash)
                 vid_count+=1
             else:duplicates+=1
         else:recent+=1
     else:
-        output(2,'\n [15]ERROR','<red>', 'Unknown filetype: "'+str(filename[-7:])+'" please report this on GitHub > Issues & provide a short explanation; continuing without that file ...')
+        output(2,'\n [16]ERROR','<red>', 'Unknown filetype: "'+str(filename[-7:])+'" please report this on GitHub > Issues & provide a short explanation; continuing without that file ...')
 
 # scrape messages
 group_id = None
@@ -270,8 +289,8 @@ if group_id:
             except IndexError:break # break if end is reached
             except Exception:
                 print('\n'+traceback.format_exc())
-                output(2,'\n [16]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
-                s(180)
+                output(2,'\n [17]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation.')
+                input('\nPress any key to close ...')
                 exit()
         except KeyError:
             output(3,' WARNING','<yellow>', 'No scrapeable media found in mesages')
@@ -314,12 +333,12 @@ while True:
         except IndexError:break # break if end is reached
         except Exception:
             print('\n'+traceback.format_exc())
-            output(2,'\n [17]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation; closing in 60 seconds.')
-            s(180)
+            output(2,'\n [18]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation.')
+            input('\nPress any key to close ...')
             exit()
     except KeyError:
-        output(2,'\n [18]ERROR','<red>', "Couldn't find any scrapeable media at all!\n This most likely happend because you're not following the creator, your authorisation token is wrong\n or the creator is not providing unlocked content. Closing in 60 Seconds.")
-        s(180)
+        output(2,'\n [19]ERROR','<red>', "Couldn't find any scrapeable media at all!\n This most likely happend because you're not following the creator, your authorisation token is wrong\n or the creator is not providing unlocked content.")
+        input('\nPress any key to close ...')
         exit()
     if remember == 'True' and recent > int(total_photos+total_videos) * 0.2:
         print(f"\n╔═\n  Finished download; it looks like we've had already or have just downloaded all possible new content.\n\t\t  ✶ Please leave a Star on the GitHub Repository, if you are satisfied! ✶{10*' '}═╝")
@@ -328,11 +347,11 @@ while True:
 
 print('')
 issue=False
-if pic_count-1 <= total_photos * 0.2:
+if pic_count-1 <= total_photos * 0.2 and remember == 'False':
     output(3,' WARNING','<yellow>', 'Low amount of content scraped. Creators total Pictures: '+str(total_photos)+', downloaded Pictures: '+str(pic_count-1))
     issue = True
 
-if vid_count-1 <= total_videos * 0.2:
+if vid_count-1 <= total_videos * 0.2 and remember == 'False':
     output(3,' WARNING','<yellow>', 'Low amount of content scraped. Creators total Videos: '+str(total_videos)+', downloaded Videos: '+str(vid_count-1))
     issue = True
 
