@@ -19,7 +19,7 @@ You can just install the [Executable version](https://github.com/Avnsx/fansly/re
 #### Requirements
 If you want to use the python source directly, please install following requirements into your environment:
 
-	pip install requests loguru imagehash pillow python-dateutil psutil keyboard selenium-wire undetected_chromedriver==3.0.6 pycryptodome pywin32
+	pip install requests loguru imagehash pillow python-dateutil psutil keyboard selenium-wire==4.6.0 undetected_chromedriver==3.0.6 pycryptodome pywin32
 or you can use [``requirements.txt``](https://github.com/Avnsx/fansly/blob/main/requirements.txt) with ``pip install --user -r requirements.txt`` into ``cmd.exe`` from project download folder to install them.
 
 If you get an error while installing requirements with ``pywin32``; it is a windows only library and is not definitely required for the scraper itsself. Only ``automatic_configurator.py`` needs it. If for some reason you can't install it with pip, you can also install it [through pywin32's github](https://github.com/mhammond/pywin32/releases) or you might also be able to install that by ``pip install pypiwin32`` or ``conda install pywin32``. If you can't install pywin32 that obviously means that you won't be able to run automatic configurator and need to use [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started) instead to set it up.
