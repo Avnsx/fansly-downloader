@@ -265,20 +265,20 @@ if group_id:
                 if previews == 'True':
                     try:
                         if x['access'] != False:
-                            sort_download(x['media']['filename'], sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                            sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
                         if x['access'] == False:
-                            sort_download(x['preview']['filename'], sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                            sort_download(f"{mycreator}.png", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
                     except:pass
                 # unlocked meda in messages
                 try:
                     locurl=x['media']['locations'][0]['location']
-                    sort_download(x['media']['filename'], sess.get(locurl, headers=headers).content)
+                    sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
                 # unlocked messages without corresponding location url
                 except IndexError:
                     for f in range(0,len(x['media']['variants'])):
                         try:
                             locurl=x['media']['variants'][f]['locations'][0]['location']
-                            sort_download(x['media']['variants'][f]['filename'], sess.get(locurl, headers=headers).content)
+                            sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
                             break
                         except:pass # silently passing locked media in messages
                     pass
@@ -309,20 +309,20 @@ while True:
             if previews == 'True':
                 try:
                     if x['access'] != False:
-                        sort_download(x['media']['filename'], sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                        sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
                     if x['access'] == False:
-                        sort_download(x['preview']['filename'], sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                        sort_download(f"{mycreator}.png", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
                 except:pass
             # unlocked media
             try:
                 locurl=x['media']['locations'][0]['location']
-                sort_download(x['media']['filename'], sess.get(locurl, headers=headers).content)
+                sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
             # unlocked media without corresponding location url
             except IndexError:
                 for f in range(0,len(x['media']['variants'])):
                     try:
                         locurl=x['media']['variants'][f]['locations'][0]['location']
-                        sort_download(x['media']['variants'][f]['filename'], sess.get(locurl, headers=headers).content)
+                        sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
                         break
                     except:pass # silently passing locked media
                 pass
@@ -366,5 +366,4 @@ if openwhenfinished == 'True':open_file(full_path)
 
 print('╔═\n  Done! Downloaded '+str(pic_count-1)+' pictures & '+str(vid_count-1)+' videos ('+str(duplicates)+' duplicates declined)\n  Saved in directory: "'+full_path+'"\n  ✶ Please leave a Star on the GitHub Repository, if you are satisfied! ✶'+f'{12*" "}'+'═╝')
 
-s(120)
-exit()
+input()
