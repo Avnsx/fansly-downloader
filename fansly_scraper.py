@@ -51,11 +51,16 @@ for x in mycreator,mytoken,myuseragent:
         input('\nPress any key to close ...')
         exit()
 
-for x in show,remember,previews,openwhenfinished:
+for x in show,previews,openwhenfinished:
     if x != 'True' and x != 'False':
         output(2,'\n [4]ERROR','<red>', f'"{x}" is malformed in the configuration file! This value can only be True or False\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
         input('\nPress any key to close ...')
         exit()
+
+if remember != 'True' and remember != 'False' and remember != 'Auto':
+    output(2,'\n [4]ERROR','<red>', f'"{remember}" is malformed in the configuration file! This value can only be True, False or Auto\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
+    input('\nPress any key to close ...')
+    exit()
 
 def open_file(myfile):
     os_v=platform.system()
@@ -164,6 +169,13 @@ def process_vid(name):
         recent_videobyte_hashes.append(hashlib.md5(f.read()).hexdigest())
 
 print('')
+if remember == 'Auto':
+    output(1,' Info','<light-blue>', 'Automatically detecting whether download folder exists')
+    if os.path.isdir(basedir):
+        remember = 'True'
+    else:
+        remember = 'False'
+
 if remember == 'True':
     if os.path.isdir(basedir):
         output(1,' Info','<light-blue>', f'"{basedir}" folder exists in local directory')
