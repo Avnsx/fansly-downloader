@@ -7,6 +7,7 @@ from functools import partialmethod
 from PIL import Image
 from time import sleep as s
 from configparser import RawConfigParser
+from datetime import datetime
 os.system('title Fansly Scraper')
 sess = requests.Session()
 
@@ -37,6 +38,7 @@ try:
     remember = config['Options']['Update_Recent_Download'].capitalize()
     previews = config['Options']['Download_Media_Previews'].capitalize()
     openwhenfinished = config['Options']['Open_Folder_When_Finished'].capitalize()
+    naming = config['Options']['naming_convention'].capitalize()
     curent_ver = config['Other']['version']
 except (KeyError, NameError) as e:
     output(2,'\n [2]ERROR','<red>', f'"{e}" is missing or malformed in the configuration file!\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
@@ -59,6 +61,11 @@ for x in show,previews,openwhenfinished:
 
 if remember != 'True' and remember != 'False' and remember != 'Auto':
     output(2,'\n [4]ERROR','<red>', f'"{remember}" is malformed in the configuration file! This value can only be True, False or Auto\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
+    input('\nPress any key to close ...')
+    exit()
+
+if naming != 'Standard' and naming != 'Datepost':
+    output(2,'\n [4]ERROR','<red>', f'"{naming}" is malformed in the configuration file! This value can only be Standard or DatePost\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
     input('\nPress any key to close ...')
     exit()
 
@@ -234,8 +241,12 @@ def sort_download(filename,filebytes):
         photohash=str(imagehash.average_hash(Image.open(io.BytesIO(filebytes))))
         if photohash not in recent_photobyte_hashes:
             if photohash not in photobyte_hashes:
+                if naming == 'Datepost':
+                    prefix = ""
+                else:
+                    prefix = f"{pic_count}-{randints}_"
                 if show == 'True':output(1,' Info','<light-blue>', f"Downloading Image '{win_comp_name}'")
-                with open(f"{basedir}/Pictures/{pic_count}-{randints}_{win_comp_name}", 'wb') as f:f.write(filebytes)
+                with open(f"{basedir}/Pictures/{win_comp_name}", 'wb') as f:f.write(filebytes)
                 photobyte_hashes.append(photohash)
                 pic_count+=1
             else:duplicates+=1
@@ -244,6 +255,10 @@ def sort_download(filename,filebytes):
         videohash=hashlib.md5(filebytes).hexdigest()
         if videohash not in recent_videobyte_hashes:
             if videohash not in videobyte_hashes:
+                if naming == 'Datepost':
+                    prefix = ""
+                else:
+                    prefix = f"{vid_count}-{randints}_"
                 if show == 'True':output(1,' Info','<light-blue>', f"Downloading Video '{win_comp_name}'")
                 with open(f"{basedir}/Videos/{vid_count}-{randints}_{win_comp_name}", 'wb') as f:f.write(filebytes)
                 videobyte_hashes.append(videohash)
@@ -273,24 +288,32 @@ if group_id:
             resp = sess.get('https://apiv2.fansly.com/api/v1/message', headers=headers, params=(('groupId', group_id),('before', msg_cursor),('limit', '50'),)).json()
         try:
             for x in resp['response']['accountMedia']:
+                # set filename
+                if naming == 'Datepost':
+                    ts = int(x['createdAt'])
+                    file_datetime = datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H-%M-%S')
+                    file_id = x['id']
+                    file_name = f"{ file_datetime } { file_id }"
+                else:
+                    file_name = f"{mycreator}"
                 # message media previews
                 if previews == 'True':
                     try:
                         if x['access'] != False:
-                            sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                            sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
                         if x['access'] == False:
-                            sort_download(f"{mycreator}.png", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                            sort_download(f"{file_name}.png", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
                     except:pass
                 # unlocked meda in messages
                 try:
                     locurl=x['media']['locations'][0]['location']
-                    sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
+                    sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
                 # unlocked messages without corresponding location url
                 except IndexError:
                     for f in range(0,len(x['media']['variants'])):
                         try:
                             locurl=x['media']['variants'][f]['locations'][0]['location']
-                            sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
+                            sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
                             break
                         except:pass # silently passing locked media in messages
                     pass
@@ -317,24 +340,32 @@ while True:
     response = sess.get('https://apiv2.fansly.com/api/v1/timeline/'+creator_id+'?before='+str(cursor)+'&after=0', headers=headers)
     try:
         for x in response.json()['response']['accountMedia']:
+            # set filename
+            if naming == 'Datepost':
+                ts = int(x['createdAt'])
+                file_datetime = datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H-%M-%S')
+                file_id = x['id']
+                file_name = f"{ file_datetime } { file_id }"
+            else:
+                file_name = f"{mycreator}"
             # previews
             if previews == 'True':
                 try:
                     if x['access'] != False:
-                        sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                        sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
                     if x['access'] == False:
-                        sort_download(f"{mycreator}.png", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                        sort_download(f"{file_name}.png", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
                 except:pass
             # unlocked media
             try:
                 locurl=x['media']['locations'][0]['location']
-                sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
+                sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
             # unlocked media without corresponding location url
             except IndexError:
                 for f in range(0,len(x['media']['variants'])):
                     try:
                         locurl=x['media']['variants'][f]['locations'][0]['location']
-                        sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
+                        sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
                         break
                     except:pass # silently passing locked media
                 pass
