@@ -170,11 +170,11 @@ recent_videobyte_hashes=[]
 
 basedir=mycreator+'_fansly'
 
-def process_img(name):
-    recent_photobyte_hashes.append(str(imagehash.average_hash(Image.open(basedir+'/Pictures/'+name))))
+def process_img(filePath):
+    recent_photobyte_hashes.append(str(imagehash.average_hash(Image.open(filePath))))
 
-def process_vid(name):
-    with open(basedir+'/Videos/'+name, 'rb') as f:
+def process_vid(filePath):
+    with open(filePath, 'rb') as f:
         recent_videobyte_hashes.append(hashlib.md5(f.read()).hexdigest())
 
 print('')
@@ -200,21 +200,24 @@ if remember == 'True':
             s(30)
             exit()
 
-    # pictures
-    output(1,' Info','<light-blue>', f"Hashing {mycreator}'s recently downloaded pictures ...")
     list_of_futures=[]
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        for el in os.listdir(basedir+'/Pictures'):
-            list_of_futures.append(executor.submit(process_img, el))
-        concurrent.futures.wait(list_of_futures)
+        for x in '', '/Timeline', '/Messages', '/Previews', '/Timeline/Previews', '/Messages/Previews':
+            x_path = basedir + x
+            if os.path.isdir(x_path):
+                p_path = x_path + '/Pictures'
+                v_path = x_path + '/Videos'
+                if os.path.isdir(p_path):
+                    output(1,' Info','<light-blue>', f"Hashing {mycreator}'s recently downloaded pictures from {p_path} ...")
+                    for el in os.listdir(p_path):
+                        list_of_futures.append(executor.submit(process_img, f'{ p_path }/{ el }'))
+                        
+                if os.path.isdir(x_path + '/Videos'):
+                    output(1,' Info','<light-blue>', f"Hashing {mycreator}'s recently downloaded videos from {v_path} ...")
+                    for el in os.listdir(v_path):
+                        list_of_futures.append(executor.submit(process_vid, f'{ v_path }/{ el }'))
 
-    # videos
-    output(1,' Info','<light-blue>', f"Hashing {mycreator}'s recently downloaded videos ...")
-    list_of_futures=[]
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        for el in os.listdir(basedir+'/Videos'):
-            list_of_futures.append(executor.submit(process_vid, el))
-        concurrent.futures.wait(list_of_futures)
+    concurrent.futures.wait(list_of_futures)
 
     output(1,' Info','<light-blue>', f'Finished hashing! Will now compare each new download against {len(recent_photobyte_hashes)} photo & {len(recent_videobyte_hashes)} video hashes.')
 else:
@@ -329,15 +332,13 @@ if group_id:
                 # message media previews
                 if previews == 'True':
                     try:
-                        if x['access'] != False:
-                            sort_download(f"{file_name} preview.{x['media']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content, preview_directory_name)
-                        if x['access'] == False:
-                            sort_download(f"{file_name} preview.png", sess.get(x['preview']['locations'][0]['location'], headers=headers).content, preview_directory_name)
+                        sort_download(f"{file_name} preview.{x['preview']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content, preview_directory_name)
                     except:pass
                 # unlocked meda in messages
                 try:
-                    locurl=x['media']['locations'][0]['location']
-                    sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content, directory_name)
+                    if(x['access'] == True):
+                        locurl=x['media']['locations'][0]['location']
+                        sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content, directory_name)
                 # unlocked messages without corresponding location url
                 except IndexError:
                     for f in range(0,len(x['media']['variants'])):
@@ -389,15 +390,13 @@ while True:
             # previews
             if previews == 'True':
                 try:
-                    if x['access'] != False:
-                        sort_download(f"{file_name} preview.{x['media']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content, preview_directory_name)
-                    if x['access'] == False:
-                        sort_download(f"{file_name} preview.png", sess.get(x['preview']['locations'][0]['location'], headers=headers).content, preview_directory_name)
+                    sort_download(f"{file_name} preview.{x['preview']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content, preview_directory_name)
                 except:pass
             # unlocked media
             try:
-                locurl=x['media']['locations'][0]['location']
-                sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content, directory_name)
+                if(x['access'] == True):
+                    locurl=x['media']['locations'][0]['location']
+                    sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content, directory_name)
             # unlocked media without corresponding location url
             except IndexError:
                 for f in range(0,len(x['media']['variants'])):
