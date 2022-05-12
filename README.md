@@ -65,7 +65,6 @@ Please open a [open a pull request](https://github.com/Avnsx/fansly/pulls)!
 ## 🙏 Support
 We all need support and motivation. This downloader for fansly is not an exception. Please give this project a ⭐️ to encourage and show that you liked it.
 
-If you found the programs helpful, consider supporting me with crypto
 
 ## 🛡️ License
 This project (including executables) is licensed under the GPL-3.0 License - see the [`LICENSE`](LICENSE) file for details.
