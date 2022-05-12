@@ -33,6 +33,7 @@ try:
     mycreator = config['TargetedCreator']['Username']
     mytoken = config['MyAccount']['Authorization_Token']
     myuseragent = config['MyAccount']['User_Agent']
+    downloadpath = config['Options']['Download_Dir']
     show = config['Options']['Show_Downloads'].capitalize()
     remember = config['Options']['Update_Recent_Download'].capitalize()
     previews = config['Options']['Download_Media_Previews'].capitalize()
@@ -154,7 +155,7 @@ if randint(1,100) <= 19:
 recent_photobyte_hashes=[]
 recent_videobyte_hashes=[]
 
-basedir=mycreator+'_fansly'
+basedir=downloadpath+mycreator
 
 def process_img(name):
     recent_photobyte_hashes.append(str(imagehash.average_hash(Image.open(basedir+'/Pictures/'+name))))
@@ -342,7 +343,7 @@ while True:
         exit()
     if remember == 'True' and recent > int(total_photos+total_videos) * 0.2:
         print(f"\n╔═\n  Finished download; it looks like we've had already or have just downloaded all possible new content.\n\t\t  ✶ Please leave a Star on the GitHub Repository, if you are satisfied! ✶{10*' '}═╝")
-        s(120)
+        input('\nPress any key to close ...')
         exit()
 
 print('')
@@ -361,9 +362,9 @@ if issue == True:
     if previews == 'False':print(f'{20*" "}Try setting Media Preview Downloads on, this helps if the creator marks all his content as previews.')
     print('')
 
-full_path=os.getcwd()+'\\'+basedir
+full_path=basedir
 if openwhenfinished == 'True':open_file(full_path)
 
 print('╔═\n  Done! Downloaded '+str(pic_count-1)+' pictures & '+str(vid_count-1)+' videos ('+str(duplicates)+' duplicates declined)\n  Saved in directory: "'+full_path+'"\n  ✶ Please leave a Star on the GitHub Repository, if you are satisfied! ✶'+f'{12*" "}'+'═╝')
-
-input()
+input('\nPress any key to close ...')
+exit()
