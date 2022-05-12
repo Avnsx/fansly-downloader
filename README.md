@@ -1,39 +1,40 @@
-# Fansly Scraper / Fansly Downloader
+# Fansly Downloader (fansly-dl)
+
 ![Downloads](https://img.shields.io/github/downloads/Avnsx/fansly/total?color=0078d7&label=🔽%20Downloads.exe&style=flat-square) ![Compatibility](https://img.shields.io/static/v1?style=flat-square&label=%F0%9F%90%8D%20Python&message=3.6%2B&color=blue) ![Stars](https://img.shields.io/github/stars/Avnsx/fansly?style=flat-square&label=⭐%20Stars&color=ffc83d)
 
 ![UI Banner](https://i.imgur.com/EhL42m3.jpg)
 
-## 👋 Introducing ``Fansly Scraper``
-Easy to use Fansly Downloader for Videos and Photos from your favorite fansly creators. After you've launched the program, it'll create a folder named ``CreatorName_fansly`` in the same directory you launched it from. That folder will have two sub-folders called Pictures & Videos, which will contain the downloaded content sorted into them.
-This is pretty useful for example; if you dislike the website theming and would like to view the media on your local machine instead. This code does not bypass any paywalls & no end user information is collected during usage.
+## 👋 Introducing ``fansly-dl``
+**fansly-dl** is a fork from the original [Fansly Downloader](https://github.com/Avnsx/fansly) repo with priminarly Linux users in mind.
+
+This project aims to be an easy to use Fansly media downloader (Videos and Photos) from your favorite (and subriscribed) fansly creators. 
+
+After you've launched the program, it'll create a sub-folder with the ``CreatorName`` in the directory you set in the parameter ``download_dir`` of the ``config.ini`` file. That folder will have two sub-folders called ``Pictures`` and ``Videos``, which will contain the downloaded content sorted into them.
+
+This code **does not bypass any paywalls** & **no user information is ever collected.**
 
 [Click me if you want a detailed description on each of the components of this software!](https://github.com/Avnsx/fansly/wiki/Explanation-of-provided-programs-&-their-functionality)
 
-### Many Thanks to all the `Stargazers` who have supported this project with stars(⭐)
-
-[![Stargazers repo roster for @Avnsx/fansly](https://reporoster.com/stars/Avnsx/fansly)](https://github.com/Avnsx/fansly/stargazers)
+### Many Thanks to all the `Avnsx` who have made this project possible! [![@Avnsx/fansly repo](https://github.com/Avnsx/fansly)]
 
 ## 🏗️ Set up
-You can just install the [Executable version](https://github.com/Avnsx/fansly/releases/latest), skip the entire set up section & go to [Quick Start](https://github.com/Avnsx/fansly#-quick-start)
 
-#### Requirements
-If you want to use the python source directly, please install following requirements into your environment:
+1. Clone this project repo:
+	* ``$ git clone https://github.com/romfetchr/fansly-dl.git``
+	* ``$ cd fansly-dl``
+3. Install the necessary Python packages: 
+	* ``$ sudo apt install python3-tk``
+	* ``$ sudo dpkg-reconfigure python3-tk``
+	* ``$ pip install --user -r requirements.txt``
+4. Get your Fansly.com account details to configure fansly-dl:
+	* Make sure you have registered an account on fansly and are logged in with it in your browser, or you'll not be able to get an **authorization token** from Developer Console;
+	* Go to whatever creator's account page and open your browsers developer console (Most often Key: F12);
+	* Reload the website by using the rotating arrow symbol to the left of your browsers search bar(Key: F5), while the developer console is open. Now do the steps on the following picture:
+	![image](https://user-images.githubusercontent.com/97050167/167995208-4ca0a829-ec2e-4ff4-8f64-e49ea1114de8.png)
+	* Copy the string that is on the right side of `authorization:` then **replace** the text `YourAuthToken` (inside the ``config.ini`` file) with the value you just coppied;
+	* Copy the string that is on the right side of `User-Agent:` then **replace** the text `YourUsrAgent` (inside the ``config.ini`` file) with latest coppied string.
 
-	pip install requests loguru imagehash pillow python-dateutil psutil keyboard selenium-wire==4.6.0 undetected_chromedriver==3.0.6 pycryptodome pywin32
-or you can use [``requirements.txt``](https://github.com/Avnsx/fansly/blob/main/requirements.txt) with ``pip install --user -r requirements.txt`` into ``cmd.exe`` from project download folder to install them.
-
-If you get an error while installing requirements with ``pywin32``; it is a windows only library and is not definitely required for the scraper itsself. Only ``automatic_configurator.py`` needs it. If for some reason you can't install it with pip, you can also install it [through pywin32's github](https://github.com/mhammond/pywin32/releases) or you might also be able to install that by ``pip install pypiwin32`` or ``conda install pywin32``. If you can't install pywin32 that obviously means that you won't be able to run automatic configurator and need to use [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started) instead to set it up.
-
-## 🚀 Quick Start
-**Quick start is only compatible with Windows & you to have to have recently logged into fansly in any of the following browsers: Chrome, FireFox, Opera, Brave or Microsoft Edge and that browser has to be [set as your default browser in windows settings](https://www.avast.com/c-change-default-browser-windows#:~:text=Open%20the%20Start%20menu%20and,is%20the%20current%20default%20browser.).**
-1. Make sure the browser you set as default browser [in windows settings](https://www.avast.com/c-change-default-browser-windows#:~:text=Open%20the%20Start%20menu%20and,is%20the%20current%20default%20browser.), is also the browser that you've browsed fansly with in the past
-2. Click on Automatic Configurator and wait for it [to do its thing](https://github.com/Avnsx/fansly/wiki/Explanation-of-provided-programs-&-their-functionality#2-automatic-configurator)
-3. If it was successful(``config.ini`` should now *only* show a *single* ``ReplaceMe`` the targeted creator name) open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username =`` with whatever content creator you wish to have scraped
-4. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up Fansly Scraper by clicking on it
-
-**⚠️ If you are not using Windows or are encountering a bug with quick start please head over to [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started) instead ⚠️**
-
-After completing any of the configuration tutorials [Quick Start](https://github.com/Avnsx/fansly#-quick-start) / [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started); in the future you'll only need to change the creator name for Targeted Creator > Username in ``config.ini`` for every further use case on other creators.
+After completing the configuration, you'll only need to change the creator name from `ReplaceWithCreator` in ``config.ini`` for every further use case on other creators.
 
 ## 🤔 FAQ
 Do you have any unanswered questions or want to know more about fansly scraper? Head over to the [Wiki](https://github.com/Avnsx/fansly/wiki)
