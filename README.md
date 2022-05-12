@@ -67,18 +67,10 @@ We all need support and motivation. This downloader for fansly is not an excepti
 
 If you found the programs helpful, consider supporting me with crypto
 
-BTC: 33s58gfMUec6HMebsccZ2w4tRTcHbRLpzp
-
-ETH: 0x10C683fab5E946df3936DbCA788080b4aDc81233
-
-Tether: 0x6a7b80a6a926eac349aCD0fAE9a3Bd24Af9fc4F1
-
-Bitcoin Cash: qzs9ayfnm5e4vtzrsk8eh34upc097m8vrv80eqefrn
-
 ## 🛡️ License
 This project (including executables) is licensed under the GPL-3.0 License - see the [`LICENSE`](LICENSE) file for details.
 
 ## Disclaimer
-"Fansly" or fansly.com is operated by Select Media LLC as stated on their "Contact" page. This repository (Avnsx/"fansly") and the provided content in it isn't in any way affiliated with, sponsored by, or endorsed by Select Media LLC or "Fansly". The developer(referred to: "Avnsx" in the following) of this code is not responsible for the end users actions, no unlawful activities of any kind are being encouraged. Statements and processes described in this repository only represent best practice guidance aimed at fostering an effective software usage. The repository was written purely for educational purposes, in an entirely theoretical environment. Thus, any information is presented on the condition that the developer of this code shall not be held liable in no event to you or anyone else for any direct, special, incidental, indirect or consequential damages of any kind, or any damages whatsoever, including without limitation, loss of profit, loss of use, savings or revenue, or the claims of third parties, whether the developer has advised of the possibility of such loss, however caused and on any theory of liability, arising out of or in connection with the possession, use or performance of this software. The material embodied in this repository is supplied to you "as-is" and without warranty of any kind, express, implied or otherwise, including without limitation, any warranty of fitness. This disclaimer is preliminary and is subject to revision.
+"Fansly" or fansly.com is operated by Select Media LLC as stated on their "Contact" page. This repository (romfetchr/fansly-dl) and the provided content in it isn't in any way affiliated with, sponsored by, or endorsed by Select Media LLC or "Fansly". The developer(referred to: "romfetchr" in the following) of this code is not responsible for the end users actions, no unlawful activities of any kind are being encouraged. Statements and processes described in this repository only represent best practice guidance aimed at fostering an effective software usage. The repository was written purely for educational purposes, in an entirely theoretical environment. Thus, any information is presented on the condition that the developer of this code shall not be held liable in no event to you or anyone else for any direct, special, incidental, indirect or consequential damages of any kind, or any damages whatsoever, including without limitation, loss of profit, loss of use, savings or revenue, or the claims of third parties, whether the developer has advised of the possibility of such loss, however caused and on any theory of liability, arising out of or in connection with the possession, use or performance of this software. The material embodied in this repository is supplied to you "as-is" and without warranty of any kind, express, implied or otherwise, including without limitation, any warranty of fitness. This disclaimer is preliminary and is subject to revision.
 ##
 Written with python 3.8.10 for Windows 10
