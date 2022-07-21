@@ -11,7 +11,7 @@ This is pretty useful for example; if you dislike the website theming and would 
 
 ### Many Thanks to all the `Stargazers` who have supported this project with stars(⭐)
 
-[![Stargazers repo roster for @Avnsx/fansly](https://git-lister.onrender.com/api/stars/Avnsx/fansly?limit=30)](https://github.com/Avnsx/fansly/stargazers)
+[![Stargazers repo roster for @Avnsx/fansly](https://git-lister.onrender.com/api/stars/Avnsx/fansly?limit=42)](https://github.com/Avnsx/fansly/stargazers)
 
 ## 🏗️ Set up
 You can just install the [Executable version](https://github.com/Avnsx/fansly/releases/latest), skip the entire set up section & go to [Quick Start](https://github.com/Avnsx/fansly#-quick-start)
