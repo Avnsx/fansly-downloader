@@ -25,9 +25,9 @@ or you can use [``requirements.txt``](https://github.com/Avnsx/fansly/blob/main/
 If you get an error while installing requirements with ``pywin32``; it is a windows only library and is not definitely required for the scraper itsself. Only ``automatic_configurator.py`` needs it. If for some reason you can't install it with pip, you can also install it [through pywin32's github](https://github.com/mhammond/pywin32/releases) or you might also be able to install that by ``pip install pypiwin32`` or ``conda install pywin32``. If you can't install pywin32 that obviously means that you won't be able to run automatic configurator and need to use [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started) instead to set it up.
 
 ## 🚀 Get Started
-Usually there would be a very user friendly way to start fansly scraper here, but due to various updates of the fansly API (https://github.com/Avnsx/fansly/issues/23, https://github.com/Avnsx/fansly/issues/30, https://github.com/Avnsx/fansly/issues/18) on the 24th of july 2022, everyone is currently forced to use a slightly more complicated way until the release of Fansly Scraper v0.4: https://github.com/Avnsx/fansly/wiki/Get-Started
+Usually there would be a very user friendly way to start fansly scraper here, but due to various updates of the fansly API (https://github.com/Avnsx/fansly/issues/23, https://github.com/Avnsx/fansly/issues/30, https://github.com/Avnsx/fansly/issues/18) after the 24th of july 2022, everyone is currently forced to use a slightly more complicated way until the release of Fansly Scraper v0.4: https://github.com/Avnsx/fansly/wiki/Get-Started
 
-### Star History (Fansly Scraper version 0.4 release at 200 stars 🙌 Smash that star button 🙏)
+### Star History (Fansly Scraper version 0.4 release at 200 stars)
 [![Star History Chart](https://api.star-history.com/svg?repos=Avnsx/fansly&type=Date)](https://star-history.com/#Avnsx/fansly&Date)
 
 ## 🤔 FAQ
