@@ -7,6 +7,7 @@ from functools import partialmethod
 from PIL import Image
 from time import sleep as s
 from configparser import RawConfigParser
+from datetime import datetime
 os.system('title Fansly Scraper')
 sess = requests.Session()
 
@@ -37,6 +38,9 @@ try:
     remember = config['Options']['Update_Recent_Download'].capitalize()
     previews = config['Options']['Download_Media_Previews'].capitalize()
     openwhenfinished = config['Options']['Open_Folder_When_Finished'].capitalize()
+    naming = config['Options']['naming_convention'].capitalize()
+    seperate_messages = config['Options']['seperate_messages'].capitalize()
+    seperate_previews = config['Options']['seperate_messages'].capitalize()
     curent_ver = config['Other']['version']
 except (KeyError, NameError) as e:
     output(2,'\n [2]ERROR','<red>', f'"{e}" is missing or malformed in the configuration file!\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
@@ -51,11 +55,21 @@ for x in mycreator,mytoken,myuseragent:
         input('\nPress any key to close ...')
         exit()
 
-for x in show,remember,previews,openwhenfinished:
+for x in show,previews,openwhenfinished,seperate_messages,seperate_previews:
     if x != 'True' and x != 'False':
         output(2,'\n [4]ERROR','<red>', f'"{x}" is malformed in the configuration file! This value can only be True or False\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
         input('\nPress any key to close ...')
         exit()
+
+if remember != 'True' and remember != 'False' and remember != 'Auto':
+    output(2,'\n [4]ERROR','<red>', f'"{remember}" is malformed in the configuration file! This value can only be True, False or Auto\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
+    input('\nPress any key to close ...')
+    exit()
+
+if naming != 'Standard' and naming != 'Datepost':
+    output(2,'\n [4]ERROR','<red>', f'"{naming}" is malformed in the configuration file! This value can only be Standard or DatePost\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
+    input('\nPress any key to close ...')
+    exit()
 
 def open_file(myfile):
     os_v=platform.system()
@@ -156,14 +170,21 @@ recent_videobyte_hashes=[]
 
 basedir=mycreator+'_fansly'
 
-def process_img(name):
-    recent_photobyte_hashes.append(str(imagehash.average_hash(Image.open(basedir+'/Pictures/'+name))))
+def process_img(filePath):
+    recent_photobyte_hashes.append(str(imagehash.average_hash(Image.open(filePath))))
 
-def process_vid(name):
-    with open(basedir+'/Videos/'+name, 'rb') as f:
+def process_vid(filePath):
+    with open(filePath, 'rb') as f:
         recent_videobyte_hashes.append(hashlib.md5(f.read()).hexdigest())
 
 print('')
+if remember == 'Auto':
+    output(1,' Info','<light-blue>', 'Automatically detecting whether download folder exists')
+    if os.path.isdir(basedir):
+        remember = 'True'
+    else:
+        remember = 'False'
+
 if remember == 'True':
     if os.path.isdir(basedir):
         output(1,' Info','<light-blue>', f'"{basedir}" folder exists in local directory')
@@ -179,29 +200,52 @@ if remember == 'True':
             s(30)
             exit()
 
-    # pictures
-    output(1,' Info','<light-blue>', f"Hashing {mycreator}'s recently downloaded pictures ...")
     list_of_futures=[]
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        for el in os.listdir(basedir+'/Pictures'):
-            list_of_futures.append(executor.submit(process_img, el))
-        concurrent.futures.wait(list_of_futures)
+        for x in '', '/Timeline', '/Messages', '/Previews', '/Timeline/Previews', '/Messages/Previews':
+            x_path = basedir + x
+            if os.path.isdir(x_path):
+                p_path = x_path + '/Pictures'
+                v_path = x_path + '/Videos'
+                if os.path.isdir(p_path):
+                    output(1,' Info','<light-blue>', f"Hashing {mycreator}'s recently downloaded pictures from {p_path} ...")
+                    for el in os.listdir(p_path):
+                        list_of_futures.append(executor.submit(process_img, f'{ p_path }/{ el }'))
+                        
+                if os.path.isdir(x_path + '/Videos'):
+                    output(1,' Info','<light-blue>', f"Hashing {mycreator}'s recently downloaded videos from {v_path} ...")
+                    for el in os.listdir(v_path):
+                        list_of_futures.append(executor.submit(process_vid, f'{ v_path }/{ el }'))
 
-    # videos
-    output(1,' Info','<light-blue>', f"Hashing {mycreator}'s recently downloaded videos ...")
-    list_of_futures=[]
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        for el in os.listdir(basedir+'/Videos'):
-            list_of_futures.append(executor.submit(process_vid, el))
-        concurrent.futures.wait(list_of_futures)
+    concurrent.futures.wait(list_of_futures)
 
     output(1,' Info','<light-blue>', f'Finished hashing! Will now compare each new download against {len(recent_photobyte_hashes)} photo & {len(recent_videobyte_hashes)} video hashes.')
 else:
     try:
         output(1,' Info','<light-blue>','Creating download directories ...')
         os.makedirs(basedir, exist_ok = True)
-        os.makedirs(basedir+'/Pictures', exist_ok = True)
-        os.makedirs(basedir+'/Videos', exist_ok = True)
+        
+        if seperate_messages == 'True':
+            os.makedirs(basedir+'/Messages', exist_ok = True)
+            os.makedirs(basedir+'/Messages/Pictures', exist_ok = True)
+            os.makedirs(basedir+'/Messages/Videos', exist_ok = True)
+            os.makedirs(basedir+'/Timeline', exist_ok = True)
+            os.makedirs(basedir+'/Timeline/Pictures', exist_ok = True)
+            os.makedirs(basedir+'/Timeline/Videos', exist_ok = True)
+            if previews == 'True' and seperate_previews == 'True':
+                os.makedirs(basedir+'/Messages/Previews', exist_ok = True)
+                os.makedirs(basedir+'/Messages/Previews/Pictures', exist_ok = True)
+                os.makedirs(basedir+'/Messages/Previews/Videos', exist_ok = True)
+                os.makedirs(basedir+'/Timeline/Previews', exist_ok = True)
+                os.makedirs(basedir+'/Timeline/Previews/Pictures', exist_ok = True)
+                os.makedirs(basedir+'/Timeline/Previews/Videos', exist_ok = True)
+        else:
+            os.makedirs(basedir+'/Pictures', exist_ok = True)
+            os.makedirs(basedir+'/Videos', exist_ok = True)
+            if seperate_previews == 'True':
+                os.makedirs(basedir+'/Previews', exist_ok = True)
+                os.makedirs(basedir+'/Previews/Pictures', exist_ok = True)
+                os.makedirs(basedir+'/Previews/Videos', exist_ok = True)
     except Exception:
         print('\n'+traceback.format_exc())
         output(2,'\n [15]ERROR','<red>', 'Creating download directories ... Please copy & paste this on GitHub > Issues & provide a short explanation.')
@@ -214,7 +258,7 @@ duplicates=0
 recent=0
 photobyte_hashes=[]
 videobyte_hashes=[]
-def sort_download(filename,filebytes):
+def sort_download(filename,filebytes, directoryName):
     global pic_count, vid_count, duplicates, recent
     win_comp_name=str(re.sub(r'[\\/:*?"<>|]', '', repr(filename).replace("'",''))).replace('..','.')
     randints=''.join(choices(digits, k=3))
@@ -222,8 +266,12 @@ def sort_download(filename,filebytes):
         photohash=str(imagehash.average_hash(Image.open(io.BytesIO(filebytes))))
         if photohash not in recent_photobyte_hashes:
             if photohash not in photobyte_hashes:
+                if naming == 'Datepost':
+                    prefix = ""
+                else:
+                    prefix = f"{pic_count}-{randints}_"
                 if show == 'True':output(1,' Info','<light-blue>', f"Downloading Image '{win_comp_name}'")
-                with open(f"{basedir}/Pictures/{pic_count}-{randints}_{win_comp_name}", 'wb') as f:f.write(filebytes)
+                with open(f"{ directoryName }/Pictures/{prefix}{win_comp_name}", 'wb') as f:f.write(filebytes)
                 photobyte_hashes.append(photohash)
                 pic_count+=1
             else:duplicates+=1
@@ -232,8 +280,12 @@ def sort_download(filename,filebytes):
         videohash=hashlib.md5(filebytes).hexdigest()
         if videohash not in recent_videobyte_hashes:
             if videohash not in videobyte_hashes:
+                if naming == 'Datepost':
+                    prefix = ""
+                else:
+                    prefix = f"{vid_count}-{randints}_"
                 if show == 'True':output(1,' Info','<light-blue>', f"Downloading Video '{win_comp_name}'")
-                with open(f"{basedir}/Videos/{vid_count}-{randints}_{win_comp_name}", 'wb') as f:f.write(filebytes)
+                with open(f"{ directoryName }/Videos/{prefix}{win_comp_name}", 'wb') as f:f.write(filebytes)
                 videobyte_hashes.append(videohash)
                 vid_count+=1
             else:duplicates+=1
@@ -253,6 +305,14 @@ if group_id:
     output(1,' Info','<light-blue>','Started messages media download ...')
     msg_cursor = None
     while True:
+        if seperate_messages == 'True':
+            directory_name = f'{ basedir }/messages'
+        else:
+            directory_name = f'{basedir}'
+        if seperate_previews == 'True':
+            preview_directory_name = f'{ directory_name }/previews'
+        else:
+            preview_directory_name = directory_name
         if not msg_cursor:
             output(1,' Info','<light-blue>', f'Inspecting message: {group_id}')
             resp = sess.get('https://apiv2.fansly.com/api/v1/message', headers=headers, params=(('groupId', group_id),('limit', '50'),)).json()
@@ -261,24 +321,30 @@ if group_id:
             resp = sess.get('https://apiv2.fansly.com/api/v1/message', headers=headers, params=(('groupId', group_id),('before', msg_cursor),('limit', '50'),)).json()
         try:
             for x in resp['response']['accountMedia']:
+                # set filename
+                if naming == 'Datepost':
+                    ts = int(x['createdAt'])
+                    file_datetime = datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H-%M-%S')
+                    file_id = x['id']
+                    file_name = f"{ file_datetime } { file_id }"
+                else:
+                    file_name = f"{mycreator}"
                 # message media previews
                 if previews == 'True':
                     try:
-                        if x['access'] != False:
-                            sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
-                        if x['access'] == False:
-                            sort_download(f"{mycreator}.png", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                        sort_download(f"{file_name} preview.{x['preview']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content, preview_directory_name)
                     except:pass
                 # unlocked meda in messages
                 try:
-                    locurl=x['media']['locations'][0]['location']
-                    sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
+                    if(x['access'] == True):
+                        locurl=x['media']['locations'][0]['location']
+                        sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content, directory_name)
                 # unlocked messages without corresponding location url
                 except IndexError:
                     for f in range(0,len(x['media']['variants'])):
                         try:
                             locurl=x['media']['variants'][f]['locations'][0]['location']
-                            sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
+                            sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content, directory_name)
                             break
                         except:pass # silently passing locked media in messages
                     pass
@@ -300,29 +366,43 @@ else:output(1,' Info','<light-blue>','No scrapeable media found in mesages')
 output(1,' Info','<light-blue>','Started profile media download; this could take a while dependant on the content size ...')
 cursor = 0
 while True:
+    if seperate_messages == 'True':
+        directory_name = f'{ basedir }/timeline'
+    else:
+        directory_name = f'{basedir}'
+    if seperate_previews == 'True':
+        preview_directory_name = f'{ directory_name }/previews'
+    else:
+        preview_directory_name = directory_name
     if cursor == 0:output(1,' Info','<light-blue>', f'Inspecting most recent page')
     else:output(1,' Info','<light-blue>', f'Inspecting page: {cursor}')
     response = sess.get('https://apiv2.fansly.com/api/v1/timeline/'+creator_id+'?before='+str(cursor)+'&after=0', headers=headers)
     try:
         for x in response.json()['response']['accountMedia']:
+            # set filename
+            if naming == 'Datepost':
+                ts = int(x['createdAt'])
+                file_datetime = datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H-%M-%S')
+                file_id = x['id']
+                file_name = f"{ file_datetime } { file_id }"
+            else:
+                file_name = f"{mycreator}"
             # previews
             if previews == 'True':
                 try:
-                    if x['access'] != False:
-                        sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
-                    if x['access'] == False:
-                        sort_download(f"{mycreator}.png", sess.get(x['preview']['locations'][0]['location'], headers=headers).content)
+                    sort_download(f"{file_name} preview.{x['preview']['mimetype'].split('/')[1]}", sess.get(x['preview']['locations'][0]['location'], headers=headers).content, preview_directory_name)
                 except:pass
             # unlocked media
             try:
-                locurl=x['media']['locations'][0]['location']
-                sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
+                if(x['access'] == True):
+                    locurl=x['media']['locations'][0]['location']
+                    sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content, directory_name)
             # unlocked media without corresponding location url
             except IndexError:
                 for f in range(0,len(x['media']['variants'])):
                     try:
                         locurl=x['media']['variants'][f]['locations'][0]['location']
-                        sort_download(f"{mycreator}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content)
+                        sort_download(f"{file_name}.{x['media']['mimetype'].split('/')[1]}", sess.get(locurl, headers=headers).content, directory_name)
                         break
                     except:pass # silently passing locked media
                 pass
