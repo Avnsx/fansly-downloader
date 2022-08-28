@@ -11,7 +11,7 @@ This is pretty useful for example; if you dislike the website theming and would 
 
 ### Many Thanks to all the `Stargazers` who have supported this project with stars(⭐)
 
-[![Stargazers repo roster for @Avnsx/fansly](https://git-lister.onrender.com/api/stars/Avnsx/fansly?limit=21)](https://github.com/Avnsx/fansly/stargazers)
+[![Stargazers repo roster for @Avnsx/fansly](https://reporoster.com/stars/Avnsx/fansly)](https://github.com/Avnsx/fansly/stargazers)
 
 ## 🏗️ Set up
 You can just install the [Executable version](https://github.com/Avnsx/fansly/releases/latest), skip the entire set up section & go to [Quick Start](https://github.com/Avnsx/fansly#-quick-start)
@@ -19,16 +19,19 @@ You can just install the [Executable version](https://github.com/Avnsx/fansly/re
 #### Requirements
 If you want to use the python source directly, please install following requirements into your environment:
 
-	pip install requests loguru imagehash pillow python-dateutil psutil keyboard selenium-wire==4.6.0 undetected_chromedriver==3.0.6 pycryptodome pywin32
+	pip install requests loguru imagehash pillow python-dateutil psutil keyboard "undetected_chromedriver>=3.1.5" pycryptodome pywin32
 or you can use [``requirements.txt``](https://github.com/Avnsx/fansly/blob/main/requirements.txt) with ``pip install --user -r requirements.txt`` into ``cmd.exe`` from project download folder to install them.
 
 If you get an error while installing requirements with ``pywin32``; it is a windows only library and is not definitely required for the scraper itsself. Only ``automatic_configurator.py`` needs it. If for some reason you can't install it with pip, you can also install it [through pywin32's github](https://github.com/mhammond/pywin32/releases) or you might also be able to install that by ``pip install pypiwin32`` or ``conda install pywin32``. If you can't install pywin32 that obviously means that you won't be able to run automatic configurator and need to use [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started) instead to set it up.
 
-## 🚀 Get Started
-Usually there would be a very user friendly way to start fansly scraper here, but due to various updates of the fansly API (https://github.com/Avnsx/fansly/issues/23, https://github.com/Avnsx/fansly/issues/30, https://github.com/Avnsx/fansly/issues/18) after the 24th of july 2022, everyone is currently forced to use a slightly more complicated way until the release of Fansly Scraper v0.4: https://github.com/Avnsx/fansly/wiki/Get-Started
+## 🚀 Quick Start
+**Quick start is only compatible with Windows & you to have to have recently logged into fansly in any of the following browsers: Chrome, FireFox, Opera, Brave or Microsoft Edge and that browser has to be [set as your default browser in windows settings](https://www.avast.com/c-change-default-browser-windows#:~:text=Open%20the%20Start%20menu%20and,is%20the%20current%20default%20browser.).**
+1. Make sure the browser you set as default browser [in windows settings](https://www.avast.com/c-change-default-browser-windows#:~:text=Open%20the%20Start%20menu%20and,is%20the%20current%20default%20browser.), is also the browser that you've browsed fansly with in the past
+2. Click on Automatic Configurator and wait for it [to do its thing](https://github.com/Avnsx/fansly/wiki/Explanation-of-provided-programs-&-their-functionality#2-automatic-configurator)
+3. If it was successful(``config.ini`` should now *only* show a *single* ``ReplaceMe`` the targeted creator name) open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username =`` with whatever content creator you wish to have scraped
+4. Save the ``config.ini`` file(into the same directory as fansly scraper) with the changes you've done to it, close it & then start up Fansly Scraper by clicking on it
 
-### Star History (Fansly Scraper version 0.4 release at 200 stars)
-[![Star History Chart](https://api.star-history.com/svg?repos=Avnsx/fansly&type=Date)](https://star-history.com/#Avnsx/fansly&Date)
+**⚠️ If you are not using Windows or are encountering a bug with quick start please head over to [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started) instead ⚠️**
 
 ## 🤔 FAQ
 Do you have any unanswered questions or want to know more about fansly scraper? Head over to the [Wiki](https://github.com/Avnsx/fansly/wiki)
