@@ -33,6 +33,8 @@ If you get an error while installing requirements with ``pywin32``; it is a wind
 
 **⚠️ If you are not using Windows or are encountering a bug with quick start please head over to [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started) instead ⚠️**
 
+After completing any of the configuration tutorials [Quick Start](https://github.com/Avnsx/fansly#-quick-start) / [Get Started](https://github.com/Avnsx/fansly/wiki/Get-Started); in the future you'll only need to change the creator name for Targeted Creator > Username in ``config.ini`` for every further use case on other creators.
+
 ## 🤔 FAQ
 Do you have any unanswered questions or want to know more about fansly scraper? Head over to the [Wiki](https://github.com/Avnsx/fansly/wiki)
 
