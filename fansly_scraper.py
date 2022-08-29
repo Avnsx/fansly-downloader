@@ -118,11 +118,12 @@ except Exception as e:
     pass
 
 F, c ='fNs', mytoken
-if c[-3:]==F:c=c.rstrip(F)
-A,B,C=['']*len(c),7,0
-for D in range(B):
-    for E in range(D,len(A),B):A[E]=c[C];C+=1
-mytoken = ''.join(A)
+if c[-3:]==F:
+    c=c.rstrip(F)
+    A,B,C=['']*len(c),7,0
+    for D in range(B):
+        for E in range(D,len(A),B):A[E]=c[C];C+=1
+    mytoken = ''.join(A)
 
 headers = {
     'Accept': 'application/json, text/plain, */*',
