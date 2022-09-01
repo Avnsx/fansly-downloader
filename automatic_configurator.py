@@ -92,27 +92,29 @@ try:
 	with OpenKey(HKEY_CURRENT_USER, r'Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice') as key:used_browser=QueryValueEx(key, 'ProgId')[0] # win only
 
 	compatible = None
-	for x in ['Firefox','Brave','Opera','Chrome','MSEdge']:
+	for x in ['Firefox','Brave','Opera GX','Opera','Chrome','MSEdge']:
 		if search(x, used_browser):
 			compatible=x
 			break
 	if search('App', used_browser):compatible='MSEdge'
 
 	if compatible:print(f'Good News! Your default browser is {compatible} -> a compatible browser for automatic configuration!')
-	if not compatible:
+	elif not compatible:
 		print(f'Your browser ({used_browser}) is not supported, please enter data manually into config.ini')
 		input()
 		exit()
 
 	if compatible == 'Chrome':
 		fp=os.getenv('localappdata')+r'\Google\Chrome\User Data'
-	if compatible == 'MSEdge':
+	elif compatible == 'MSEdge':
 		fp=os.getenv('localappdata')+r'\Microsoft\Edge\User Data'
-	if compatible == 'Brave':
+	elif compatible == 'Brave':
 		fp=os.getenv('localappdata')+r'\BraveSoftware\Brave-Browser\User Data'
-	if compatible == 'Opera':
+	elif compatible == 'Opera':
 		fp=os.getenv('appdata')+r'\Opera Software\Opera Stable'
-	if compatible == 'Firefox':
+	elif compatible == 'Opera GX':
+		fp=os.getenv('appdata')+r'\Opera Software\Opera GX Stable'
+	elif compatible == 'Firefox':
 		bp = os.getenv('appdata')+r'\Mozilla\Firefox\Profiles'
 		myprofiles=[]
 		for file in os.listdir(bp):myprofiles.append(os.path.join(file))
@@ -154,7 +156,7 @@ try:
 	# method 1: get info through a direct api request request
 	try:
 		local_s=fp+r'\Local State'
-		if compatible == 'Opera':login_d=fp+r'\Login Data'
+		if compatible == 'Opera' or compatible == 'Opera GX':login_d=fp+r'\Login Data'
 		else:login_d=fp+r'\Default\Login Data'
 
 		with open(local_s, 'r', encoding='utf-8') as f:local_state = json.loads(f.read())
@@ -227,7 +229,7 @@ try:
 					"""
 					if the fansly account has two factor enabled -> the immediately responded token is just a temporary one 
 					a request to "/login/twofa" with the temp auth token including the twofa string as a payload called "code" would be required to generate
-					the correct token; so instead we just artificially error out and have our second method get the job done
+					the correct token; so instead we just 'error out' and have our second method get the job done
 					auth = auth_req['response']['twofa']['token']
 					"""
 					print(f'ERROR: Two factor authentication is enabled for the fansly account; method 1 failed')
@@ -254,8 +256,9 @@ try:
 	try:os.remove('log_d.db')
 	except:pass
 
-	if compatible == 'Opera':
-		print('Unfortunately, you will have to enter your data manually, please read repositories wiki > Get-Started')
+	# github.com/ultrafunkamsterdam/undetected-chromedriver/issues/803
+	if compatible == 'Opera' or compatible == 'Opera GX':
+		print('Unfortunately, you will have to enter your data manually, please read the "Get-Started" tutorial')
 		input()
 		exit()
 
@@ -306,10 +309,14 @@ try:
 	options = uc.ChromeOptions()
 	options.headless = True
 	options.add_argument(fr'--disable-extensions')
-	options.add_argument(fr'--user-data-dir={os.getenv("localappdata")}\Google\Chrome\User Data')
-	
-	driver = uc.Chrome(options=options, enable_cdp_events=True, use_subprocess=True)
-	
+	options.add_argument(f'--user-data-dir={fp}')
+
+	try:
+		with open(f'{fp}/Last Version', 'r', encoding='utf-8') as f:ver_main = f.read().split('.')[0]
+		driver = uc.Chrome(options=options, enable_cdp_events=True, use_subprocess=True, version_main=ver_main)
+	except:
+		driver = uc.Chrome(options=options, enable_cdp_events=True, use_subprocess=True)
+
 	auth, ua = None, None
 	def interceptor(events):
 	    global auth, ua
