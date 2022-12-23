@@ -189,6 +189,12 @@ if remember == 'Auto':
     else:
         remember = 'False'
 
+MESSAGES_DIR_NAME = 'Messages'
+TIMELINE_DIR_NAME = 'Timeline'
+PREVIEWS_DIR_NAME = 'Previews'
+PICTURES_DIR_NAME = 'Pictures'
+VIDEOS_DIR_NAME = 'Videos'
+
 if remember == 'True':
     if os.path.isdir(basedir):
         output(1,' Info','<light-blue>', f'"{basedir}" folder exists in local directory')
@@ -206,17 +212,17 @@ if remember == 'True':
 
     list_of_futures=[]
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        for x in '', '/Timeline', '/Messages', '/Previews', '/Timeline/Previews', '/Messages/Previews':
-            x_path = basedir + x
+        for x in '', TIMELINE_DIR_NAME, MESSAGES_DIR_NAME, PREVIEWS_DIR_NAME, os.path.join(TIMELINE_DIR_NAME, PREVIEWS_DIR_NAME), os.path.join(MESSAGES_DIR_NAME, PREVIEWS_DIR_NAME):
+            x_path = os.path.join(basedir, x)
             if os.path.isdir(x_path):
-                p_path = x_path + '/Pictures'
-                v_path = x_path + '/Videos'
+                p_path = os.path.join(x_path, PICTURES_DIR_NAME)
+                v_path = os.path.join(x_path, VIDEOS_DIR_NAME)
                 if os.path.isdir(p_path):
                     output(1,' Info','<light-blue>', f"Hashing {mycreator}'s recently downloaded pictures from {p_path} ...")
                     for el in os.listdir(p_path):
                         list_of_futures.append(executor.submit(process_img, f'{p_path}/{el}'))
                         
-                if os.path.isdir(x_path + '/Videos'):
+                if os.path.isdir(v_path):
                     output(1,' Info','<light-blue>', f"Hashing {mycreator}'s recently downloaded videos from {v_path} ...")
                     for el in os.listdir(v_path):
                         list_of_futures.append(executor.submit(process_vid, f'{v_path}/{el}'))
@@ -230,26 +236,31 @@ else:
         os.makedirs(basedir, exist_ok = True)
         
         if seperate_messages == 'True':
-            os.makedirs(basedir+'/Messages', exist_ok = True)
-            os.makedirs(basedir+'/Messages/Pictures', exist_ok = True)
-            os.makedirs(basedir+'/Messages/Videos', exist_ok = True)
-            os.makedirs(basedir+'/Timeline', exist_ok = True)
-            os.makedirs(basedir+'/Timeline/Pictures', exist_ok = True)
-            os.makedirs(basedir+'/Timeline/Videos', exist_ok = True)
+            messages_dir = os.path.join(basedir, MESSAGES_DIR_NAME)
+            os.makedirs(messages_dir, exist_ok = True)
+            os.makedirs(os.path.join(messages_dir, PICTURES_DIR_NAME), exist_ok = True)
+            os.makedirs(os.path.join(messages_dir, VIDEOS_DIR_NAME), exist_ok = True)
+            timeline_dir = os.path.join(basedir, TIMELINE_DIR_NAME)
+            os.makedirs(timeline_dir, exist_ok = True)
+            os.makedirs(os.path.join(timeline_dir, PICTURES_DIR_NAME), exist_ok = True)
+            os.makedirs(os.path.join(timeline_dir, VIDEOS_DIR_NAME), exist_ok = True)
             if previews == 'True' and seperate_previews == 'True':
-                os.makedirs(basedir+'/Messages/Previews', exist_ok = True)
-                os.makedirs(basedir+'/Messages/Previews/Pictures', exist_ok = True)
-                os.makedirs(basedir+'/Messages/Previews/Videos', exist_ok = True)
-                os.makedirs(basedir+'/Timeline/Previews', exist_ok = True)
-                os.makedirs(basedir+'/Timeline/Previews/Pictures', exist_ok = True)
-                os.makedirs(basedir+'/Timeline/Previews/Videos', exist_ok = True)
+                messages_preview_dir = os.path.join(messages_dir, PREVIEWS_DIR_NAME)
+                os.makedirs(messages_preview_dir, exist_ok = True)
+                os.makedirs(os.path.join(messages_preview_dir, PICTURES_DIR_NAME), exist_ok = True)
+                os.makedirs(os.path.join(messages_preview_dir, VIDEOS_DIR_NAME), exist_ok = True)
+                timeline_preview_dir = os.path.join(timeline_dir, PREVIEWS_DIR_NAME)
+                os.makedirs(timeline_preview_dir, exist_ok = True)
+                os.makedirs(os.path.join(timeline_preview_dir, PICTURES_DIR_NAME), exist_ok = True)
+                os.makedirs(os.path.join(timeline_preview_dir, VIDEOS_DIR_NAME), exist_ok = True)
         else:
-            os.makedirs(basedir+'/Pictures', exist_ok = True)
-            os.makedirs(basedir+'/Videos', exist_ok = True)
+            os.makedirs(os.path.join(basedir, PICTURES_DIR_NAME), exist_ok = True)
+            os.makedirs(os.path.join(basedir, VIDEOS_DIR_NAME), exist_ok = True)
             if seperate_previews == 'True':
-                os.makedirs(basedir+'/Previews', exist_ok = True)
-                os.makedirs(basedir+'/Previews/Pictures', exist_ok = True)
-                os.makedirs(basedir+'/Previews/Videos', exist_ok = True)
+                preview_dir = os.path.join(basedir, PREVIEWS_DIR_NAME)
+                os.makedirs(preview_dir, exist_ok = True)
+                os.makedirs(os.path.join(preview_dir, PICTURES_DIR_NAME), exist_ok = True)
+                os.makedirs(os.path.join(preview_dir, VIDEOS_DIR_NAME), exist_ok = True)
     except Exception:
         print('\n'+traceback.format_exc())
         output(2,'\n [17]ERROR','<red>', 'Creating download directories ... Please copy & paste this on GitHub > Issues & provide a short explanation.')
@@ -305,11 +316,11 @@ if group_id:
     msg_cursor = None
     while True:
         if seperate_messages == 'True':
-            directory_name = f'{basedir}/messages'
+            directory_name = os.path.join(basedir, MESSAGES_DIR_NAME)
         else:
-            directory_name = f'{basedir}'
+            directory_name = basedir
         if seperate_previews == 'True':
-            preview_directory_name = f'{directory_name}/previews'
+            preview_directory_name = os.path.join(directory_name, PREVIEWS_DIR_NAME)
         else:
             preview_directory_name = directory_name
         if not msg_cursor:
@@ -366,11 +377,11 @@ output(1,' Info','<light-blue>','Started profile media download; this could take
 cursor = 0
 while True:
     if seperate_messages == 'True':
-        directory_name = f'{basedir}/timeline'
+        directory_name = os.path.join(basedir, TIMELINE_DIR_NAME)
     else:
-        directory_name = f'{basedir}'
+        directory_name = basedir
     if seperate_previews == 'True':
-        preview_directory_name = f'{directory_name}/previews'
+        preview_directory_name = os.path.join(directory_name, PREVIEWS_DIR_NAME)
     else:
         preview_directory_name = directory_name
     if cursor == 0:output(1,' Info','<light-blue>', f'Inspecting most recent page')
