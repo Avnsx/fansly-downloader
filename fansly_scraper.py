@@ -42,6 +42,7 @@ try:
     naming = config['Options']['naming_convention'].capitalize()
     seperate_messages = config['Options']['seperate_messages'].capitalize()
     seperate_previews = config['Options']['seperate_previews'].capitalize()
+    base_directory = config['Options']['download_directory']
     curent_ver = config['Other']['version']
 except (KeyError, NameError) as e:
     output(2,'\n [2]ERROR','<red>', f'"{e}" is missing or malformed in the configuration file!\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
@@ -49,6 +50,11 @@ except (KeyError, NameError) as e:
     exit()
 
 os.system(f'title Fansly Scraper v{curent_ver}')
+
+# config.ini backwards compability fix (≤ v0.3.5) -> val name changed
+if naming == 'Datepost':
+    config.set('Options', 'naming_convention', 'Date_posted') # set corrected value inside the config
+    with open('config.ini', 'w', encoding='utf-8') as f:config.write(f) # save it permanently into config.ini
 
 for x in mycreator,mytoken,myuseragent:
     if x == '' or x == 'ReplaceMe':
@@ -67,8 +73,8 @@ if remember != 'True' and remember != 'False' and remember != 'Auto':
     input('\nPress any key to close ...')
     exit()
 
-if naming != 'Standard' and naming != 'Datepost':
-    output(2,'\n [6]ERROR','<red>', f'"{naming}" is malformed in the configuration file! This value can only be Standard or DatePost\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
+if naming != 'Standard' and naming != 'Date_posted':
+    output(2,'\n [6]ERROR','<red>', f'"{naming}" is malformed in the configuration file! This value can only be Standard or Date_posted\n{21*" "}Read the Wiki > Explanation of provided programs & their functionality > config.ini')
     input('\nPress any key to close ...')
     exit()
 
@@ -160,34 +166,46 @@ except KeyError:subscribed = False
 total_photos = acc_req['timelineStats']['imageCount']
 total_videos = acc_req['timelineStats']['videoCount']
 
-output(1,' Info','<light-blue>','Targeted creator: "'+mycreator+'"')
-output(1,' Info','<light-blue>','Using user-agent: "'+myuseragent[:28]+' [...] '+myuseragent[-35:]+'"')
-output(1,' Info','<light-blue>','Open download folder when finished, is set to: "'+openwhenfinished+'"')
-output(1,' Info','<light-blue>','Downloading files marked as preview, is set to: "'+previews+'"')
+output(1,' Info','<light-blue>', f'Targeted creator: "{mycreator}"')
+output(1,' Info','<light-blue>', f'Using user-agent: "{myuseragent[:28]} [...] {myuseragent[-35:]}"')
+output(1,' Info','<light-blue>', f'Open download folder when finished, is set to: "{openwhenfinished}"')
+output(1,' Info','<light-blue>', f'Downloading files marked as preview, is set to: "{previews}"')
 
 if previews == 'True':output(3,' WARNING','<yellow>', 'Previews downloading is enabled; repetitive and/or emoji spammed media might be downloaded!')
 if remember == 'True':output(3,' WARNING','<yellow>', 'Update recent download is enabled')
 
 if randint(1,100) <= 19:
-    output(4,'\n lnfo','<light-red>', f"Fansly scraper was downloaded {tot_downs} times, but only {round(requests.get('https://api.github.com/repos/avnsx/fansly', headers={'User-Agent':'Fansly Scraper'}).json()['stargazers_count']/tot_downs*100, 2)} % of You(!) have starred it\n{19*' '}Stars directly influence my willingness to continue maintaining the project\n{23*' '}Help the repository grow today, by leaving a star on it!")
+    output(4,'\n lnfo','<light-red>', f"Fansly scraper was downloaded {tot_downs} times, but only {round(requests.get('https://api.github.com/repos/avnsx/fansly', headers={'User-Agent':'Fansly Scraper'}).json()['stargazers_count']/tot_downs*100, 2)} % of You(!) have starred it.\n{17*' '}Stars directly influence my willingness to continue maintaining the project.\n{17*' '}Help the repository grow today, by leaving a star on it and sharing it to others online!")
     s(15)
 
-recent_photobyte_hashes, recent_videobyte_hashes, basedir = [], [], mycreator+'_fansly'
+recent_photobyte_hashes, recent_videobyte_hashes = [], []
 
-def process_img(filePath):
-    recent_photobyte_hashes.append(str(imagehash.average_hash(Image.open(filePath))))
-
-def process_vid(filePath):
-    with open(filePath, 'rb') as f:
-        recent_videobyte_hashes.append(hashlib.md5(f.read()).hexdigest())
-
-print('')
-if remember == 'Auto':
-    output(1,' Info','<light-blue>', 'Automatically detecting whether download folder exists')
-    if os.path.isdir(basedir):
-        remember = 'True'
+def ask_correct_dir():
+    global BASE_DIR_NAME
+    root = Tk()
+    root.withdraw()
+    BASE_DIR_NAME = filedialog.askdirectory()
+    if BASE_DIR_NAME:
+        output(1,'\n Info','<light-blue>', f'Chose folder file path {BASE_DIR_NAME}')
+        return BASE_DIR_NAME
     else:
-        remember = 'False'
+        output(2,'\n ERROR','<red>', f'Could not register your chosen folder file path. Please close and start all over again!')
+        s(15)
+        exit() # this has to force exit
+
+if base_directory == 'Local_directory': # if user didn't specify custom downloads path 
+    BASE_DIR_NAME = mycreator+'_fansly' # use local directory
+elif os.path.isdir(base_directory): # if user specified a correct custom downloads path
+    BASE_DIR_NAME = os.path.join(base_directory, mycreator+'_fansly') # use their custom path & specify new folder for the current creator in it
+    output(1,' Info','<light-blue>', f'Acknowledging custom basis download directory: "{base_directory}"')
+else: # if their set directory, can't be found by the OS
+    output(3,'\n WARNING','<yellow>', f"The custom basis download directory file path '{base_directory}'; seems to be invalid!\n{20*' '}Please change it, to a correct file path for example: 'C:\\MyFanslyDownloads'\n{20*' '}You could also just change it back to the default argument: 'Local_directory'\n\n{20*' '}A explorer window to help you set the correct path, will open soon!\n\n{20*' '}Preferably right click inside the explorer, to create a new folder\n{20*' '}Select it and the folder will be used as the default download directory")
+    s(10) # give user time to realise instructions were given
+    base_directory = ask_correct_dir() # ask user to select correct path using tkinters explorer dialog
+    config.set('Options', 'download_directory', base_directory) # set corrected path inside the config
+    with open('config.ini', 'w', encoding='utf-8') as f:config.write(f) # save the config permanently into config.ini
+    BASE_DIR_NAME = os.path.join(base_directory, mycreator+'_fansly') # use their custom path & specify new folder for the current creator in it
+
 
 MESSAGES_DIR_NAME = 'Messages'
 TIMELINE_DIR_NAME = 'Timeline'
@@ -195,25 +213,35 @@ PREVIEWS_DIR_NAME = 'Previews'
 PICTURES_DIR_NAME = 'Pictures'
 VIDEOS_DIR_NAME = 'Videos'
 
-if remember == 'True':
-    if os.path.isdir(basedir):
-        output(1,' Info','<light-blue>', f'"{basedir}" folder exists in local directory')
+def process_img(filePath):
+    recent_photobyte_hashes.append(str(imagehash.average_hash(Image.open(filePath))))
+
+def process_vid(filePath):
+    h = hashlib.md5()
+    with open(filePath, 'rb') as f:
+        while (part := f.read(1_048_576)):
+            h.update(part)
+    recent_videobyte_hashes.append(h.hexdigest())
+
+print('') # intentional empty print
+if remember == 'Auto':
+    output(1,' Info','<light-blue>', 'Automatically detecting whether download folder exists')
+    if os.path.isdir(BASE_DIR_NAME):
+        remember = 'True'
     else:
-        output(3,' WARNING','<yellow>', f"'{basedir}' folder is not located in the local directory; but you launched in update recent download mode,\n{20*' '}so find & select the folder that contains recently downloaded 'Photos' & 'Videos' as subfolders (it should be called '{basedir}')")
-        root = Tk()
-        root.withdraw()
-        basedir = filedialog.askdirectory()
-        if basedir:
-            output(1,' Info','<light-blue>', f'Chose folder path {basedir}')
-        else:
-            output(2,'\n [16]ERROR','<red>', f'Could not register your chosen folder path, please start all over again. Closing in 30 seconds')
-            s(30)
-            exit()
+        remember = 'False'
+
+if remember == 'True':
+    if os.path.isdir(BASE_DIR_NAME):
+        output(1,' Info','<light-blue>', f'"{BASE_DIR_NAME}" folder already exists in specified directory')
+    else:
+        output(3,' WARNING','<yellow>', f"'{BASE_DIR_NAME}' folder is not located in the specified directory; but you launched in update recent download mode,\n{20*' '}so find & select the folder that contains recently downloaded 'Messages' & 'Timeline' as subfolders (it should be called '{BASE_DIR_NAME}')")
+        ask_correct_dir()
 
     list_of_futures=[]
     with concurrent.futures.ThreadPoolExecutor() as executor:
         for x in '', TIMELINE_DIR_NAME, MESSAGES_DIR_NAME, PREVIEWS_DIR_NAME, os.path.join(TIMELINE_DIR_NAME, PREVIEWS_DIR_NAME), os.path.join(MESSAGES_DIR_NAME, PREVIEWS_DIR_NAME):
-            x_path = os.path.join(basedir, x)
+            x_path = os.path.join(BASE_DIR_NAME, x)
             if os.path.isdir(x_path):
                 p_path = os.path.join(x_path, PICTURES_DIR_NAME)
                 v_path = os.path.join(x_path, VIDEOS_DIR_NAME)
@@ -233,14 +261,14 @@ if remember == 'True':
 else:
     try:
         output(1,' Info','<light-blue>','Creating download directories ...')
-        os.makedirs(basedir, exist_ok = True)
+        os.makedirs(BASE_DIR_NAME, exist_ok = True)
         
         if seperate_messages == 'True':
-            messages_dir = os.path.join(basedir, MESSAGES_DIR_NAME)
+            messages_dir = os.path.join(BASE_DIR_NAME, MESSAGES_DIR_NAME)
             os.makedirs(messages_dir, exist_ok = True)
             os.makedirs(os.path.join(messages_dir, PICTURES_DIR_NAME), exist_ok = True)
             os.makedirs(os.path.join(messages_dir, VIDEOS_DIR_NAME), exist_ok = True)
-            timeline_dir = os.path.join(basedir, TIMELINE_DIR_NAME)
+            timeline_dir = os.path.join(BASE_DIR_NAME, TIMELINE_DIR_NAME)
             os.makedirs(timeline_dir, exist_ok = True)
             os.makedirs(os.path.join(timeline_dir, PICTURES_DIR_NAME), exist_ok = True)
             os.makedirs(os.path.join(timeline_dir, VIDEOS_DIR_NAME), exist_ok = True)
@@ -254,16 +282,16 @@ else:
                 os.makedirs(os.path.join(timeline_preview_dir, PICTURES_DIR_NAME), exist_ok = True)
                 os.makedirs(os.path.join(timeline_preview_dir, VIDEOS_DIR_NAME), exist_ok = True)
         else:
-            os.makedirs(os.path.join(basedir, PICTURES_DIR_NAME), exist_ok = True)
-            os.makedirs(os.path.join(basedir, VIDEOS_DIR_NAME), exist_ok = True)
+            os.makedirs(os.path.join(BASE_DIR_NAME, PICTURES_DIR_NAME), exist_ok = True)
+            os.makedirs(os.path.join(BASE_DIR_NAME, VIDEOS_DIR_NAME), exist_ok = True)
             if seperate_previews == 'True':
-                preview_dir = os.path.join(basedir, PREVIEWS_DIR_NAME)
+                preview_dir = os.path.join(BASE_DIR_NAME, PREVIEWS_DIR_NAME)
                 os.makedirs(preview_dir, exist_ok = True)
                 os.makedirs(os.path.join(preview_dir, PICTURES_DIR_NAME), exist_ok = True)
                 os.makedirs(os.path.join(preview_dir, VIDEOS_DIR_NAME), exist_ok = True)
     except Exception:
         print('\n'+traceback.format_exc())
-        output(2,'\n [17]ERROR','<red>', 'Creating download directories ... Please copy & paste this on GitHub > Issues & provide a short explanation.')
+        output(2,'\n [16]ERROR','<red>', 'Creating download directories ... Please copy & paste this on GitHub > Issues & provide a short explanation.')
         input('\nPress any key to close ...')
         exit()
 
@@ -276,7 +304,7 @@ def sort_download(filename,filebytes, directoryName):
         photohash=str(imagehash.average_hash(Image.open(io.BytesIO(filebytes))))
         if photohash not in recent_photobyte_hashes:
             if photohash not in photobyte_hashes:
-                if naming == 'Datepost':
+                if naming == 'Date_posted':
                     prefix = ""
                 else:
                     prefix = f"{pic_count}-{randints}_"
@@ -290,7 +318,7 @@ def sort_download(filename,filebytes, directoryName):
         videohash=hashlib.md5(filebytes).hexdigest()
         if videohash not in recent_videobyte_hashes:
             if videohash not in videobyte_hashes:
-                if naming == 'Datepost':
+                if naming == 'Date_posted':
                     prefix = ""
                 else:
                     prefix = f"{vid_count}-{randints}_"
@@ -301,7 +329,7 @@ def sort_download(filename,filebytes, directoryName):
             else:duplicates+=1
         else:recent+=1
     else:
-        output(2,'\n [18]ERROR','<red>', 'Unknown filetype: "'+str(filename[-7:])+'" please report this on GitHub > Issues & provide a short explanation; continuing without that file ...')
+        output(2,'\n [17]ERROR','<red>', 'Unknown filetype: "'+str(filename[-7:])+'" please report this on GitHub > Issues & provide a short explanation; continuing without that file ...')
 
 # scrape messages
 group_id = None
@@ -316,9 +344,9 @@ if group_id:
     msg_cursor = None
     while True:
         if seperate_messages == 'True':
-            directory_name = os.path.join(basedir, MESSAGES_DIR_NAME)
+            directory_name = os.path.join(BASE_DIR_NAME, MESSAGES_DIR_NAME)
         else:
-            directory_name = basedir
+            directory_name = BASE_DIR_NAME
         if seperate_previews == 'True':
             preview_directory_name = os.path.join(directory_name, PREVIEWS_DIR_NAME)
         else:
@@ -332,7 +360,7 @@ if group_id:
         try:
             for x in resp['response']['accountMedia']:
                 # set filename
-                if naming == 'Datepost':
+                if naming == 'Date_posted':
                     ts = int(x['createdAt'])
                     file_datetime = datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H-%M-%S')
                     file_id = x['id']
@@ -365,32 +393,44 @@ if group_id:
             except IndexError:break # break if end is reached
             except Exception:
                 print('\n'+traceback.format_exc())
-                output(2,'\n [19]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation.')
+                output(2,'\n [18]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation.')
                 input('\nPress any key to close ...')
                 exit()
         except KeyError:
-            output(3,' WARNING','<yellow>', 'No scrapeable media found in mesages')
+            output(3,' WARNING','<yellow>', 'No scrapeable media found in messages')
             pass
-else:output(1,' Info','<light-blue>','No scrapeable media found in mesages')
+else:output(1,' Info','<light-blue>','No scrapeable media found in messages')
 
 output(1,' Info','<light-blue>','Started profile media download; this could take a while dependant on the content size ...')
 cursor = 0
 while True:
     if seperate_messages == 'True':
-        directory_name = os.path.join(basedir, TIMELINE_DIR_NAME)
+        directory_name = os.path.join(BASE_DIR_NAME, TIMELINE_DIR_NAME)
     else:
-        directory_name = basedir
+        directory_name = BASE_DIR_NAME
     if seperate_previews == 'True':
         preview_directory_name = os.path.join(directory_name, PREVIEWS_DIR_NAME)
     else:
         preview_directory_name = directory_name
     if cursor == 0:output(1,' Info','<light-blue>', f'Inspecting most recent page')
     else:output(1,' Info','<light-blue>', f'Inspecting page: {cursor}')
-    response = sess.get('https://apiv3.fansly.com/api/v1/timeline/'+creator_id+'?before='+str(cursor)+'&after=0', headers=headers)
+    
+    # simple attempt to deal with rate limiting
+    while True:
+        try:
+            # people with a high enough internet download speed & hardware specification will manage to hit a rate limit here
+            response = sess.get(f'https://apiv3.fansly.com/api/v1/timeline/{creator_id}?before={cursor}&after=0', headers=headers) # outdated; they're serving over 'timeline/home/' ... '&mode=0' now
+            break # break if no errors happened, so we can just continue trying with next download
+        except:
+            output(2,' WARNING','<yellow>', f"Uhm, looks like we've hit a rate limit ..\n{20*' '}Will try to continue the download, infinitely every 15 seconds\n{20*' '}Let me know if this logic worked out at any point in time\n{20*' '}by opening a issue ticket please!")
+            print('\n'+traceback.format_exc())
+            s(5)
+            pass
+
     try:
         for x in response.json()['response']['accountMedia']:
             # set filename
-            if naming == 'Datepost':
+            if naming == 'Date_posted':
                 ts = int(x['createdAt'])
                 file_datetime = datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H-%M-%S')
                 file_id = x['id']
@@ -423,11 +463,11 @@ while True:
         except IndexError:break # break if end is reached
         except Exception:
             print('\n'+traceback.format_exc())
-            output(2,'\n [20]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation.')
+            output(2,'\n [19]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation.')
             input('\nPress any key to close ...')
             exit()
     except KeyError:
-        output(2,'\n [21]ERROR','<red>', "Couldn't find any scrapeable media at all!\n This most likely happend because you're not following the creator, your authorisation token is wrong\n or the creator is not providing unlocked content.")
+        output(2,'\n [20]ERROR','<red>', "Couldn't find any scrapeable media at all!\n This most likely happend because you're not following the creator, your authorisation token is wrong\n or the creator is not providing unlocked content.")
         input('\nPress any key to close ...')
         exit()
     if remember == 'True' and recent > int(total_photos+total_videos) * 0.2:
@@ -451,7 +491,7 @@ if issue == True:
     if previews == 'False':print(f'{20*" "}Try setting Media Preview Downloads on, this helps if the creator marks all his content as previews.')
     print('')
 
-full_path=os.getcwd()+'\\'+basedir
+full_path = os.path.join(os.getcwd(), BASE_DIR_NAME)
 if openwhenfinished == 'True':open_file(full_path)
 
 print('╔═\n  Done! Downloaded '+str(pic_count-1)+' pictures & '+str(vid_count-1)+' videos ('+str(duplicates)+' duplicates declined)\n  Saved in directory: "'+full_path+'"\n  ✶ Please leave a Star on the GitHub Repository, if you are satisfied! ✶'+f'{12*" "}'+'═╝')
