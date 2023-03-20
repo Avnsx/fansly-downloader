@@ -193,7 +193,7 @@ def ask_correct_dir():
         s(15)
         exit() # this has to force exit
 
-if base_directory == 'Local_directory': # if user didn't specify custom downloads path 
+if base_directory == 'Local_directory': # if user didn't specify custom downloads path
     BASE_DIR_NAME = mycreator+'_fansly' # use local directory
 elif os.path.isdir(base_directory): # if user specified a correct custom downloads path
     BASE_DIR_NAME = os.path.join(base_directory, mycreator+'_fansly') # use their custom path & specify new folder for the current creator in it
@@ -331,12 +331,17 @@ def sort_download(filename,filebytes, directoryName):
     else:
         output(2,'\n [17]ERROR','<red>', 'Unknown filetype: "'+str(filename[-7:])+'" please report this on GitHub > Issues & provide a short explanation; continuing without that file ...')
 
+
 # scrape messages
 group_id = None
 groups = sess.get('https://apiv3.fansly.com/api/v1/group', headers=headers).json()['response']['groups']
 for x in range(len(groups)):
-    if groups[x]['users'][0]['userId'] == creator_id:
-        group_id = groups[x]['id']
+    users = groups[x]['users']
+    for y in range(len(users)):
+        if users[y]['userId'] == creator_id:
+            group_id = groups[x]['id']
+            break
+    if group_id:
         break
 
 if group_id:
@@ -414,7 +419,7 @@ while True:
         preview_directory_name = directory_name
     if cursor == 0:output(1,' Info','<light-blue>', f'Inspecting most recent page')
     else:output(1,' Info','<light-blue>', f'Inspecting page: {cursor}')
-    
+
     # simple attempt to deal with rate limiting
     while True:
         try:
