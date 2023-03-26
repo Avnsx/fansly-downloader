@@ -27,15 +27,15 @@ import os
 os.system('title Automatic Configurator')
 
 import psutil,re,sqlite3,traceback,json,win32con,win32api,win32gui,win32process,win32crypt,requests,keyboard,shutil,base64
-import undetected_chromedriver.v2 as uc
+import undetected_chromedriver as uc
 from re import search
 from winreg import HKEY_CURRENT_USER, OpenKey, QueryValueEx
 from configparser import RawConfigParser
 from Crypto.Cipher import AES
 sess = requests.Session()
 
-if uc.__version__ < '3.1.5':
-	input(f'WARNING: Possible module versioning missmatch found for "undetected_chromedriver"\nRequired is version 3.1.5 or above, but you have version {uc.__version__}\nPlease make sure to upgrade with "pip install --upgrade undetected_chromedriver"\n\nYou can skip this warning by pressing Enter; but the configurator will most likely not work as expected')
+if uc.__version__ < '3.4.6':
+	input(f'WARNING: Possible module versioning missmatch found for "undetected_chromedriver"\nRequired is version 3.4.6 or above, but you have version {uc.__version__}\nPlease make sure to upgrade with "pip install --upgrade undetected_chromedriver"\n\nYou can skip this warning by pressing Enter; but the configurator will most likely not work as expected')
 
 def exit():os._exit(0) # thanks pyinstaller
 
@@ -307,9 +307,8 @@ try:
 			count+=1
 
 	options = uc.ChromeOptions()
-	options.headless = True
-	options.add_argument(fr'--disable-extensions')
-	options.add_argument(f'--user-data-dir={fp}')
+	for arg in ['--headless', '--disable-extensions', f'--user-data-dir={fp}']:
+		options.add_argument(arg)
 
 	try:
 		with open(f'{fp}/Last Version', 'r', encoding='utf-8') as f:ver_main = f.read().split('.')[0]
