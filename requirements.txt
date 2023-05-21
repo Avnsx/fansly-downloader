@@ -8,3 +8,5 @@ keyboard>=0.13.5
 undetected_chromedriver==3.4.6
 pycryptodome>=3.14.0
 pywin32>=303 ; sys_platform == 'win32'
+av>=9.0.0
+m3u8>=3.0.0
