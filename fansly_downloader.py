@@ -47,17 +47,14 @@ if 'seperate_previews' in config['Options']:
     config['Options']['separate_previews'] = config['Options'].pop('seperate_previews')
 with open('config.ini', 'w', encoding='utf-8') as f:config.write(f)
 
-# config.ini backwards compatibility fix (≤ v0.4) -> config option "naming_convention" removed entirely
-if 'naming_convention' in config['Options']:
-    config['Options'].pop('naming_convention')
-    with open('config.ini', 'w', encoding='utf-8') as f:config.write(f)
-    output(3,'\n WARNING','<yellow>', 'Just removed \"naming_convention\" from the config.ini file, as the whole option is no longer supported after version 0.3.5')
-
-# config.ini backwards compatibility fix (≤ v0.4) -> config option "update_recent_download", no longer supports "True" as value
-if config.get('Options', 'update_recent_download') == "True":
-    config.set('Options', 'update_recent_download', 'Auto')
-    with open('config.ini', 'w', encoding='utf-8') as f:config.write(f)
-    output(3,'\n WARNING','<yellow>', 'Just set \"update_recent_download\" to \"Auto\" in config.ini file, as the value \"True\"; is no longer supported after version 0.3.5')
+# config.ini backwards compatibility fix (≤ v0.4) -> config option "naming_convention" & "update_recent_download" removed entirely
+options_to_remove = ['naming_convention', 'update_recent_download']
+for option in options_to_remove:
+    if option in config['Options']:
+        config['Options'].pop(option)
+        with open('config.ini', 'w', encoding='utf-8') as f:
+            config.write(f)
+        output(3, '\n WARNING', '<yellow>', f'Just removed "{option}" from the config.ini file, as the whole option is no longer supported after version 0.3.5')
 
 
 try:
@@ -71,7 +68,6 @@ try:
     # Options
     download_mode = config.get('Options', 'download_mode').capitalize() # Normal (Timeline & Messages), Timeline, Messages, Single (Single by post id) or Collections -> str
     show_downloads = config.getboolean('Options', 'show_downloads') # True, False -> boolean
-    update_recent_download = config.get('Options', 'update_recent_download').capitalize() # Auto, True, False -> str
     download_media_previews = config.getboolean('Options', 'download_media_previews') # True, False -> boolean
     open_folder_when_finished = config.getboolean('Options', 'open_folder_when_finished') # True, False -> boolean
     separate_messages = config.getboolean('Options', 'separate_messages') # True, False -> boolean
@@ -205,12 +201,6 @@ for value in show_downloads, download_media_previews, open_folder_when_finished,
         input('\nPress any key to close ...')
         exit()
 
-# validate input value for update_recent_download
-if not any(['False' in update_recent_download, 'Auto' in update_recent_download]):
-    output(2,'\n [6]ERROR','<red>', f"\'{update_recent_download}\' is malformed in the configuration file! This value can only be Auto or False \n{21*' '}Read the Wiki > Explanation of provided programs & their functionality > config.ini")
-    input('\nPress any key to close ...')
-    exit()
-
 
 
 ## starting here: general epoch timestamp to local timezone manipulation
@@ -228,13 +218,14 @@ diff_from_utc, hours_in_seconds = compute_timezone_offset()
 time_format = 12 if ('AM' in time.strftime('%X') or 'PM' in time.strftime('%X')) else 24
 
 # convert every epoch timestamp passed, to the time it was for the local computers timezone
-def get_adjusted_datetime(epoch_timestamp, diff_from_utc = diff_from_utc, hours_in_seconds = hours_in_seconds):
+def get_adjusted_datetime(epoch_timestamp: int, diff_from_utc: int = diff_from_utc, hours_in_seconds: int = hours_in_seconds):
     adjusted_timestamp = epoch_timestamp + diff_from_utc * 3600
     adjusted_timestamp += hours_in_seconds
+    # start of strings are ISO 8601; so that they're sortable by Name after download
     if time_format == 24:
-        return time.strftime("%d-%b-%Y_at_%H-%M", time.localtime(adjusted_timestamp))
+        return time.strftime("%Y-%m-%d_at_%H-%M", time.localtime(adjusted_timestamp))
     else:
-        return time.strftime("%b-%d-%Y_at_%I-%M-%p", time.localtime(adjusted_timestamp))
+        return time.strftime("%Y-%m-%d_at_%I-%M-%p", time.localtime(adjusted_timestamp))
 
 
 
@@ -408,7 +399,11 @@ def download_m3u8(m3u8_url: str, save_path: str):
     }
 
     # download the m3u8 playlist
-    playlist_content = sess.get(m3u8_url, headers=headers, cookies=cookies).text
+    playlist_content_req = sess.get(m3u8_url, headers=headers, cookies=cookies)
+    if not playlist_content_req.ok:
+        output(2,'\n [14]ERROR','<red>', f'Failed downloading m3u8; at playlist_content request. Response code: {playlist_content_req.status_code}\n{playlist_content_req.text}')
+        return False
+    playlist_content = playlist_content_req.text
 
     # parse the m3u8 playlist content using the m3u8 library
     playlist_obj = m3u8.loads(playlist_content)
@@ -442,16 +437,23 @@ def download_m3u8(m3u8_url: str, save_path: str):
     output_video_stream = output_container.add_stream(template=video_stream)
     output_audio_stream = output_container.add_stream(template=audio_stream)
 
-    # loop through each .ts file content
+    start_pts = None
     for ts_content in ts_contents:
         # open the input video stream from the .ts file content
         input_container = av.open(io.BytesIO(ts_content), format='mpegts')
         input_video_stream = input_container.streams.video[0]
         input_audio_stream = input_container.streams.audio[0]
-
+    
         for packet in input_container.demux([input_video_stream, input_audio_stream]):
             if packet.dts is None:
                 continue
+            
+            if start_pts is None:
+                start_pts  = packet.pts
+
+            packet.pts -= start_pts
+            packet.dts -= start_pts
+            
             if packet.stream == input_video_stream:
                 packet.stream = output_video_stream
             elif packet.stream == input_audio_stream:
@@ -487,7 +489,7 @@ class DuplicateCountError(Exception):
 
 pic_count, vid_count, duplicate_count = 0, 0, 0 # count downloaded content & duplicates, from all modules globally
 
-# deduplication functionality variables; used for update_recent_download
+# deduplication functionality variables
 recent_photo_media_ids, recent_video_media_ids = set(), set()
 recent_photo_hashes, recent_video_hashes = set(), set()
 
@@ -568,17 +570,14 @@ def sort_download(accessible_media: dict):
             response = sess.get(download_url, stream=True, headers=headers)
             if response.ok:
                 
-                fhash = None
+                file_hash = None
                 # utilise hashing for images
                 if 'image' in mimetype:
                     # open the image
-                    image = Image.open(io.BytesIO(response.content))
-                    
-                    # resize the image to 10% of its original size (so it only takes ~ 0.13 ms to hash)
-                    resized_image = image.resize((int(image.width * 0.1), int(image.height * 0.1)))
+                    img = Image.open(io.BytesIO(response.content))
 
                     # calculate the hash of the resized image
-                    photohash = str(imagehash.average_hash(resized_image))
+                    photohash = str(imagehash.average_hash(img))
 
                     # deduplication - part 2.1: decide if this photo is even worth further processing; by hashing
                     if photohash in recent_photo_hashes:
@@ -589,9 +588,9 @@ def sort_download(accessible_media: dict):
                         recent_photo_hashes.add(photohash)
 
                     # close the image
-                    image.close()
+                    img.close()
 
-                    fhash = photohash
+                    file_hash = photohash
 
                 # utilise hashing for videos
                 elif 'video' in mimetype:
@@ -605,11 +604,11 @@ def sort_download(accessible_media: dict):
                     else:
                         recent_video_hashes.add(videohash)
 
-                    fhash = videohash
+                    file_hash = videohash
 
                 # hacky overwrite for save_path to introduce file hash to filename
                 base_path, extension = os.path.splitext(save_path)
-                save_path = f"{base_path}_hash_{fhash}{extension}"
+                save_path = f"{base_path}_hash_{file_hash}{extension}"
 
                 # if the normal file made it this far, it's worth to be saved
                 with open(save_path, 'wb') as f:
@@ -621,7 +620,7 @@ def sort_download(accessible_media: dict):
                     # we only count them if the file was actually written
                     pic_count += 1 if 'image' in mimetype else 0; vid_count += 1 if 'video' in mimetype else 0
             else:
-                output(2,'\n [14]ERROR','<red>', f"Download failed on filename: {filename} - due to an network error --> status_code: {response.status_code} | content: \n{response.content}")
+                output(2,'\n [15]ERROR','<red>', f"Download failed on filename: {filename} - due to an network error --> status_code: {response.status_code} | content: \n{response.content}")
                 input()
                 exit()
 
@@ -629,8 +628,8 @@ def sort_download(accessible_media: dict):
 
 
 
-# atm this function is only being utilised by single post & collections download, but will prolly use this for everything in a re-write / re-factoring of the whole code
-def parse_media_info(media_info: dict, post_id: int = None):
+# whole code uses this; whenever any json response needs to get parsed from fansly api
+def parse_media_info(media_info: dict, post_id = None):
     # initialize variables
     highest_variants_resolution_url, download_url, file_extension, metadata, default_normal_locations =  None, None, None, None, None
     created_at, media_id, highest_variants_resolution, highest_variants_resolution_height, default_normal_height = 0, 0, 0, 0, 0
@@ -643,6 +642,11 @@ def parse_media_info(media_info: dict, post_id: int = None):
 
     # check if media is a preview
     is_preview = media_info['previewId'] is not None
+    
+    # fix rare bug, of free / paid content being counted as preview
+    if is_preview:
+        if media_info['access']:
+            is_preview = False
 
     # parse normal basic (paid/free) media from the default location, before parsing its variants (later on we compare heights, to determine which one we want)
     if not is_preview:
@@ -650,7 +654,7 @@ def parse_media_info(media_info: dict, post_id: int = None):
         default_normal_locations = media_info['media']['locations']
         if default_normal_locations:
             default_details = media_info['media']
-            default_normal_height = default_details['height'] # hopefully this is not bugged out
+            default_normal_height = default_details['height'] or 0 # hopefully the fansly api; reliably serves a correct value for this
             default_normal_created_at = int(default_details['createdAt'])
             default_normal_mimetype = default_details['mimetype']
             default_normal_locations = default_details['locations'][0]['location']
@@ -673,10 +677,10 @@ def parse_media_info(media_info: dict, post_id: int = None):
         if content.get('locations'):
             location_url = content['locations'][0]['location']
 
-            current_variant_resolution = content['width'] * content['height']
+            current_variant_resolution = (content['width'] or 0) * (content['height'] or 0)
             if current_variant_resolution > highest_variants_resolution:
                 highest_variants_resolution = current_variant_resolution
-                highest_variants_resolution_height = content['height']
+                highest_variants_resolution_height = content['height'] or 0
                 highest_variants_resolution_url = location_url
                 media_id = int(content['id'])
                 mimetype = content['mimetype']
@@ -715,7 +719,7 @@ def parse_media_info(media_info: dict, post_id: int = None):
             parse_variants(content = content, content_type = 'media')
 
         # compare the normal media from variants against, the one that is populated in the default normal location
-        if all([default_normal_height, highest_variants_resolution_height, default_normal_height > highest_variants_resolution_height]):
+        if all([default_normal_height, highest_variants_resolution_height]) and default_normal_height > highest_variants_resolution_height:
             # overwrite default variable values, which we will finally return; with the ones from the default media
             media_id = default_normal_id
             created_at = default_normal_created_at
@@ -751,7 +755,7 @@ def parse_media_info(media_info: dict, post_id: int = None):
 
         # if metadata didn't exist we need the user to notify us through github, because that would be detrimental
         if not 'Key-Pair-Id' in download_url and not metadata:
-            output(2,'\n [15]ERROR','<red>', f"Failed downloading a video! Please open a GitHub issue ticket called \'Metadata missing\' and copy paste this:\n\n\tMetadata Missing\n\tpost_id: {post_id} & media_id: {media_id}\n")
+            output(2,'\n [16]ERROR','<red>', f"Failed downloading a video! Please open a GitHub issue ticket called \'Metadata missing\' and copy paste this:\n\n\tMetadata Missing\n\tpost_id: {post_id} & media_id: {media_id}\n")
             input('Press Enter to attempt continuing download ...')
 
     return {'media_id': media_id, 'created_at': created_at, 'mimetype': mimetype, 'file_extension': file_extension, 'is_preview': is_preview, 'download_url': download_url}
@@ -812,7 +816,7 @@ def hash_img(filepath: str):
     except FileExistsError:
         os.remove(filepath)
     except Exception:
-        output(2,'\n [16]ERROR','<red>', f"\nError processing image \'{filepath}\': {traceback.format_exc()}")
+        output(2,'\n [17]ERROR','<red>', f"\nError processing image \'{filepath}\': {traceback.format_exc()}")
 
 # exclusively used for hashing videos from pre-existing download directories
 def hash_video(filepath: str):
@@ -841,7 +845,7 @@ def hash_video(filepath: str):
     except FileExistsError:
         os.remove(filepath)
     except Exception:
-        output(2,'\n [17]ERROR','<red>', f"\nError processing video \'{filepath}\': {traceback.format_exc()}")
+        output(2,'\n [18]ERROR','<red>', f"\nError processing video \'{filepath}\': {traceback.format_exc()}")
 
 # exclusively used for processing pre-existing files from previous downloads
 def process_file(file_path: str):
@@ -861,8 +865,8 @@ def process_folder(folder_path: str):
     return True
 
 
-if update_recent_download == 'Auto' and os.path.isdir(generate_base_dir(config_username, download_mode)):
-    output(1,' Info','<light-blue>', f"Update recent download is automatically enabled for;\n{17*' '}{BASE_DIR_NAME}")
+if os.path.isdir(generate_base_dir(config_username, download_mode)):
+    output(1,' Info','<light-blue>', f"Deduplication is automatically enabled for;\n{17*' '}{BASE_DIR_NAME}")
     
     if process_folder(BASE_DIR_NAME):
         output(1,' Info','<light-blue>', f"Deduplication process is complete! Each new download will now be compared\n{17*' '}against a total of {len(recent_photo_hashes)} photo & {len(recent_video_hashes)} video hashes and corresponding media IDs.")
@@ -898,7 +902,7 @@ if download_mode == 'Single':
         if post_id.isdigit() and len(post_id) >= 10 and not any(char.isspace() for char in post_id):
             break
         else:
-            output(2,'\n [17]ERROR','<red>', f"The input string \'{post_id}\' can not be a valid post ID.\n{22*' '}The last few numbers in the url is the post ID\n{22*' '}Example: \'https://fansly.com/post/1283998432982\'\n{22*' '}In the example \'1283998432982\' would be the post ID")
+            output(2,'\n [19]ERROR','<red>', f"The input string \'{post_id}\' can not be a valid post ID.\n{22*' '}The last few numbers in the url is the post ID\n{22*' '}Example: \'https://fansly.com/post/1283998432982\'\n{22*' '}In the example \'1283998432982\' would be the post ID")
 
     post_req = sess.get('https://apiv3.fansly.com/api/v1/post', params={'ids': post_id, 'ngsw-bypass': 'true',}, headers=headers)
 
@@ -909,50 +913,61 @@ if download_mode == 'Single':
 
         # post object contains: posts, aggregatedPosts, accountMediaBundles, accountMedia, accounts, tips, tipGoals, stories, polls
         post_object = post_req.json()['response']
+        
+        # if access to post content / post contains content
+        if post_object['accountMedia']:
 
-        # parse post creator name
-        if not creator_username:
-            creator_id = post_object['accountMedia'][0]['accountId'] # the post creators reliable accountId
-            creator_display_name, creator_username = next((account.get('displayName'), account.get('username')) for account in post_object.get('accounts', []) if account.get('id') == creator_id)
+            # parse post creator name
+            if not creator_username:
+                creator_id = post_object['accountMedia'][0]['accountId'] # the post creators reliable accountId
+                creator_display_name, creator_username = next((account.get('displayName'), account.get('username')) for account in post_object.get('accounts', []) if account.get('id') == creator_id)
+    
+                if creator_display_name and creator_username:
+                    output(1,' Info','<light-blue>', f"Inspecting a post by {creator_display_name} (@{creator_username})")
+                else:
+                    output(1,' Info','<light-blue>', f"Inspecting a post by {creator_username.capitalize()}")
+    
+            # parse relevant details about the post
+            if not accessible_media:
+                # loop through the list of dictionaries and find the highest quality media URL for each one
+                for obj in post_object['accountMedia']:
+                    try:
+                        # add details into a list
+                        contained_posts += [parse_media_info(obj, post_id)]
+                    except Exception:
+                        output(2,'\n [20]ERROR','<red>', f"Unexpected error during parsing Single Post content; \n{traceback.format_exc()}")
+                        input('\n Press any key to attempt to continue ..')
+    
+                # summarise all scrapable & wanted media
+                accessible_media = [item for item in contained_posts if item.get('download_url') and (item.get('is_preview') == download_media_previews or not item.get('is_preview'))]
 
-            if creator_display_name and creator_username:
-                output(1,' Info','<light-blue>', f"Inspecting a post by {creator_display_name} (@{creator_username})")
-            else:
-                output(1,' Info','<light-blue>', f"Inspecting a post by {creator_username.capitalize()}")
-
-        # parse relevant details about the post
-        if not accessible_media:
-            # loop through the list of dictionaries and find the highest quality media URL for each one
-            for obj in post_object['accountMedia']:
-                # add details into a list
-                contained_posts += [parse_media_info(obj, post_id)]
-
-            # summarise all scrapable & wanted media
-            accessible_media = [item for item in contained_posts if item.get('download_url') and (item.get('is_preview') == download_media_previews or not item.get('is_preview'))]
-
+            # at this point we have already parsed the whole post object and determined what is scrapable with the code above
+            output(1,' Info','<light-blue>', f"Amount of Media linked to Single post: {len(post_object['accountMedia'])} (scrapable: {len(accessible_media)})")
+        
+            """
+            generate a base dir based on various factors, except this time we ovewrite the username from config.ini
+            with the custom username we analysed through single post download mode's post_object. this is because
+            the user could've decide to just download some random creators post instead of the one that he currently
+            set as creator for > TargetCreator > username in config.ini
+            """
+            generate_base_dir(creator_username, module_requested_by = 'Single')
+        
+            try:
+                # download it
+                sort_download(accessible_media)
+            except DuplicateCountError:
+                output(1,' Info','<light-blue>', f"Already downloaded all possible Single Post content! [Duplicate threshold exceeded {DUPLICATE_THRESHOLD}]")
+            except Exception:
+                output(2,'\n [21]ERROR','<red>', f"Unexpected error during sorting Single Post download; \n{traceback.format_exc()}")
+                input('\n Press any key to attempt to continue ..')
+        
+        else:
+            output(2, '\n WARNING', '<yellow>', f"Could not find any accessible content in the single post.")
+    
     else:
-        output(2,'\n [19]ERROR','<red>', f"Failed single post download. Fetch post information request, response code: {post_req.status_code}\n{post_req.text}")
+        output(2,'\n [22]ERROR','<red>', f"Failed single post download. Fetch post information request, response code: {post_req.status_code}\n{post_req.text}")
         input('\n Press any key to attempt to continue ..')
 
-    # at this point we have already parsed the whole post object and determined what is scrapable with the code above
-    output(1,' Info','<light-blue>', f"Amount of Media linked to Single post: {len(post_object['accountMedia'])} (scrapable: {len(accessible_media)})")
-
-    """
-    generate a base dir based on various factors, except this time we ovewrite the username from config.ini
-    with the custom username we analysed through single post download mode's post_object. this is because
-    the user could've decide to just download some random creators post instead of the one that he currently
-    set as creator for > TargetCreator > username in config.ini
-    """
-    generate_base_dir(creator_username, module_requested_by = 'Single')
-
-    try:
-        # download it
-        sort_download(accessible_media)
-    except DuplicateCountError:
-        output(1,' Info','<light-blue>', f"Already downloaded all possible Single Post content! [Duplicate threshold exceeded {DUPLICATE_THRESHOLD}]")
-    except Exception:
-        output(2,'\n [20]ERROR','<red>', f"Unexpected error during sorting Single Post download; \n{traceback.format_exc()}")
-        input('\n Press any key to attempt to continue ..')
 
 
 
@@ -975,8 +990,12 @@ if 'Collection' in download_mode:
         contained_posts = []
         
         for obj in post_object['response']:
-            # add details into a list
-            contained_posts += [parse_media_info(obj)]
+            try:
+                # add details into a list
+                contained_posts += [parse_media_info(obj)]
+            except Exception:
+                output(2,'\n [23]ERROR','<red>', f"Unexpected error during parsing Collections content; \n{traceback.format_exc()}")
+                input('\n Press any key to attempt to continue ..')
         
         # count only amount of scrapable media (is_preview check not really necessary since everything in collections is always paid, but w/e)
         accessible_media = [item for item in contained_posts if item.get('download_url') and (item.get('is_preview') == download_media_previews or not item.get('is_preview'))]
@@ -991,11 +1010,11 @@ if 'Collection' in download_mode:
         except DuplicateCountError:
             output(1,' Info','<light-blue>', f"Already downloaded all possible Collections content! [Duplicate threshold exceeded {DUPLICATE_THRESHOLD}]")
         except Exception:
-            output(2,'\n [21]ERROR','<red>', f"Unexpected error during sorting Collections download; \n{traceback.format_exc()}")
+            output(2,'\n [24]ERROR','<red>', f"Unexpected error during sorting Collections download; \n{traceback.format_exc()}")
             input('\n Press any key to attempt to continue ..')
 
     else:
-        output(2,'\n [22]ERROR','<red>', f"Failed Collections download. Fetch collections request, response code: {collections_req.status_code}\n{collections_req.text}")
+        output(2,'\n [25]ERROR','<red>', f"Failed Collections download. Fetch collections request, response code: {collections_req.status_code}\n{collections_req.text}")
         input('\n Press any key to attempt to continue ..')
 
 
@@ -1009,15 +1028,15 @@ if any(['Message' in download_mode, 'Timeline' in download_mode, 'Normal' in dow
         creator_id = acc_req['id']
     except KeyError as e:
         if raw_req.status_code == 401:
-            output(2,'\n [23]ERROR','<red>', f"API returned unauthorized. This is most likely because of a wrong authorization token, in the configuration file.\n{21*' '}Used authorization token: \'{config_token}\'")
+            output(2,'\n [26]ERROR','<red>', f"API returned unauthorized. This is most likely because of a wrong authorization token, in the configuration file.\n{21*' '}Used authorization token: \'{config_token}\'")
         else:
-            output(2,'\n [24]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed.')
+            output(2,'\n [27]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed.')
         print('\n'+str(e))
         print(raw_req.text)
         input('\nPress any key to close ...')
         exit()
     except IndexError as e:
-        output(2,'\n [25]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed; most likely misspelled the creator name.')
+        output(2,'\n [28]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed; most likely misspelled the creator name.')
         print('\n'+str(e))
         print(raw_req.text)
         input('\nPress any key to close ...')
@@ -1032,7 +1051,7 @@ if any(['Message' in download_mode, 'Timeline' in download_mode, 'Normal' in dow
     try:
         total_timeline_pictures = acc_req['timelineStats']['imageCount']
     except KeyError:
-        output(2,'\n [26]ERROR','<red>', 'Can not get timelineStats for creator username; most likely creator username misspelled')
+        output(2,'\n [29]ERROR','<red>', 'Can not get timelineStats for creator username; most likely creator username misspelled')
         input('\nPress any key to close ...')
         exit()
     total_timeline_videos = acc_req['timelineStats']['videoCount']
@@ -1081,8 +1100,12 @@ if any(['Message' in download_mode, 'Normal' in download_mode]):
                 if not accessible_media:
                     # loop through the list of dictionaries and find the highest quality media URL for each one
                     for obj in post_object['accountMedia']:
-                        # add details into a list
-                        contained_posts += [parse_media_info(obj)]
+                        try:
+                            # add details into a list
+                            contained_posts += [parse_media_info(obj)]
+                        except Exception:
+                            output(2,'\n [30]ERROR','<red>', f"Unexpected error during parsing Messages content; \n{traceback.format_exc()}")
+                            input('\n Press any key to attempt to continue ..')
         
                     # summarise all scrapable & wanted media
                     accessible_media = [item for item in contained_posts if item.get('download_url') and (item.get('is_preview') == download_media_previews or not item.get('is_preview'))]
@@ -1103,16 +1126,16 @@ if any(['Message' in download_mode, 'Normal' in download_mode]):
                     except DuplicateCountError:
                         output(1,' Info','<light-blue>', f"Already downloaded all possible Messages content! [Duplicate threshold exceeded {DUPLICATE_THRESHOLD}]")
                     except Exception:
-                        output(2,'\n [27]ERROR','<red>', f"Unexpected error during sorting Messages download; \n{traceback.format_exc()}")
+                        output(2,'\n [31]ERROR','<red>', f"Unexpected error during sorting Messages download; \n{traceback.format_exc()}")
                         input('\n Press any key to attempt to continue ..')
 
             else:
-                output(2,'\n [28]ERROR','<red>', f"Failed messages download. messages_req failed with response code: {messages_req.status_code}\n{messages_req.text}")
+                output(2,'\n [32]ERROR','<red>', f"Failed messages download. messages_req failed with response code: {messages_req.status_code}\n{messages_req.text}")
 
         elif group_id is None:
             output(2, ' WARNING', '<yellow>', f"Could not find a chat history with {config_username}; skipping messages download ..")
     else:
-        output(2,'\n [29]ERROR','<red>', f"Failed Messages download. Fetch Messages request, response code: {groups_req.status_code}\n{groups_req.text}")
+        output(2,'\n [33]ERROR','<red>', f"Failed Messages download. Fetch Messages request, response code: {groups_req.status_code}\n{groups_req.text}")
         input('\n Press any key to attempt to continue ..')
 
 
@@ -1159,8 +1182,12 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
                 if not accessible_media:
                     # loop through the list of dictionaries and find the highest quality media URL for each one
                     for obj in post_object['accountMedia']:
-                        # add details into a list
-                        contained_posts += [parse_media_info(obj)]
+                        try:
+                            # add details into a list
+                            contained_posts += [parse_media_info(obj)]
+                        except Exception:
+                            output(2,'\n [34]ERROR','<red>', f"Unexpected error during parsing Timeline content; \n{traceback.format_exc()}")
+                            input('\n Press any key to attempt to continue ..')
         
                     # summarise all scrapable & wanted media
                     accessible_media = [item for item in contained_posts if item.get('download_url') and (item.get('is_preview') == download_media_previews or not item.get('is_preview'))]
@@ -1175,7 +1202,7 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
                         output(1,' Info','<light-blue>', f"Already downloaded all possible Timeline content! [Duplicate threshold exceeded {DUPLICATE_THRESHOLD}]")
                         break
                     except Exception:
-                        output(2,'\n [30]ERROR','<red>', f"Unexpected error during sorting Timeline download: \n{traceback.format_exc()}")
+                        output(2,'\n [35]ERROR','<red>', f"Unexpected error during sorting Timeline download: \n{traceback.format_exc()}")
                         input('\n Press any key to attempt to continue ..')
 
                 # get next timeline_cursor
@@ -1185,15 +1212,15 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
                     break  # break the whole while loop, if end is reached
                 except Exception:
                     print('\n'+traceback.format_exc())
-                    output(2,'\n [31]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation.')
+                    output(2,'\n [36]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation.')
                     input('\nPress any key to close ...')
                     exit()
 
         except KeyError:
-            output(2,'\n [32]ERROR','<red>', "Couldn\'t find any scrapable media at all!\n This most likely happend because you\'re not following the creator, your authorisation token is wrong\n or the creator is not providing unlocked content.")
+            output(2,'\n [37]ERROR','<red>', "Couldn\'t find any scrapable media at all!\n This most likely happend because you\'re not following the creator, your authorisation token is wrong\n or the creator is not providing unlocked content.")
             input('\n Press any key to attempt to continue ..')
         except Exception:
-            output(2,'\n [33]ERROR','<red>', f"Unexpected error during Timeline download: \n{traceback.format_exc()}")
+            output(2,'\n [38]ERROR','<red>', f"Unexpected error during Timeline download: \n{traceback.format_exc()}")
             input('\n Press any key to attempt to continue ..')
 
     # check if atleast 20% of timeline was scraped; exluding the case when all the media was declined as duplicates
