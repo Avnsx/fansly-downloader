@@ -35,7 +35,7 @@ def output(level: int, log_type: str, color: str, mytext: str):
 output(1,'\n Info','<light-blue>','Reading config.ini file ...')
 config = RawConfigParser()
 if len(config.read('config.ini')) != 1:
-    output(2,'\n [1]ERROR','<red>', 'config.ini file not found or can not be read. Please download it & make sure it is in the same directory as Fansly Downloader')
+    output(2,'\n [1]ERROR','<red>', 'config.ini file not found or can not be read. Please download it & make sure it is in the same directory as fansly downloader')
     input('\nPress any key to close ...')
     exit()
 
@@ -104,7 +104,7 @@ usern_error = False
 
 if 'ReplaceMe' in config_username:
     output(3, '\n WARNING', '<yellow>', f"Value for TargetedCreator > Username > \'{config_username}\'; is unmodified.\n{20*' '}Please read the documentation regarding the config.ini file,\n{20*' '}before attempting to use fansly downloader!")
-    open_url(url_to_open = 'https://github.com/Avnsx/Fansly-Downloader-App/wiki/Explanation-of-provided-programs-&-their-functionality#4-configini')
+    open_url(url_to_open = 'https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#4-configini')
     usern_error = True
 
 # remove @ from username in config file & save changes
@@ -169,7 +169,7 @@ def pick_chrome_user_agent(user_agents):
     return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36' # if no matches / error also return random UA
 
 if config_useragent and len(config_useragent) < 40 or 'ReplaceMe' in config_useragent:
-    output(3, '\n WARNING', '<yellow>', f"Useragent in config.ini \'{config_useragent}\', is most likely wrong,\n{20*' '}will adjust it with a educated guess for chrome browser.\n{20*' '}You should replace this with your correct user-agent later, more info on the Fansly Downloader Wiki.")
+    output(3, '\n WARNING', '<yellow>', f"Useragent in config.ini \'{config_useragent}\', is most likely wrong,\n{20*' '}will adjust it with a educated guess for chrome browser.\n{20*' '}You should replace this with your correct user-agent later, more info on the fansly downloader Wiki.")
 
     try:
         # thanks Jonathan Robson (@jnrbsn) - for continously providing these up-to-date user-agents
@@ -314,18 +314,18 @@ def open_file(myfile: str):
             subprocess.Popen(['open', myfile])
         else:
             if open_folder_when_finished:
-                output(2,'\n [8]ERROR','<red>', f"Fansly Downloader could not open \'{myfile}\'; if this happens again turn Open_Folder_When_Finished to \'False\' in the file \'config.ini\'.\n{21*' '}Will try to continue ...")
+                output(2,'\n [8]ERROR','<red>', f"fansly downloader could not open \'{myfile}\'; if this happens again turn Open_Folder_When_Finished to \'False\' in the file \'config.ini\'.\n{21*' '}Will try to continue ...")
                 s(5)
             else:
-                output(2,'\n [9]ERROR','<red>', f"Fansly Downloader could not open \'{myfile}\'; this happend while trying to do an required update!\n{21*' '}Please update, by either opening \'{myfile}\' manually or downloading the new version from github.com/Avnsx/Fansly-Downloader-App")
+                output(2,'\n [9]ERROR','<red>', f"fansly downloader could not open \'{myfile}\'; this happend while trying to do an required update!\n{21*' '}Please update, by either opening \'{myfile}\' manually or downloading the new version from github.com/Avnsx/fansly-downloader")
                 s(30)
                 exit()
     except:
         if open_folder_when_finished:
-            output(2,'\n [10]ERROR','<red>', f"Fansly Downloader could not open \'{myfile}\'; if this happens again turn Open_Folder_When_Finished to \'False\' in the file \'config.ini\'.\n{21*' '}Will try to continue ...")
+            output(2,'\n [10]ERROR','<red>', f"fansly downloader could not open \'{myfile}\'; if this happens again turn Open_Folder_When_Finished to \'False\' in the file \'config.ini\'.\n{21*' '}Will try to continue ...")
             s(5)
         else:
-            output(2,'\n [11]ERROR','<red>', f"Fansly Downloader could not open \'{myfile}\'; this happend while trying to do an required update!\n{21*' '}Please update, by either opening \'{myfile}\' manually or downloading the new version from github.com/Avnsx/Fansly-Downloader-App")
+            output(2,'\n [11]ERROR','<red>', f"fansly downloader could not open \'{myfile}\'; this happend while trying to do an required update!\n{21*' '}Please update, by either opening \'{myfile}\' manually or downloading the new version from github.com/Avnsx/fansly-downloader")
             s(30)
             exit()
 
@@ -336,7 +336,7 @@ try:
     api_req=requests.get('https://api.github.com/repos/avnsx/fansly/releases', headers={'user-agent': f"Avnsx/Fansly Downloader {curent_ver}",'referer': f"Avnsx/Fansly Downloader {curent_ver}", 'accept-language': 'en-US,en;q=0.9'}).json()
     for x in api_req:tot_downs+=x['assets'][0]['download_count']
     if api_req[0]['tag_name'].lstrip('v') > curent_ver:
-        output(3,'\n WARNING','<yellow>', f"Your version (v{curent_ver}) of Fansly Downloader is outdated; starting updater ...")
+        output(3,'\n WARNING','<yellow>', f"Your version (v{curent_ver}) of fansly downloader is outdated; starting updater ...")
         s(3)
         open_file('updater.exe')
         s(10)
@@ -354,7 +354,7 @@ except Exception as e:
 
 if randint(1,100) <= 19:
     try:
-        output(4,'\n lnfo','<light-red>', f"Fansly Downloader was downloaded {tot_downs} times, but only {round(requests.get('https://api.github.com/repos/avnsx/fansly', headers={'User-Agent':'Avnsx/Fansly Downloader {curent_ver}'}).json()['stargazers_count']/tot_downs*100, 2)} % of You(!) have starred it.\n{17*' '}Stars directly influence my willingness to continue maintaining the project.\n{17*' '}Help the repository grow today, by leaving a star on it and sharing it to others online!")
+        output(4,'\n lnfo','<light-red>', f"Fansly Downloader was downloaded {tot_downs} times, but only {round(requests.get('https://api.github.com/repos/avnsx/fansly', headers={'User-Agent':'Avnsx/fansly downloader {curent_ver}'}).json()['stargazers_count']/tot_downs*100, 2)} % of You(!) have starred it.\n{17*' '}Stars directly influence my willingness to continue maintaining the project.\n{17*' '}Help the repository grow today, by leaving a star on it and sharing it to others online!")
         s(15)
     except requests.exceptions.RequestException:
         pass
@@ -577,7 +577,7 @@ def sort_download(accessible_media: dict):
                     img = Image.open(io.BytesIO(response.content))
 
                     # calculate the hash of the resized image
-                    photohash = str(imagehash.average_hash(img))
+                    photohash = str(imagehash.phash(img, hash_size = 16))
 
                     # deduplication - part 2.1: decide if this photo is even worth further processing; by hashing
                     if photohash in recent_photo_hashes:
@@ -702,8 +702,8 @@ def parse_media_info(media_info: dict, post_id = None):
                 content creator, just attaches that old content to a public post after e.g. 3 months.
 
                 or createdAt & updatedAt are also just bugged out idk..
-                note: if someone complains about files missing again, they're prolly overwriting each other.
-                try adding randint(-1800, 1800) to epoch timestamps
+                note: images would be overwriting each other by filename, if hashing didnt provide uniqueness
+                else we would be forced to add randint(-1800, 1800) to epoch timestamps
                 """
                 try:
                     created_at = int(content['updatedAt'])
@@ -806,7 +806,7 @@ def hash_img(filepath: str):
             recent_photo_hashes.add(existing_hash)
         else:
             img = Image.open(filepath)
-            file_hash = str(imagehash.average_hash(img))
+            file_hash = str(imagehash.phash(img, hash_size = 16))
             recent_photo_hashes.add(file_hash)
             
             new_filename = add_hash_to_filename(filename, file_hash)
@@ -877,7 +877,7 @@ if os.path.isdir(generate_base_dir(config_username, download_mode)):
     # print("Recent Video Media IDs:", recent_video_media_ids)
 
     if randint(1,100) <= 19:
-        output(3, '\n WARNING', '<yellow>', f"Reminder; If you remove id_NUMBERS or hash_STRING from filenames of previously downloaded files,\n{20*' '}they will no longer be compatible with Fansly Downloaders deduplication algorithm")
+        output(3, '\n WARNING', '<yellow>', f"Reminder; If you remove id_NUMBERS or hash_STRING from filenames of previously downloaded files,\n{20*' '}they will no longer be compatible with fansly downloaders deduplication algorithm")
     # because adding information as metadata; requires specific configuration for each file type through PIL and that's too complex due to file types. maybe in the future I might decide to just save every image as .png and every video as .mp4 and add/read it as metadata
     # or if someone contributes a function actually perfectly adding metadata to all common file types, that would be nice
 
