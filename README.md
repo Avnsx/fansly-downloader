@@ -1,4 +1,4 @@
-## 👋 Introducing `Fansly Downloader`: The Ultimate Content Downloading App
+### 👋 Introducing `Fansly Downloader`: The Ultimate Content Downloader
 
 <div align="center">
   <a href="https://github.com/Avnsx/fansly-downloader/releases/latest">
@@ -11,7 +11,7 @@
     <img src="https://img.shields.io/github/commits-since/Avnsx/fansly-downloader/latest?color=orange&label=%F0%9F%92%81%20Uncompiled%20Commits&style=flat-square" alt="Commits since latest release" />
   </a>
   <a href="https://github.com/Avnsx/fansly-downloader/issues?q=is%3Aissue+is%3Aopen+label%3Abug">
-    <img src="https://img.shields.io/github/issues-raw/Avnsx/fansly-downloader/bug?color=pink&label=%F0%9F%A6%84%20Known%20Bugs&style=flat-square" alt="Known Bugs" />
+    <img src="https://img.shields.io/github/issues-raw/Avnsx/fansly-downloader/bug?color=pink&label=%F0%9F%A6%84%20Active%20Bugs&style=flat-square" alt="Active Bugs" />
   </a>
   <a href="https://www.python.org/downloads/">
     <img src="https://img.shields.io/static/v1?style=flat-square&label=%F0%9F%90%8D%20Python&message=3.6%2B&color=3c8c50" alt="Compatibility" />
@@ -22,23 +22,23 @@
 </div>
 
 <div align="center">
-  <a href="https://github.com/Avnsx/fansly-downloader/releases/latest">
+  <a href="https://github.com/Avnsx/fansly-downloader#%EF%B8%8F-set-up">
     <img src="https://img.shields.io/badge/Compatible with-grey?style=flat-square" alt="Compatible with text" />
   </a>
-  <a href="https://github.com/Avnsx/fansly-downloader/releases/latest">
+  <a href="https://github.com/Avnsx/fansly-downloader#%EF%B8%8F-set-up">
     <img src="https://img.shields.io/badge/%F0%9F%AA%9F-Windows-0078D6?style=flat-square" alt="Compatible with Windows" />
   </a>
-  <a href="https://github.com/Avnsx/fansly-downloader/releases/latest">
+  <a href="https://github.com/Avnsx/fansly-downloader#%EF%B8%8F-set-up">
     <img src="https://img.shields.io/badge/%F0%9F%90%A7-Linux-FCC624?style=flat-square" alt="Compatible with Linux" />
   </a>
-  <a href="https://github.com/Avnsx/fansly-downloader/commits/main">
+  <a href="https://github.com/Avnsx/fansly-downloader#%EF%B8%8F-set-up">
     <img src="https://img.shields.io/badge/%E2%9A%AA-macOS-000000?style=flat-square" alt="Compatible with macOS" />
   </a>
 </div>
 
 
 
-![Fansly Downloader UI Banner](https://i.imgur.com/bxZonNp.gif)
+![Fansly Downloader UI Banner](https://i.imgur.com/9VaUh2v.gif)
 
 Fansly Downloader is the go-to app for all your bulk media downloading needs. Download photos, videos or any other media from Fansly, this powerful tool has got you covered! Say goodbye to the hassle of individually downloading each piece of media – now you can download them all or just some, with just a few clicks.
 
@@ -116,22 +116,17 @@ Fansly Downloader is the go-to app for all your bulk media downloading needs. Do
 On windows you can just install the [Executable version](https://github.com/Avnsx/fansly-downloader/releases/latest), skip the entire set up section & go to [Quick Start](https://github.com/Avnsx/fansly-downloader#-quick-start)
 
 #### Requirements
-If your operating system is not compatible with **executable versions** of Fansly Downloader (only Windows supported for ``.exe``) or just generally intend to use the Python source directly, please ensure that [Python is installed](https://www.python.org/downloads/) on your system. Once Python is installed, you can proceed by installing the following requirements using [Python's package manager](https://realpython.com/what-is-pip/), within your systems terminal type:
+If your operating system is not compatible with **executable versions** of Fansly Downloader (only Windows supported for ``.exe``) or you just generally intend to use the Python source directly, please ensure that [Python is installed](https://www.python.org/downloads/) on your system. Once Python is installed, you can proceed by installing the following requirements using [Python's package manager](https://realpython.com/what-is-pip/), within your systems terminal type:
 
-	pip install requests loguru imagehash pillow python-dateutil psutil keyboard av m3u8 pycryptodome "undetected_chromedriver==3.4.6" "pywin32; platform_system == 'Windows'"
-Alternatively you can use [``requirements.txt``](https://github.com/Avnsx/fansly-downloader/blob/main/requirements.txt) through opening your system's terminal (e.g.: cmd.exe) and navigating to the project's download folder & executing the following command: ``pip install --user -r requirements.txt``
+	pip3 install requests loguru python-dateutil plyvel-ci psutil imagehash m3u8 av pillow
+Alternatively you can use [``requirements.txt``](https://github.com/Avnsx/fansly-downloader/blob/main/requirements.txt) through opening your system's terminal (e.g.: cmd.exe) and navigating to the project's download folder & executing the following command: ``pip3 install --user -r requirements.txt``
 
-If you are on windows and can't install the windows only library called ``pywin32`` with pip, you can also install it [through pywin32's github](https://github.com/mhammond/pywin32/releases). Not being able to install pywin32, means that you won't be able to run automatic configurator and need to use [Get Started](https://github.com/Avnsx/fansly-downloader/wiki/Get-Started) instead to set Fansly Downloader up.
+On linux you might additionally need to install pythons tkinter module with ``sudo apt-get install python3-tk``
 
 ## 🚀 Quick Start
-**Quick start is only compatible with Windows & you have to have recently logged into fansly in any of the following browsers: Chrome, FireFox, Opera, Brave or Microsoft Edge and that browser has to be [set as your default browser in windows settings](https://www.avast.com/c-change-default-browser-windows#:~:text=Open%20the%20Start%20menu%20and,is%20the%20current%20default%20browser).**
+Setting up fansly downloader is easy! It will interactively help you set its configuration file (``config.ini``) up, the first time you start the program.
 
-1. Make sure the browser you set as default browser [in windows settings](https://www.avast.com/c-change-default-browser-windows#:~:text=Open%20the%20Start%20menu%20and,is%20the%20current%20default%20browser), is also the browser that you've browsed fansly with in the past
-2. Click on Automatic Configurator and wait for it [to do its thing](https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#2-automatic-configurator) (if it was successful ``config.ini`` should now *only* show a *single* ``ReplaceMe`` for the targeted creator name)
-3. Open the ``config.ini`` file and replace the value for ``[TargetedCreator]`` > ``Username =`` with whatever content creators username 
-4. Save the ``config.ini`` file(into the same directory as Fansly Downloader) with the changes you've done to it, close it & start up Fansly Downloader by clicking on it
-
-**⚠️ If you are not using Windows or are encountering a bug with quick start please head over to [Get Started](https://github.com/Avnsx/fansly-downloader/wiki/Get-Started) instead ⚠️**
+**⚠️ If the interactive semi-automatic tutorial by fansly downloader doesn't work for you; please head over to [Get Started](https://github.com/Avnsx/fansly-downloader/wiki/Get-Started) instead ⚠️**
 
 After completing any of the configuration tutorials [Quick Start](https://github.com/Avnsx/fansly-downloader#-quick-start) / [Get Started](https://github.com/Avnsx/fansly-downloader/wiki/Get-Started); in the future you'll only need to change the creator name for Targeted Creator > Username in ``config.ini`` for every further use case on other creators.
 
@@ -150,11 +145,7 @@ Do you have any unanswered questions or want to know more about Fansly Downloade
 ## 🤝 Contributing to `Fansly Downloader`
 Any kind of positive contribution is welcome! Please help it grow by contributing to the project.
 
-The currently most needed changes are:
-+ adding plyvel, linux & macOS compatibility to automatic configurator
-+ a way to visually display (e.g. loading bar) how much content is already scraped and how much is left
-
-Please open a [open a pull request](https://github.com/Avnsx/fansly-downloader/pulls)!
+Open a [open a pull request](https://github.com/Avnsx/fansly-downloader/pulls)!
 
 ## 🙏 Support
 + Please give this project a star(⭐️) to encourage further development
