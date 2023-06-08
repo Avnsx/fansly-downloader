@@ -1,4 +1,6 @@
-import requests, os, re, base64, hashlib, imagehash, io, traceback, sys, platform, subprocess, concurrent.futures, json, m3u8, av, time, mimetypes
+# fix in future: audio needs to be properly transcoded from mp4 to mp3, instead of just saved as
+# change url for update testing
+import requests, os, re, base64, hashlib, imagehash, io, traceback, sys, platform, subprocess, concurrent.futures, json, m3u8, av, time, mimetypes, configparser
 from random import randint
 from tkinter import Tk, filedialog
 from loguru import logger as log
@@ -6,57 +8,98 @@ from functools import partialmethod
 from PIL import Image, ImageFile
 from time import sleep as s
 from configparser import RawConfigParser
-from datetime import datetime
 from os.path import join, exists
-from os import makedirs
-
-os.system('title Fansly Downloader')
-sess = requests.Session()
+from os import makedirs, getcwd
+from utils.update_util import delete_deprecated_files, check_latest_release, apply_old_config_values
 
 # tell PIL to be tolerant of files that are truncated
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-def exit():os._exit(0) # pyinstaller
+# define requests session
+sess = requests.Session()
+
+
+# cross-platform compatible, re-name downloaders terminal output window title
+def set_window_title(title):
+    current_platform = platform.system()
+    if current_platform == 'Windows':
+        subprocess.call('title {}'.format(title), shell=True)
+    elif current_platform == 'Linux' or current_platform == 'Darwin':
+        subprocess.call(['printf', r'\33]0;{}\a'.format(title)])
+set_window_title('Fansly Downloader')
+
+# for pyinstaller compatibility
+def exit():
+    os._exit(0)
 
 # base64 code to display logo in console
-print(base64.b64decode('CiAg4paI4paI4paI4paI4paI4paI4paI4pWXIOKWiOKWiOKWiOKWiOKWiOKVlyDilojilojilojilZcgICDilojilojilZfilojilojilojilojilojilojilojilZfilojilojilZcgIOKWiOKWiOKVlyAgIOKWiOKWiOKVlyAgICDilojilojilojilojilojilojilZcg4paI4paI4pWXICAgICAgICAgIOKWiOKWiOKWiOKWiOKWiOKVlyDilojilojilojilojilojilojilZcg4paI4paI4paI4paI4paI4paI4pWXIAogIOKWiOKWiOKVlOKVkOKVkOKVkOKVkOKVneKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVl+KWiOKWiOKWiOKWiOKVlyAg4paI4paI4pWR4paI4paI4pWU4pWQ4pWQ4pWQ4pWQ4pWd4paI4paI4pWRICDilZrilojilojilZcg4paI4paI4pWU4pWdICAgIOKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVl+KWiOKWiOKVkSAgICAgICAgIOKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVl+KWiOKWiOKVlOKVkOKVkOKWiOKWiOKVl+KWiOKWiOKVlOKVkOKVkOKWiOKWiOKVlwogIOKWiOKWiOKWiOKWiOKWiOKVlyAg4paI4paI4paI4paI4paI4paI4paI4pWR4paI4paI4pWU4paI4paI4pWXIOKWiOKWiOKVkeKWiOKWiOKWiOKWiOKWiOKWiOKWiOKVl+KWiOKWiOKVkSAgIOKVmuKWiOKWiOKWiOKWiOKVlOKVnSAgICAg4paI4paI4pWRICDilojilojilZHilojilojilZEgICAgICAgICDilojilojilojilojilojilojilojilZHilojilojilojilojilojilojilZTilZ3ilojilojilojilojilojilojilZTilZ0KICDilojilojilZTilZDilZDilZ0gIOKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVkeKWiOKWiOKVkeKVmuKWiOKWiOKVl+KWiOKWiOKVkeKVmuKVkOKVkOKVkOKVkOKWiOKWiOKVkeKWiOKWiOKVkSAgICDilZrilojilojilZTilZ0gICAgICDilojilojilZEgIOKWiOKWiOKVkeKWiOKWiOKVkSAgICAgICAgIOKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVkeKWiOKWiOKVlOKVkOKVkOKVkOKVnSDilojilojilZTilZDilZDilZDilZ0gCiAg4paI4paI4pWRICAgICDilojilojilZEgIOKWiOKWiOKVkeKWiOKWiOKVkSDilZrilojilojilojilojilZHilojilojilojilojilojilojilojilZHilojilojilojilojilojilojilojilZfilojilojilZEgICAgICAg4paI4paI4paI4paI4paI4paI4pWU4pWd4paI4paI4paI4paI4paI4paI4paI4pWXICAgIOKWiOKWiOKVkSAg4paI4paI4pWR4paI4paI4pWRICAgICDilojilojilZEgICAgIAogIOKVmuKVkOKVnSAgICAg4pWa4pWQ4pWdICDilZrilZDilZ3ilZrilZDilZ0gIOKVmuKVkOKVkOKVkOKVneKVmuKVkOKVkOKVkOKVkOKVkOKVkOKVneKVmuKVkOKVkOKVkOKVkOKVkOKVkOKVneKVmuKVkOKVnSAgICAgICDilZrilZDilZDilZDilZDilZDilZ0g4pWa4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWdICAgIOKVmuKVkOKVnSAg4pWa4pWQ4pWd4pWa4pWQ4pWdICAgICDilZrilZDilZ0gICAgIAogICAgICAgICAgICAgICAgICAgICAgICBkZXZlbG9wZWQgb24gZ2l0aHViLmNvbS9Bdm5zeC9mYW5zbHktZG93bmxvYWRlci1hcHAK').decode('utf-8'))
+print(base64.b64decode('CiAg4paI4paI4paI4paI4paI4paI4paI4pWXIOKWiOKWiOKWiOKWiOKWiOKVlyDilojilojilojilZcgICDilojilojilZfilojilojilojilojilojilojilojilZfilojilojilZcgIOKWiOKWiOKVlyAgIOKWiOKWiOKVlyAgICDilojilojilojilojilojilojilZcg4paI4paI4pWXICAgICAgICAgIOKWiOKWiOKWiOKWiOKWiOKVlyDilojilojilojilojilojilojilZcg4paI4paI4paI4paI4paI4paI4pWXIAogIOKWiOKWiOKVlOKVkOKVkOKVkOKVkOKVneKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVl+KWiOKWiOKWiOKWiOKVlyAg4paI4paI4pWR4paI4paI4pWU4pWQ4pWQ4pWQ4pWQ4pWd4paI4paI4pWRICDilZrilojilojilZcg4paI4paI4pWU4pWdICAgIOKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVl+KWiOKWiOKVkSAgICAgICAgIOKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVl+KWiOKWiOKVlOKVkOKVkOKWiOKWiOKVl+KWiOKWiOKVlOKVkOKVkOKWiOKWiOKVlwogIOKWiOKWiOKWiOKWiOKWiOKVlyAg4paI4paI4paI4paI4paI4paI4paI4pWR4paI4paI4pWU4paI4paI4pWXIOKWiOKWiOKVkeKWiOKWiOKWiOKWiOKWiOKWiOKWiOKVl+KWiOKWiOKVkSAgIOKVmuKWiOKWiOKWiOKWiOKVlOKVnSAgICAg4paI4paI4pWRICDilojilojilZHilojilojilZEgICAgICAgICDilojilojilojilojilojilojilojilZHilojilojilojilojilojilojilZTilZ3ilojilojilojilojilojilojilZTilZ0KICDilojilojilZTilZDilZDilZ0gIOKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVkeKWiOKWiOKVkeKVmuKWiOKWiOKVl+KWiOKWiOKVkeKVmuKVkOKVkOKVkOKVkOKWiOKWiOKVkeKWiOKWiOKVkSAgICDilZrilojilojilZTilZ0gICAgICDilojilojilZEgIOKWiOKWiOKVkeKWiOKWiOKVkSAgICAgICAgIOKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVkeKWiOKWiOKVlOKVkOKVkOKVkOKVnSDilojilojilZTilZDilZDilZDilZ0gCiAg4paI4paI4pWRICAgICDilojilojilZEgIOKWiOKWiOKVkeKWiOKWiOKVkSDilZrilojilojilojilojilZHilojilojilojilojilojilojilojilZHilojilojilojilojilojilojilojilZfilojilojilZEgICAgICAg4paI4paI4paI4paI4paI4paI4pWU4pWd4paI4paI4paI4paI4paI4paI4paI4pWXICAgIOKWiOKWiOKVkSAg4paI4paI4pWR4paI4paI4pWRICAgICDilojilojilZEgICAgIAogIOKVmuKVkOKVnSAgICAg4pWa4pWQ4pWdICDilZrilZDilZ3ilZrilZDilZ0gIOKVmuKVkOKVkOKVkOKVneKVmuKVkOKVkOKVkOKVkOKVkOKVkOKVneKVmuKVkOKVkOKVkOKVkOKVkOKVkOKVneKVmuKVkOKVnSAgICAgICDilZrilZDilZDilZDilZDilZDilZ0g4pWa4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWdICAgIOKVmuKVkOKVnSAg4pWa4pWQ4pWd4pWa4pWQ4pWdICAgICDilZrilZDilZ0gICAgIAogICAgICAgICAgICAgICAgICAgICAgICBkZXZlbG9wZWQgb24gZ2l0aHViLmNvbS9Bdm5zeC9mYW5zbHktZG93bmxvYWRlcgo=').decode('utf-8'))
 
 # most of the time, we utilize this to display colored output rather than logging or prints
 def output(level: int, log_type: str, color: str, mytext: str):
     try:
         log.level(log_type, no = level, color = color)
     except TypeError:
-        pass # level failsave
+        pass # level failsafe
     log.__class__.type = partialmethod(log.__class__.log, log_type)
     log.remove()
     log.add(sys.stdout, format = "<level>{level}</level> | <white>{time:HH:mm}</white> <level>|</level><light-white>| {message}</light-white>", level=log_type)
     log.type(mytext)
 
+# mostly used to attempt to open fansly downloaders documentation
+def open_url(url_to_open: str):
+    s(10)
+    try:
+        import webbrowser
+        webbrowser.open(url_to_open, new=0, autoraise=True)
+    except Exception:
+        pass
+
 output(1,'\n Info','<light-blue>','Reading config.ini file ...')
 config = RawConfigParser()
 if len(config.read('config.ini')) != 1:
-    output(2,'\n [1]ERROR','<red>', 'config.ini file not found or can not be read. Please download it & make sure it is in the same directory as fansly downloader')
-    input('\nPress any key to close ...')
+    output(2,'\n [1]ERROR','<red>', f"config.ini file not found or can not be read.\n{21*' '}Please download it & make sure it is in the same directory as fansly downloader")
+    input('\nPress Enter to close ...')
     exit()
 
 
-# config.ini backwards compatibility fix (≤ v0.4) -> fix spelling mistake "seperate" to "separate"
-if 'seperate_messages' in config['Options']:
-    config['Options']['separate_messages'] = config['Options'].pop('seperate_messages')
-if 'seperate_previews' in config['Options']:
-    config['Options']['separate_previews'] = config['Options'].pop('seperate_previews')
-with open('config.ini', 'w', encoding='utf-8') as f:config.write(f)
+## starting here: self updating functionality
+# if started with --update start argument
+if len(sys.argv) > 1 and sys.argv[1] == '--update':
+    # config.ini backwards compatibility fix (≤ v0.4) -> fix spelling mistake "seperate" to "separate"
+    if 'seperate_messages' in config['Options']:
+        config['Options']['separate_messages'] = config['Options'].pop('seperate_messages')
+    if 'seperate_previews' in config['Options']:
+        config['Options']['separate_previews'] = config['Options'].pop('seperate_previews')
+    with open('config.ini', 'w', encoding='utf-8') as f:config.write(f)
+    
+    # config.ini backwards compatibility fix (≤ v0.4) -> config option "naming_convention" & "update_recent_download" removed entirely
+    options_to_remove = ['naming_convention', 'update_recent_download']
+    for option in options_to_remove:
+        if option in config['Options']:
+            config['Options'].pop(option)
+            with open('config.ini', 'w', encoding='utf-8') as f:
+                config.write(f)
+            output(3, '\n WARNING', '<yellow>', f"Just removed \'{option}\' from the config.ini file,\n\
+                   {6*' '}as the whole option is no longer supported after version 0.3.5")
+    
+    # get the version string of what we've just been updated to
+    version_string = sys.argv[2]
 
-# config.ini backwards compatibility fix (≤ v0.4) -> config option "naming_convention" & "update_recent_download" removed entirely
-options_to_remove = ['naming_convention', 'update_recent_download']
-for option in options_to_remove:
-    if option in config['Options']:
-        config['Options'].pop(option)
-        with open('config.ini', 'w', encoding='utf-8') as f:
-            config.write(f)
-        output(3, '\n WARNING', '<yellow>', f'Just removed "{option}" from the config.ini file, as the whole option is no longer supported after version 0.3.5')
+    # check if old config.ini exists, compare each pre-existing value of it and apply it to new config.ini
+    apply_old_config_values()
+    
+    # temporary: delete deprecated files
+    delete_deprecated_files()
+
+    # get release description and if existent; display it in terminal
+    check_latest_release(update_version = version_string, intend = 'update')
+else:
+    # check if a new version is available
+    check_latest_release(current_version = config.get('Other', 'version'), intend = 'check')
 
 
+## read & verify config values
 try:
     # TargetedCreator
     config_username = config.get('TargetedCreator', 'Username') # string
@@ -77,79 +120,238 @@ try:
     download_directory = config.get('Options', 'download_directory').capitalize() # Local_directory, C:\MyCustomFolderFilePath -> str
 
     # Other
-    curent_ver = config.get('Other', 'version') # str
+    current_version = config.get('Other', 'version') # str
+except configparser.NoOptionError as e:
+    error_string = str(e)
+    output(2,'\n ERROR','<red>', f"Your config.ini file is very malformed, please download a fresh version of it from GitHub.\n{error_string}")
+    input('\nPress Enter to close ...')
+    exit()
+except ValueError as e:
+    error_string = str(e)
+    if 'a boolean' in error_string:
+        output(2,'\n [1]ERROR','<red>', f"\'{error_string.rsplit('boolean: ')[1]}\' is malformed in the configuration file! This value can only be True or False\n\
+            {6*' '}Read the Wiki > Explanation of provided programs & their functionality > config.ini")
+        open_url('https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#4-configini')
+        input('\nPress Enter to close ...')
+        exit()
+    else:
+        output(2,'\n [2]ERROR','<red>', f"You have entered a wrong value in the config.ini file -> \'{error_string}\'\n\
+            {6*' '}Read the Wiki > Explanation of provided programs & their functionality > config.ini")
+        open_url('https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#4-configini')
+        input('\nPress Enter to close ...')
+        exit()
 except (KeyError, NameError) as key:
-    output(2,'\n [2]ERROR','<red>', f"\'{key}\' is missing or malformed in the configuration file!\n{21*' '}Read the Wiki > Explanation of provided programs & their functionality > config.ini")
-    input('\nPress any key to close ...')
+    output(2,'\n [3]ERROR','<red>', f"\'{key}\' is missing or malformed in the configuration file!\n\
+        {6*' '}Read the Wiki > Explanation of provided programs & their functionality > config.ini")
+    open_url('https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#4-configini')
+    input('\nPress Enter to close ...')
     exit()
 
-os.system(f"title Fansly Downloader v{curent_ver}")
+
+# update window title with specific downloader version
+set_window_title(f"Fansly Downloader v{current_version}")
+
+
+# occasionally notfiy user to star repository
+def remind_stargazing():
+    stargazers_count, total_downloads = 0, 0
+    
+    # depends on global variable current_version
+    stats_headers = {'user-agent': f"Avnsx/Fansly Downloader {current_version}",
+                     'referer': f"Avnsx/Fansly Downloader {current_version}",
+                     'accept-language': 'en-US,en;q=0.9'}
+    
+    # get total_downloads count
+    stargazers_check_request = requests.get('https://api.github.com/repos/avnsx/fansly-downloader/releases', allow_redirects = True, headers = stats_headers)
+    if not stargazers_check_request.ok:
+        return False
+    stargazers_check_request = stargazers_check_request.json()
+    for x in stargazers_check_request:
+        total_downloads += x['assets'][0]['download_count'] or 0
+    
+    # get stargazers_count
+    downloads_check_request = requests.get('https://api.github.com/repos/avnsx/fansly-downloader', allow_redirects = True, headers = stats_headers)
+    if not downloads_check_request.ok:
+        return False
+    downloads_check_request = downloads_check_request.json()
+    stargazers_count = downloads_check_request['stargazers_count'] or 0
+
+    percentual_stars = round(stargazers_count / total_downloads * 100, 2)
+    
+    # display message (intentionally "lnfo" with lvl 4)
+    output(4,'\n lnfo','<light-red>', f"Fansly Downloader was downloaded {total_downloads} times, but only {percentual_stars} % of You(!) have starred it.\n\
+           {6*' '}Stars directly influence my willingness to continue maintaining the project.\n\
+            {5*' '}Help the repository grow today, by leaving a star on it and sharing it to others online!")
+    s(15)
+
+if randint(1,100) <= 19:
+    try:
+        remind_stargazing()
+    except Exception: # irrelevant enough, to pass regardless what errors may happen
+        pass
 
 
 
 ## starting here: general validation of all input values in config.ini
-# mostly used to attempt to open fansly downloaders documentation
-def open_url(url_to_open: str):
-    s(5)
-    try:
-        import webbrowser
-        webbrowser.open(url_to_open, new=0, autoraise=True)
-    except:
-        pass
 
+# validate input value for config_username in config.ini
+while True:
+    usern_base_text = f'Invalid targeted creators username value; '
+    usern_error = False
 
-# validate input value for "username" in config.ini
-usern_base_text = f'The username \"{config_username}\", which you typed into the config.ini file for [TargetedCreator] > username; '
-usern_error = False
-
-if 'ReplaceMe' in config_username:
-    output(3, '\n WARNING', '<yellow>', f"Value for TargetedCreator > Username > \'{config_username}\'; is unmodified.\n{20*' '}Please read the documentation regarding the config.ini file,\n{20*' '}before attempting to use fansly downloader!")
-    open_url(url_to_open = 'https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#4-configini')
-    usern_error = True
-
-# remove @ from username in config file & save changes
-if '@' in config_username and not usern_error:
-    config_username = config_username.replace('@', '')
-    config.set('TargetedCreator', 'username', config_username)
-    with open('config.ini', 'w') as config_file:
-        config.write(config_file)
-
-if ' ' in config_username and not usern_error:
-    output(3, '\n WARNING', '<yellow>', f"{usern_base_text}must be a concatenated string. No spaces.")
-    usern_error = True
-
-if not usern_error:
-    if len(config_username) < 4 or len(config_username) > 20:
-        output(3, '\n WARNING', '<yellow>', f"{usern_base_text}must be between 4 and 20 characters long.")
+    if 'ReplaceMe' in config_username:
+        output(3, '\n WARNING', '<yellow>', f"Config.ini value for TargetedCreator > Username > \'{config_username}\'; is unmodified.")
         usern_error = True
-    else:
-        invalid_chars = set(config_username) - set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
-        if invalid_chars:
-            output(3, '\n WARNING', '<yellow>', f"{usern_base_text}should only contain alphanumeric characters, hyphens, or underscores.")
+
+    # remove @ from username in config file & save changes
+    if '@' in config_username and not usern_error:
+        config_username = config_username.replace('@', '')
+        config.set('TargetedCreator', 'username', config_username)
+        with open('config.ini', 'w') as config_file:
+            config.write(config_file)
+
+    # intentionally dont want to just .strip() spaces, because like this, it might give the user a food for thought, that he's supposed to enter the username tag after @ and not creators display name
+    if ' ' in config_username and not usern_error:
+        output(3, ' WARNING', '<yellow>', f"{usern_base_text}must be a concatenated string. No spaces!\n")
+        usern_error = True
+
+    if not usern_error:
+        if len(config_username) < 4 or len(config_username) > 20:
+            output(3, ' WARNING', '<yellow>', f"{usern_base_text}must be between 4 and 20 characters long!\n")
             usern_error = True
+        else:
+            invalid_chars = set(config_username) - set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
+            if invalid_chars:
+                output(3, ' WARNING', '<yellow>', f"{usern_base_text}should only contain\n{20*' '}alphanumeric characters, hyphens, or underscores!\n")
+                usern_error = True
 
-if usern_error:
-    output(3, '\n WARNING', '<yellow>', f'Populate the value, with the username of the fansly creator, whom you would like to download content from.')
-    input('\nPress any key to close ...')
-    exit()
+    if not usern_error:
+        output(1, '\n info', '<light-blue>', 'Username validation successful!')
+        if config_username != config['TargetedCreator']['username']:
+            config.set('TargetedCreator', 'username', config_username)
+            with open('config.ini', 'w') as config_file:
+                config.write(config_file)
+        break
+    else:
+        output(5,'\n Config','<light-magenta>', f"Populate the value, with the username handle (e.g.: @MyCreatorsName)\n\
+            {7*' '}of the fansly creator, whom you would like to download content from.")
+        config_username = input(f"\n{19*' '} ► Enter a valid username: ")
 
+
+
+# only if config_token is not set up already; verify if plyvel is installed
+plyvel_installed, processed_from_path = False, None
+if any([not config_token, 'ReplaceMe' in config_token]) or config_token and len(config_token) < 50:
+    try:
+        import plyvel
+        plyvel_installed = True
+    except ImportError:
+        output(3,'\n WARNING','<yellow>', f"Fansly Downloaders automatic configuration for the authorization_token in the config.ini file will be skipped.\
+            \n{20*' '}Your system is missing required plyvel (python module) builds by Siyao Chen (@liviaerxin).\
+            \n{20*' '}Installable with \'pip3 install plyvel-ci\' or from github.com/liviaerxin/plyvel/releases/latest")
+
+# semi-automatically set up value for config_token (authorization_token) based on the users input
+if plyvel_installed and any([not config_token, 'ReplaceMe' in config_token, config_token and len(config_token) < 50]):
+    
+    # fansly-downloader plyvel dependant package imports
+    from utils.config_util import (
+        get_browser_paths,
+        parse_browser_from_string,
+        find_leveldb_folders,
+        get_auth_token_from_leveldb_folder,
+        process_storage_folders,
+        link_fansly_downloader_to_account
+    )
+
+    output(3,'\n WARNING','<yellow>', f"Authorization token \'{config_token}\' is unmodified,\n\
+        {12*' '}missing or malformed in the configuration file.\n\
+        {12*' '}Will automatically configure by fetching fansly authorization token,\n\
+        {12*' '}from all browser storages available on the local system.")
+
+    browser_paths = get_browser_paths()
+    processed_account = None
+    
+    for path in browser_paths:
+        processed_token = None
+    
+        # if not firefox, process leveldb folders
+        if 'firefox' not in path.lower():
+            leveldb_folders = find_leveldb_folders(path)
+            for folder in leveldb_folders:
+                processed_token = get_auth_token_from_leveldb_folder(folder)
+                if processed_token:
+                    processed_account = link_fansly_downloader_to_account(processed_token)
+                    break  # exit the inner loop if a valid processed_token is found
+    
+        # if firefox, process sqlite db instead
+        else:
+            processed_token = process_storage_folders(path)
+            if processed_token:
+                processed_account = link_fansly_downloader_to_account(processed_token)
+    
+        if all([processed_account, processed_token]):
+            processed_from_path = parse_browser_from_string(path) # we might also utilise this for guessing the useragent
+
+            # let user pick a account, to connect to fansly downloader
+            output(5,'\n Config','<light-magenta>', f"Do you want to link the account \'{processed_account}\' to Fansly Downloader? (found in: {processed_from_path})")
+            while True:
+                user_input_acc_verify = input(f"{20*' '}► Type either \'Yes\' or \'No\': ").strip().lower()
+                if user_input_acc_verify == "yes" or user_input_acc_verify == "no":
+                    break # break user input verification
+                else:
+                    output(2,'\n ERROR','<red>', f"Please enter either \'Yes\' or \'No\', to decide if you want to link to \'{processed_account}\'")
+
+            # based on user input; write account username & auth token to config.ini
+            if user_input_acc_verify == "yes" and all([processed_account, processed_token]):
+                config_token = processed_token
+                config.set('MyAccount', 'authorization_token', config_token)
+                with open('config.ini', 'w', encoding='utf-8') as f:
+                    config.write(f)
+                output(1,'\n Info','<light-blue>', f"Success! Authorization token applied to config.ini file\n")
+                break # break whole loop
+
+    # if no account auth, was found in any of the users browsers
+    if not processed_account:
+        output(2,'\n ERROR','<red>', f"Your Fansly account was not found in any of your browser\'s local storage.\n\
+        {10*' '}Did you not recently browse Fansly with an authenticated session?\
+        {10*' '}Please read & apply the \'Get-Started\' tutorial instead.")
+        open_url('https://github.com/Avnsx/fansly-downloader/wiki/Get-Started')
+        input('\n Press Enter to close ..')
+        exit()
+    
+    # if users decisions have led to auth token still being invalid
+    elif any([not config_token, 'ReplaceMe' in config_token]) or config_token and len(config_token) < 50:
+        output(2,'\n ERROR','<red>', f"Reached the end and the authentication token in config.ini file is still invalid!\n\
+        {10*' '}Please read & apply the \'Get-Started\' tutorial instead.")
+        open_url('https://github.com/Avnsx/fansly-downloader/wiki/Get-Started')
+        input('\n Press Enter to close ..')
+        exit()
 
 
 # validate input value for "user_agent" in config.ini
-def pick_chrome_user_agent(user_agents):
+ua_if_failed = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36' # if no matches / error just set random UA
+def guess_user_agent(user_agents: dict, based_on_browser: str = processed_from_path or 'Chrome'):
+
+    if processed_from_path == 'Microsoft Edge':
+        based_on_browser = 'Edg' # msedge only reports "Edg" as its identifier
+
+        # could do the same for opera, opera gx, brave. but those are not supported by @jnrbsn's repo. so we just return chrome ua
+        # in general his repo, does not provide the most accurate latest user-agents, if I am borred some time in the future,
+        # I might just write my own similar repo and use that instead
+
     try:
         os_name = platform.system()
         if os_name == "Windows":
             for user_agent in user_agents:
-                if "Chrome" in user_agent and "Windows" in user_agent:
+                if based_on_browser in user_agent and "Windows" in user_agent:
                     match = re.search(r'Windows NT ([\d.]+)', user_agent)
                     if match:
                         os_version = match.group(1)
                         if os_version in user_agent:
                             return user_agent
-        elif os_name == "Darwin":  # Macintosh
+        elif os_name == "Darwin":  # macOS
             for user_agent in user_agents:
-                if "Chrome" in user_agent and "Macintosh" in user_agent:
+                if based_on_browser in user_agent and "Macintosh" in user_agent:
                     match = re.search(r'Mac OS X ([\d_.]+)', user_agent)
                     if match:
                         os_version = match.group(1).replace('_', '.')
@@ -157,54 +359,50 @@ def pick_chrome_user_agent(user_agents):
                             return user_agent
         elif os_name == "Linux":
             for user_agent in user_agents:
-                if "Chrome" in user_agent and "Linux" in user_agent:
+                if based_on_browser in user_agent and "Linux" in user_agent:
                     match = re.search(r'Linux ([\d.]+)', user_agent)
                     if match:
                         os_version = match.group(1)
                         if os_version in user_agent:
                             return user_agent
     except Exception:
-        output(2,'\n [3]ERROR','<red>', f'Regexing user-agent from online source failed: {traceback.format_exc()}')
+        output(2,'\n [4]ERROR','<red>', f'Regexing user-agent from online source failed: {traceback.format_exc()}')
 
-    return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36' # if no matches / error also return random UA
+    output(3, '\n WARNING', '<yellow>', f"Missing user-agent for {based_on_browser} & os: {os_name}. Set chrome & windows ua instead")
+    return ua_if_failed
 
-if config_useragent and len(config_useragent) < 40 or 'ReplaceMe' in config_useragent:
-    output(3, '\n WARNING', '<yellow>', f"Useragent in config.ini \'{config_useragent}\', is most likely wrong,\n{20*' '}will adjust it with a educated guess for chrome browser.\n{20*' '}You should replace this with your correct user-agent later, more info on the fansly downloader Wiki.")
+if not config_useragent or config_useragent and len(config_useragent) < 40 or 'ReplaceMe' in config_useragent:
+    output(3, '\n WARNING', '<yellow>', f"Browser user-agent in config.ini \'{config_useragent}\', is most likely incorrect.")
+    if processed_from_path:
+        output(5,'\n Config','<light-magenta>', f"Will adjust it with a educated guess;\n\
+            {7*' '}based on the combination of your operating system & specific browser")
+    else:
+        output(5,'\n Config','<light-magenta>', f"Will adjust it with a educated guess, hard-set for chrome browser.\n\
+            {7*' '}If you're not using chrome, you might want to replace it in the config.ini file later on.\n\
+            {7*' '}more information regarding this topic is on the fansly downloader Wiki.")
 
     try:
         # thanks Jonathan Robson (@jnrbsn) - for continously providing these up-to-date user-agents
-        user_agent_req = requests.get('https://jnrbsn.github.io/user-agents/user-agents.json', headers={'User-Agent': f"Avnsx/Fansly Downloader {curent_ver}", 'accept-language': 'en-US,en;q=0.9'})
+        user_agent_req = requests.get('https://jnrbsn.github.io/user-agents/user-agents.json', headers = {'User-Agent': f"Avnsx/Fansly Downloader {current_version}", 'accept-language': 'en-US,en;q=0.9'})
         if user_agent_req.ok:
             user_agent_req = user_agent_req.json()
-            config_useragent = pick_chrome_user_agent(user_agent_req)
+            config_useragent = guess_user_agent(user_agent_req)
         else:
-            config_useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'
+            config_useragent = ua_if_failed
     except requests.exceptions.RequestException:
-        config_useragent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'
+        config_useragent = ua_if_failed
 
-    # save modification to config file
+    # save useragent modification to config file
     config.set('MyAccount', 'user_agent', config_useragent)
     with open('config.ini', 'w') as config_file:
         config.write(config_file)
 
-
-# validate input value for config_token
-if not config_token or 'ReplaceMe' in config_token:
-    output(2,'\n [4]ERROR','<red>', f"\'{config_token}\' is unmodified, missing or malformed in the configuration file!\n{21*' '}Read the Wiki > Explanation of provided programs & their functionality > config.ini")
-    input('\nPress any key to close ...')
-    exit()
-
-# validate input value for below listed vars
-for value in show_downloads, download_media_previews, open_folder_when_finished, separate_messages, separate_timeline, separate_previews, utilise_duplicate_threshold:
-    if value != True and value != False:
-        output(2,'\n [5]ERROR','<red>', f"\'{value}\' is malformed in the configuration file! This value can only be True or False\n{21*' '}Read the Wiki > Explanation of provided programs & their functionality > config.ini")
-        input('\nPress any key to close ...')
-        exit()
+    output(1,'\n Info','<light-blue>', f"Success! Applied a browser user-agent to config.ini file\n")
 
 
 
 ## starting here: general epoch timestamp to local timezone manipulation
-# calculates offset from global utc time, to local pcs time
+# calculates offset from global utc time, to local systems time
 def compute_timezone_offset():
     offset = time.timezone if (time.localtime().tm_isdst == 0) else time.altzone
     diff_from_utc = int(offset / 60 / 60 * -1)
@@ -240,7 +438,7 @@ def ask_correct_dir():
         output(1,'\n Info','<light-blue>', f"Chose folder file path {BASE_DIR_NAME}")
         return BASE_DIR_NAME
     else:
-        output(2,'\n [7]ERROR','<red>', f"Could not register your chosen folder file path. Please close and start all over again!")
+        output(2,'\n [5]ERROR','<red>', f"Could not register your chosen folder file path. Please close and start all over again!")
         s(15)
         exit() # this has to force exit
 
@@ -250,13 +448,13 @@ def generate_base_dir(creator_name_to_create_for: str, module_requested_by: str)
     global BASE_DIR_NAME, download_directory, separate_messages, separate_timeline
     if 'Local_dir' in download_directory: # if user didn't specify custom downloads path
         if "Collection" in module_requested_by:
-            BASE_DIR_NAME = join(os.getcwd(), 'Collections')
+            BASE_DIR_NAME = join(getcwd(), 'Collections')
         elif "Message" in module_requested_by and separate_messages:
-            BASE_DIR_NAME = join(os.getcwd(), creator_name_to_create_for+'_fansly', 'Messages')
+            BASE_DIR_NAME = join(getcwd(), creator_name_to_create_for+'_fansly', 'Messages')
         elif "Timeline" in module_requested_by and separate_timeline:
-            BASE_DIR_NAME = join(os.getcwd(), creator_name_to_create_for+'_fansly', 'Timeline')
+            BASE_DIR_NAME = join(getcwd(), creator_name_to_create_for+'_fansly', 'Timeline')
         else:
-            BASE_DIR_NAME = join(os.getcwd(), creator_name_to_create_for+'_fansly') # use local directory
+            BASE_DIR_NAME = join(getcwd(), creator_name_to_create_for+'_fansly') # use local directory
     elif os.path.isdir(download_directory): # if user specified a correct custom downloads path
         if "Collection" in module_requested_by:
             BASE_DIR_NAME = join(download_directory, 'Collections')
@@ -268,7 +466,12 @@ def generate_base_dir(creator_name_to_create_for: str, module_requested_by: str)
             BASE_DIR_NAME = join(download_directory, creator_name_to_create_for+'_fansly') # use their custom path & specify new folder for the current creator in it
         output(1,' Info','<light-blue>', f"Acknowledging custom basis download directory: \'{download_directory}\'")
     else: # if their set directory, can't be found by the OS
-        output(3,'\n WARNING','<yellow>', f"The custom basis download directory file path: \'{download_directory}\'; seems to be invalid!\n{20*' '}Please change it, to a correct file path for example: \'C:/MyFanslyDownloads\'\n{20*' '}You could also just change it back to the default argument: \'Local_directory\'\n\n{20*' '}A explorer window to help you set the correct path, will open soon!\n\n{20*' '}Preferably right click inside the explorer, to create a new folder\n{20*' '}Select it and the folder will be used as the default download directory")
+        output(3,'\n WARNING','<yellow>', f"The custom basis download directory file path: \'{download_directory}\'; seems to be invalid!\
+            \n{20*' '}Please change it, to a correct file path for example: \'C:/MyFanslyDownloads\'\
+            \n{20*' '}You could also just change it back to the default argument: \'Local_directory\'\n\
+            \n{20*' '}A explorer window to help you set the correct path, will open soon!\n\
+            \n{20*' '}Preferably right click inside the explorer, to create a new folder\
+            \n{20*' '}Select it and the folder will be used as the default download directory")
         s(10) # give user time to realise instructions were given
         download_directory = ask_correct_dir() # ask user to select correct path using tkinters explorer dialog
         config.set('Options', 'download_directory', download_directory) # set corrected path inside the config
@@ -286,13 +489,14 @@ def generate_base_dir(creator_name_to_create_for: str, module_requested_by: str)
     correct_File_Hierarchy, tmp_BDR = True, BASE_DIR_NAME.partition('_fansly')[0] + '_fansly'
     if os.path.isdir(tmp_BDR):
         for directory in os.listdir(tmp_BDR):
-            if os.path.isdir(os.path.join(tmp_BDR, directory)):
+            if os.path.isdir(join(tmp_BDR, directory)):
                 if 'Pictures' in directory and any([separate_messages, separate_timeline]):
                     correct_File_Hierarchy = False
                 if 'Videos' in directory and any([separate_messages, separate_timeline]):
                     correct_File_Hierarchy = False
         if not correct_File_Hierarchy:
-            output(3, '\n WARNING', '<yellow>', f"Due to the presence of \'Pictures\' and \'Videos\' sub-directories in the current download folder;\n{20*' '}content separation will remain disabled throughout this current downloading session.")
+            output(3, '\n WARNING', '<yellow>', f"Due to the presence of \'Pictures\' and \'Videos\' sub-directories in the current download folder;\
+                \n{20*' '}content separation will remain disabled throughout this current downloading session.")
             separate_messages, separate_timeline = False, False
         
             # utilize recursion to fix BASE_DIR_NAME generation
@@ -303,61 +507,24 @@ def generate_base_dir(creator_name_to_create_for: str, module_requested_by: str)
 
 
 # utilized to open the download directory in file explorer; once the download process has finished
-def open_file(myfile: str):
-    os_v=platform.system()
-    try:
-        if os_v == 'Windows':
-            os.startfile(myfile)
-        elif os_v == 'Linux':
-            subprocess.Popen(['xdg-open', myfile])
-        elif os_v == 'Darwin':
-            subprocess.Popen(['open', myfile])
-        else:
-            if open_folder_when_finished:
-                output(2,'\n [8]ERROR','<red>', f"fansly downloader could not open \'{myfile}\'; if this happens again turn Open_Folder_When_Finished to \'False\' in the file \'config.ini\'.\n{21*' '}Will try to continue ...")
-                s(5)
-            else:
-                output(2,'\n [9]ERROR','<red>', f"fansly downloader could not open \'{myfile}\'; this happend while trying to do an required update!\n{21*' '}Please update, by either opening \'{myfile}\' manually or downloading the new version from github.com/Avnsx/fansly-downloader")
-                s(30)
-                exit()
-    except:
-        if open_folder_when_finished:
-            output(2,'\n [10]ERROR','<red>', f"fansly downloader could not open \'{myfile}\'; if this happens again turn Open_Folder_When_Finished to \'False\' in the file \'config.ini\'.\n{21*' '}Will try to continue ...")
-            s(5)
-        else:
-            output(2,'\n [11]ERROR','<red>', f"fansly downloader could not open \'{myfile}\'; this happend while trying to do an required update!\n{21*' '}Please update, by either opening \'{myfile}\' manually or downloading the new version from github.com/Avnsx/fansly-downloader")
-            s(30)
-            exit()
+def open_location(filepath: str):
+    plat = platform.system()
 
+    if not open_folder_when_finished:
+        return False
+    
+    if not os.path.isfile(filepath) and not os.path.isdir(filepath):
+        return False
 
-# notfiy user to star repository
-tot_downs=0
-try:
-    api_req=requests.get('https://api.github.com/repos/avnsx/fansly/releases', headers={'user-agent': f"Avnsx/Fansly Downloader {curent_ver}",'referer': f"Avnsx/Fansly Downloader {curent_ver}", 'accept-language': 'en-US,en;q=0.9'}).json()
-    for x in api_req:tot_downs+=x['assets'][0]['download_count']
-    if api_req[0]['tag_name'].lstrip('v') > curent_ver:
-        output(3,'\n WARNING','<yellow>', f"Your version (v{curent_ver}) of fansly downloader is outdated; starting updater ...")
-        s(3)
-        open_file('updater.exe')
-        s(10)
-        exit()
-except requests.exceptions.ConnectionError as e:
-    output(2,'\n [12]ERROR','<red>', 'Update check failed, due to no internet connection!')
-    print('\n'+str(e))
-    input('\nPress any key to close ...')
-    exit()
-except Exception as e:
-    output(2,'\n [13]ERROR','<red>', 'Update check failed, will try to continue ...')
-    print('\n'+str(e))
-    s(3)
-    pass
+    if plat == 'Windows':
+        subprocess.run(['start', filepath], shell=True)
+    elif plat == 'Linux':
+        subprocess.run([filepath], shell=True)
+    elif plat == 'Darwin':
+        subprocess.run(['open', filepath], shell=False)
+    
+    return True
 
-if randint(1,100) <= 19:
-    try:
-        output(4,'\n lnfo','<light-red>', f"Fansly Downloader was downloaded {tot_downs} times, but only {round(requests.get('https://api.github.com/repos/avnsx/fansly', headers={'User-Agent':'Avnsx/fansly downloader {curent_ver}'}).json()['stargazers_count']/tot_downs*100, 2)} % of You(!) have starred it.\n{17*' '}Stars directly influence my willingness to continue maintaining the project.\n{17*' '}Help the repository grow today, by leaving a star on it and sharing it to others online!")
-        s(15)
-    except requests.exceptions.RequestException:
-        pass
 
 
 # un/scramble auth token
@@ -401,7 +568,7 @@ def download_m3u8(m3u8_url: str, save_path: str):
     # download the m3u8 playlist
     playlist_content_req = sess.get(m3u8_url, headers=headers, cookies=cookies)
     if not playlist_content_req.ok:
-        output(2,'\n [14]ERROR','<red>', f'Failed downloading m3u8; at playlist_content request. Response code: {playlist_content_req.status_code}\n{playlist_content_req.text}')
+        output(2,'\n [12]ERROR','<red>', f'Failed downloading m3u8; at playlist_content request. Response code: {playlist_content_req.status_code}\n{playlist_content_req.text}')
         return False
     playlist_content = playlist_content_req.text
 
@@ -490,12 +657,12 @@ class DuplicateCountError(Exception):
 pic_count, vid_count, duplicate_count = 0, 0, 0 # count downloaded content & duplicates, from all modules globally
 
 # deduplication functionality variables
-recent_photo_media_ids, recent_video_media_ids = set(), set()
-recent_photo_hashes, recent_video_hashes = set(), set()
+recent_photo_media_ids, recent_video_media_ids, recent_audio_media_ids = set(), set(), set()
+recent_photo_hashes, recent_video_hashes, recent_audio_hashes = set(), set(), set()
 
 def sort_download(accessible_media: dict):
     # global required so we can use them at the end of the whole code in global space
-    global pic_count, vid_count, save_dir, recent_photo_media_ids, recent_video_media_ids, recent_photo_hashes, recent_video_hashes, duplicate_count
+    global pic_count, vid_count, save_dir, recent_photo_media_ids, recent_video_media_ids, recent_audio_media_ids, recent_photo_hashes, recent_video_hashes, recent_audio_hashes, duplicate_count
     
     # loop through the accessible_media and download the media files
     for post in accessible_media:
@@ -524,6 +691,8 @@ def sort_download(accessible_media: dict):
                 recent_photo_media_ids.add(media_id)
             elif 'video' in mimetype:
                 recent_video_media_ids.add(media_id)
+            elif 'audio' in mimetype:
+                recent_audio_media_ids.add(media_id)
 
         # for collections downloads we just put everything into the same folder
         if "Collection" in download_mode:
@@ -540,7 +709,7 @@ def sort_download(accessible_media: dict):
             elif 'video' in mimetype:
                 save_dir = join(BASE_DIR_NAME, "Videos")
             elif 'audio' in mimetype:
-                save_dir = join(BASE_DIR_NAME, "Audios")
+                save_dir = join(BASE_DIR_NAME, "Audio")
             else:
                 # if the mimetype is neither image nor video, skip the download
                 output(3,'\n WARNING','<yellow>', f"Unknown mimetype; skipping download for mimetype: \'{mimetype}\' | media_id: {media_id}")
@@ -555,7 +724,7 @@ def sort_download(accessible_media: dict):
 
             if not exists(save_dir):
                 makedirs(save_dir)
-
+        
         # if show_downloads is True / downloads should be shown
         if show_downloads:
             output(1,' Info','<light-blue>', f"Downloading {mimetype.split('/')[-2]} \'{filename}\'")
@@ -597,7 +766,7 @@ def sort_download(accessible_media: dict):
                     videohash = hashlib.md5(response.content).hexdigest()
 
                     # deduplication - part 2.2: decide if this video is even worth further processing; by hashing
-                    if videohash in recent_photo_hashes:
+                    if videohash in recent_video_hashes:
                         output(1,' Info','<light-blue>', f"Deduplication [Hashing]: {mimetype.split('/')[-2]} \'{filename}\' → declined")
                         duplicate_count += 1
                         continue
@@ -605,7 +774,21 @@ def sort_download(accessible_media: dict):
                         recent_video_hashes.add(videohash)
 
                     file_hash = videohash
+                
+                # utilise hashing for audio
+                elif 'audio' in mimetype:
+                    audiohash = hashlib.md5(response.content).hexdigest()
 
+                    # deduplication - part 2.2: decide if this audio is even worth further processing; by hashing
+                    if audiohash in recent_audio_hashes:
+                        output(1,' Info', '<light-blue>', f"Deduplication [Hashing]: {mimetype.split('/')[-2]} \'{filename}\' → declined")
+                        duplicate_count += 1
+                        continue
+                    else:
+                        recent_audio_hashes.add(audiohash)
+
+                    file_hash = audiohash
+                
                 # hacky overwrite for save_path to introduce file hash to filename
                 base_path, extension = os.path.splitext(save_path)
                 save_path = f"{base_path}_hash_{file_hash}{extension}"
@@ -620,7 +803,7 @@ def sort_download(accessible_media: dict):
                     # we only count them if the file was actually written
                     pic_count += 1 if 'image' in mimetype else 0; vid_count += 1 if 'video' in mimetype else 0
             else:
-                output(2,'\n [15]ERROR','<red>', f"Download failed on filename: {filename} - due to an network error --> status_code: {response.status_code} | content: \n{response.content}")
+                output(2,'\n [13]ERROR','<red>', f"Download failed on filename: {filename} - due to an network error --> status_code: {response.status_code} | content: \n{response.content}")
                 input()
                 exit()
 
@@ -631,14 +814,8 @@ def sort_download(accessible_media: dict):
 # whole code uses this; whenever any json response needs to get parsed from fansly api
 def parse_media_info(media_info: dict, post_id = None):
     # initialize variables
-    highest_variants_resolution_url, download_url, file_extension, metadata, default_normal_locations =  None, None, None, None, None
+    highest_variants_resolution_url, download_url, file_extension, metadata, default_normal_locations, default_normal_mimetype, mimetype =  None, None, None, None, None, None, None
     created_at, media_id, highest_variants_resolution, highest_variants_resolution_height, default_normal_height = 0, 0, 0, 0, 0
-
-    # generalised createdAt date - not really needed
-    # created_at = int(media_info['createdAt'])
-
-    # generalised standard mimetype - should get overwritten
-    mimetype = media_info['media']['mimetype']
 
     # check if media is a preview
     is_preview = media_info['previewId'] is not None
@@ -648,19 +825,38 @@ def parse_media_info(media_info: dict, post_id = None):
         if media_info['access']:
             is_preview = False
 
+    def simplify_mimetype(mimetype: str):
+        if mimetype == 'application/vnd.apple.mpegurl':
+            mimetype = 'video/mp4'
+        elif mimetype == 'audio/mp4': # another bug in fansly api, where audio is served as mp4 filetype ..
+            mimetype = 'audio/mp3' # i am aware that the correct mimetype would be "audio/mpeg", but we just simplify it
+        return mimetype
+
+    # variables in api "media" = "default_" & "preview" = "preview" in our code
     # parse normal basic (paid/free) media from the default location, before parsing its variants (later on we compare heights, to determine which one we want)
     if not is_preview:
-        # check if there's a default normal content even populated
         default_normal_locations = media_info['media']['locations']
-        if default_normal_locations:
-            default_details = media_info['media']
-            default_normal_height = default_details['height'] or 0 # hopefully the fansly api; reliably serves a correct value for this
-            default_normal_created_at = int(default_details['createdAt'])
-            default_normal_mimetype = default_details['mimetype']
-            default_normal_locations = default_details['locations'][0]['location']
-            default_normal_id = int(default_details['id'])
+        
+        default_details = media_info['media']
+        default_normal_id = int(default_details['id'])
+        default_normal_created_at = int(default_details['createdAt'])
+        default_normal_mimetype = simplify_mimetype(default_details['mimetype'])
+        default_normal_height = default_details['height'] or 0
 
-    # locally fixes fansly api highest current_variant_resolution height bug. can't use content['id'], because that's also bugged ..
+    # if its a preview, we take the default preview media instead
+    elif is_preview:
+        default_normal_locations = media_info['preview']['locations']
+
+        default_details = media_info['preview']
+        default_normal_id = int(media_info['preview']['id'])
+        default_normal_created_at = int(default_details['createdAt'])
+        default_normal_mimetype = simplify_mimetype(default_details['mimetype'])
+        default_normal_height = default_details['height'] or 0
+
+    if default_details['locations']:
+        default_normal_locations = default_details['locations'][0]['location']
+
+    # locally fixes fansly api highest current_variant_resolution height bug
     def parse_variant_metadata(variant_metadata: str):
         variant_metadata = json.loads(variant_metadata)
         max_variant = max(variant_metadata['variants'], key=lambda variant: variant['h'], default=None)
@@ -673,17 +869,17 @@ def parse_media_info(media_info: dict, post_id = None):
         return max_variant['h']
 
     def parse_variants(content: dict, content_type: str): # content_type: media / preview
-        nonlocal metadata, highest_variants_resolution, highest_variants_resolution_url, download_url, media_id, created_at, highest_variants_resolution_height
+        nonlocal metadata, highest_variants_resolution, highest_variants_resolution_url, download_url, media_id, created_at, highest_variants_resolution_height, default_normal_mimetype, mimetype
         if content.get('locations'):
             location_url = content['locations'][0]['location']
 
             current_variant_resolution = (content['width'] or 0) * (content['height'] or 0)
-            if current_variant_resolution > highest_variants_resolution:
+            if current_variant_resolution > highest_variants_resolution and default_normal_mimetype == simplify_mimetype(content['mimetype']):
                 highest_variants_resolution = current_variant_resolution
                 highest_variants_resolution_height = content['height'] or 0
                 highest_variants_resolution_url = location_url
                 media_id = int(content['id'])
-                mimetype = content['mimetype']
+                mimetype = simplify_mimetype(content['mimetype'])
 
                 # if key-pair-id is not in there we'll know it's the new .m3u8 format, so we construct a generalised url, which we can pass relevant auth strings with
                 # note: this url won't actually work, its purpose is to just pass the strings through the download_url variable
@@ -696,7 +892,7 @@ def parse_media_info(media_info: dict, post_id = None):
 
                 """
                 it seems like the date parsed here is actually the correct date,
-                which is directly attached to the content. but it seems like posts that could be uploaded
+                which is directly attached to the content. but posts that could be uploaded
                 8 hours ago, can contain images from 3 months ago. so the date we are parsing here,
                 might be the date, that the fansly CDN has first seen that specific content and the
                 content creator, just attaches that old content to a public post after e.g. 3 months.
@@ -718,52 +914,45 @@ def parse_media_info(media_info: dict, post_id = None):
         for content in variants:
             parse_variants(content = content, content_type = 'media')
 
-        # compare the normal media from variants against, the one that is populated in the default normal location
-        if all([default_normal_height, highest_variants_resolution_height]) and default_normal_height > highest_variants_resolution_height:
-            # overwrite default variable values, which we will finally return; with the ones from the default media
-            media_id = default_normal_id
-            created_at = default_normal_created_at
-            mimetype = default_normal_mimetype
-            download_url = default_normal_locations
-    
-
     # previews: if media location is not found, we work with the preview media info instead
     if not download_url and 'preview' in media_info:
         variants = media_info['preview']['variants']
         for content in variants:
             parse_variants(content = content, content_type = 'preview')
 
-        # if we couldn't find any high quality .m3u8 through the preview's variants at all; we fall back to the default (lower quality) preview
-        # if they ever fix the content height bug; this logic should be: we compare both preview media's qualities to each other and decide the one to pick after
-        if not download_url:
-            for location in media_info['preview']['locations']:
-                download_url = location['location']
-
-        # overwrite generalised mimetype; with specific preview mimetype
-        mimetype = media_info['preview']['mimetype']
-
-        if not media_id:
-            media_id = int(media_info['preview']['id'])
-
-        if not created_at:
-            created_at = int(media_info['preview']['createdAt'])
+    """
+    so the way this works is; we have these 4 base variables defined all over this function.
+    parse_variants() will initially overwrite them with values from each contents variants above.
+    then right below, we will compare the values and decide which media has the higher resolution. (default populated content vs content from variants)
+    or if variants didn't provide a higher resolution at all, we just fall back to the default content
+    """
+    if all([default_normal_height, highest_variants_resolution_height]) and all([default_normal_height > highest_variants_resolution_height, default_normal_mimetype == mimetype]) or not download_url: # 167 videos before
+        # overwrite default variable values, which we will finally return; with the ones from the default media
+        media_id = default_normal_id
+        created_at = default_normal_created_at
+        mimetype = default_normal_mimetype
+        download_url = default_normal_locations
 
     # due to fansly may 2023 update
     if download_url:
         # parse file extension separately 
         file_extension = download_url.split('/')[-1].split('.')[-1].split('?')[0]
 
+        if file_extension == 'mp4' and mimetype == 'audio/mp3':
+            file_extension = 'mp3'
+
         # if metadata didn't exist we need the user to notify us through github, because that would be detrimental
         if not 'Key-Pair-Id' in download_url and not metadata:
-            output(2,'\n [16]ERROR','<red>', f"Failed downloading a video! Please open a GitHub issue ticket called \'Metadata missing\' and copy paste this:\n\n\tMetadata Missing\n\tpost_id: {post_id} & media_id: {media_id}\n")
+            output(2,'\n [14]ERROR','<red>', f"Failed downloading a video! Please open a GitHub issue ticket called \'Metadata missing\' and copy paste this:\n\
+                \n\tMetadata Missing\n\tpost_id: {post_id} & media_id: {media_id} & config_username: {config_username}\n")
             input('Press Enter to attempt continuing download ...')
-
+    
     return {'media_id': media_id, 'created_at': created_at, 'mimetype': mimetype, 'file_extension': file_extension, 'is_preview': is_preview, 'download_url': download_url}
 
 
 
 ## starting here: deduplication functionality
-# variables used: recent_photo_media_ids, recent_video_media_ids, recent_photo_hashes, recent_video_hashes
+# variables used: recent_photo_media_ids, recent_video_media_ids recent_audio_media_ids,, recent_photo_hashes, recent_video_hashes, recent_audio_hashes
 # these are defined globally above sort_download() though
 
 # exclusively used for extracting media_id from pre-existing filenames
@@ -816,27 +1005,37 @@ def hash_img(filepath: str):
     except FileExistsError:
         os.remove(filepath)
     except Exception:
-        output(2,'\n [17]ERROR','<red>', f"\nError processing image \'{filepath}\': {traceback.format_exc()}")
+        output(2,'\n [15]ERROR','<red>', f"\nError processing image \'{filepath}\': {traceback.format_exc()}")
 
-# exclusively used for hashing videos from pre-existing download directories
-def hash_video(filepath: str):
+# exclusively used for hashing videos & audio from pre-existing download directories
+def hash_content(filepath: str, content_format: str): # former known as hash_video
+    global recent_video_hashes, recent_audio_hashes, recent_video_media_ids, recent_audio_media_ids
     try:
         filename = os.path.basename(filepath)
 
         media_id = extract_media_id(filename)
         if media_id:
-            recent_video_media_ids.add(media_id)
+            if content_format == 'video':
+                recent_video_media_ids.add(media_id)
+            elif content_format == 'audio':
+                recent_audio_media_ids.add(media_id)
 
         existing_hash = extract_hash_from_filename(filename)
         if existing_hash:
-            recent_video_hashes.add(existing_hash)
+            if content_format == 'video':
+                recent_video_hashes.add(existing_hash)
+            elif content_format == 'audio':
+                recent_audio_hashes.add(existing_hash)
         else:
             h = hashlib.md5()
             with open(filepath, 'rb') as f:
                 while (part := f.read(1_048_576)):
                     h.update(part)
             file_hash = h.hexdigest()
-            recent_video_hashes.add(file_hash)
+            if content_format == 'video':
+                recent_video_hashes.add(file_hash)
+            elif content_format == 'audio':
+                recent_audio_hashes.add(file_hash)
             
             new_filename = add_hash_to_filename(filename, file_hash)
             new_filepath = join(os.path.dirname(filepath), new_filename)
@@ -845,7 +1044,7 @@ def hash_video(filepath: str):
     except FileExistsError:
         os.remove(filepath)
     except Exception:
-        output(2,'\n [18]ERROR','<red>', f"\nError processing video \'{filepath}\': {traceback.format_exc()}")
+        output(2,'\n [16]ERROR','<red>', f"\nError processing {content_format} \'{filepath}\': {traceback.format_exc()}")
 
 # exclusively used for processing pre-existing files from previous downloads
 def process_file(file_path: str):
@@ -854,7 +1053,9 @@ def process_file(file_path: str):
         if mimetype.startswith('image'):
             hash_img(file_path)
         elif mimetype.startswith('video'):
-            hash_video(file_path)
+            hash_content(file_path, content_format = 'video')
+        elif mimetype.startswith('audio'):
+            hash_content(file_path, content_format = 'audio')
 
 # exclusively used for processing pre-existing folders from previous downloads
 def process_folder(folder_path: str):
@@ -869,7 +1070,8 @@ if os.path.isdir(generate_base_dir(config_username, download_mode)):
     output(1,' Info','<light-blue>', f"Deduplication is automatically enabled for;\n{17*' '}{BASE_DIR_NAME}")
     
     if process_folder(BASE_DIR_NAME):
-        output(1,' Info','<light-blue>', f"Deduplication process is complete! Each new download will now be compared\n{17*' '}against a total of {len(recent_photo_hashes)} photo & {len(recent_video_hashes)} video hashes and corresponding media IDs.")
+        output(1,' Info','<light-blue>', f"Deduplication process is complete! Each new download will now be compared\
+            \n{17*' '}against a total of {len(recent_photo_hashes)} photo & {len(recent_video_hashes)} video hashes and corresponding media IDs.")
 
     # print("Recent Photo Hashes:", recent_photo_hashes)
     # print("Recent Photo Media IDs:", recent_photo_media_ids)
@@ -877,7 +1079,8 @@ if os.path.isdir(generate_base_dir(config_username, download_mode)):
     # print("Recent Video Media IDs:", recent_video_media_ids)
 
     if randint(1,100) <= 19:
-        output(3, '\n WARNING', '<yellow>', f"Reminder; If you remove id_NUMBERS or hash_STRING from filenames of previously downloaded files,\n{20*' '}they will no longer be compatible with fansly downloaders deduplication algorithm")
+        output(3, '\n WARNING', '<yellow>', f"Reminder; If you remove id_NUMBERS or hash_STRING from filenames of previously downloaded files,\
+            \n{20*' '}they will no longer be compatible with fansly downloaders deduplication algorithm")
     # because adding information as metadata; requires specific configuration for each file type through PIL and that's too complex due to file types. maybe in the future I might decide to just save every image as .png and every video as .mp4 and add/read it as metadata
     # or if someone contributes a function actually perfectly adding metadata to all common file types, that would be nice
 
@@ -895,14 +1098,19 @@ if download_mode:
 
 ## starting here: download_mode = Single
 if download_mode == 'Single':
-    output(1,' Info','<light-blue>', f"You have launched in Single Post download mode\n{17*' '}Please enter the ID of the post you would like to download\n{17*' '}After you click on a post, it will show in your browsers url bar")
+    output(1,' Info','<light-blue>', f"You have launched in Single Post download mode\
+        \n{17*' '}Please enter the ID of the post you would like to download\
+        \n{17*' '}After you click on a post, it will show in your browsers url bar")
     
     while True:
-        post_id = input(f"\n{17*' '}Post ID: ") # str
+        post_id = input(f"\n{17*' '}► Post ID: ") # str
         if post_id.isdigit() and len(post_id) >= 10 and not any(char.isspace() for char in post_id):
             break
         else:
-            output(2,'\n [19]ERROR','<red>', f"The input string \'{post_id}\' can not be a valid post ID.\n{22*' '}The last few numbers in the url is the post ID\n{22*' '}Example: \'https://fansly.com/post/1283998432982\'\n{22*' '}In the example \'1283998432982\' would be the post ID")
+            output(2,'\n [17]ERROR','<red>', f"The input string \'{post_id}\' can not be a valid post ID.\
+                \n{22*' '}The last few numbers in the url is the post ID\
+                \n{22*' '}Example: \'https://fansly.com/post/1283998432982\'\
+                \n{22*' '}In the example \'1283998432982\' would be the post ID")
 
     post_req = sess.get('https://apiv3.fansly.com/api/v1/post', params={'ids': post_id, 'ngsw-bypass': 'true',}, headers=headers)
 
@@ -935,8 +1143,8 @@ if download_mode == 'Single':
                         # add details into a list
                         contained_posts += [parse_media_info(obj, post_id)]
                     except Exception:
-                        output(2,'\n [20]ERROR','<red>', f"Unexpected error during parsing Single Post content; \n{traceback.format_exc()}")
-                        input('\n Press any key to attempt to continue ..')
+                        output(2,'\n [18]ERROR','<red>', f"Unexpected error during parsing Single Post content; \n{traceback.format_exc()}")
+                        input('\n Press Enter to attempt to continue ..')
     
                 # summarise all scrapable & wanted media
                 accessible_media = [item for item in contained_posts if item.get('download_url') and (item.get('is_preview') == download_media_previews or not item.get('is_preview'))]
@@ -958,15 +1166,15 @@ if download_mode == 'Single':
             except DuplicateCountError:
                 output(1,' Info','<light-blue>', f"Already downloaded all possible Single Post content! [Duplicate threshold exceeded {DUPLICATE_THRESHOLD}]")
             except Exception:
-                output(2,'\n [21]ERROR','<red>', f"Unexpected error during sorting Single Post download; \n{traceback.format_exc()}")
-                input('\n Press any key to attempt to continue ..')
+                output(2,'\n [19]ERROR','<red>', f"Unexpected error during sorting Single Post download; \n{traceback.format_exc()}")
+                input('\n Press Enter to attempt to continue ..')
         
         else:
             output(2, '\n WARNING', '<yellow>', f"Could not find any accessible content in the single post.")
     
     else:
-        output(2,'\n [22]ERROR','<red>', f"Failed single post download. Fetch post information request, response code: {post_req.status_code}\n{post_req.text}")
-        input('\n Press any key to attempt to continue ..')
+        output(2,'\n [20]ERROR','<red>', f"Failed single post download. Fetch post information request, response code: {post_req.status_code}\n{post_req.text}")
+        input('\n Press Enter to attempt to continue ..')
 
 
 
@@ -994,8 +1202,8 @@ if 'Collection' in download_mode:
                 # add details into a list
                 contained_posts += [parse_media_info(obj)]
             except Exception:
-                output(2,'\n [23]ERROR','<red>', f"Unexpected error during parsing Collections content; \n{traceback.format_exc()}")
-                input('\n Press any key to attempt to continue ..')
+                output(2,'\n [21]ERROR','<red>', f"Unexpected error during parsing Collections content; \n{traceback.format_exc()}")
+                input('\n Press Enter to attempt to continue ..')
         
         # count only amount of scrapable media (is_preview check not really necessary since everything in collections is always paid, but w/e)
         accessible_media = [item for item in contained_posts if item.get('download_url') and (item.get('is_preview') == download_media_previews or not item.get('is_preview'))]
@@ -1010,12 +1218,12 @@ if 'Collection' in download_mode:
         except DuplicateCountError:
             output(1,' Info','<light-blue>', f"Already downloaded all possible Collections content! [Duplicate threshold exceeded {DUPLICATE_THRESHOLD}]")
         except Exception:
-            output(2,'\n [24]ERROR','<red>', f"Unexpected error during sorting Collections download; \n{traceback.format_exc()}")
-            input('\n Press any key to attempt to continue ..')
+            output(2,'\n [22]ERROR','<red>', f"Unexpected error during sorting Collections download; \n{traceback.format_exc()}")
+            input('\n Press Enter to attempt to continue ..')
 
     else:
-        output(2,'\n [25]ERROR','<red>', f"Failed Collections download. Fetch collections request, response code: {collections_req.status_code}\n{collections_req.text}")
-        input('\n Press any key to attempt to continue ..')
+        output(2,'\n [23]ERROR','<red>', f"Failed Collections download. Fetch collections request, response code: {collections_req.status_code}\n{collections_req.text}")
+        input('\n Press Enter to attempt to continue ..')
 
 
 
@@ -1028,18 +1236,18 @@ if any(['Message' in download_mode, 'Timeline' in download_mode, 'Normal' in dow
         creator_id = acc_req['id']
     except KeyError as e:
         if raw_req.status_code == 401:
-            output(2,'\n [26]ERROR','<red>', f"API returned unauthorized. This is most likely because of a wrong authorization token, in the configuration file.\n{21*' '}Used authorization token: \'{config_token}\'")
+            output(2,'\n [24]ERROR','<red>', f"API returned unauthorized. This is most likely because of a wrong authorization token, in the configuration file.\n{21*' '}Used authorization token: \'{config_token}\'")
         else:
-            output(2,'\n [27]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed.')
+            output(2,'\n [25]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed.')
         print('\n'+str(e))
         print(raw_req.text)
-        input('\nPress any key to close ...')
+        input('\nPress Enter to close ...')
         exit()
     except IndexError as e:
-        output(2,'\n [28]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed; most likely misspelled the creator name.')
+        output(2,'\n [26]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed; most likely misspelled the creator name.')
         print('\n'+str(e))
         print(raw_req.text)
-        input('\nPress any key to close ...')
+        input('\nPress Enter to close ...')
         exit()
 
     # below only needed by timeline; but wouldn't work without acc_req so it's here
@@ -1051,8 +1259,8 @@ if any(['Message' in download_mode, 'Timeline' in download_mode, 'Normal' in dow
     try:
         total_timeline_pictures = acc_req['timelineStats']['imageCount']
     except KeyError:
-        output(2,'\n [29]ERROR','<red>', 'Can not get timelineStats for creator username; most likely creator username misspelled')
-        input('\nPress any key to close ...')
+        output(2,'\n [27]ERROR','<red>', f"Can not get timelineStats for creator username \'{config_username}\'; most likely misspelled it!")
+        input('\nPress Enter to close ...')
         exit()
     total_timeline_videos = acc_req['timelineStats']['videoCount']
 
@@ -1104,8 +1312,8 @@ if any(['Message' in download_mode, 'Normal' in download_mode]):
                             # add details into a list
                             contained_posts += [parse_media_info(obj)]
                         except Exception:
-                            output(2,'\n [30]ERROR','<red>', f"Unexpected error during parsing Messages content; \n{traceback.format_exc()}")
-                            input('\n Press any key to attempt to continue ..')
+                            output(2,'\n [28]ERROR','<red>', f"Unexpected error during parsing Messages content; \n{traceback.format_exc()}")
+                            input('\n Press Enter to attempt to continue ..')
         
                     # summarise all scrapable & wanted media
                     accessible_media = [item for item in contained_posts if item.get('download_url') and (item.get('is_preview') == download_media_previews or not item.get('is_preview'))]
@@ -1126,17 +1334,17 @@ if any(['Message' in download_mode, 'Normal' in download_mode]):
                     except DuplicateCountError:
                         output(1,' Info','<light-blue>', f"Already downloaded all possible Messages content! [Duplicate threshold exceeded {DUPLICATE_THRESHOLD}]")
                     except Exception:
-                        output(2,'\n [31]ERROR','<red>', f"Unexpected error during sorting Messages download; \n{traceback.format_exc()}")
-                        input('\n Press any key to attempt to continue ..')
+                        output(2,'\n [29]ERROR','<red>', f"Unexpected error during sorting Messages download; \n{traceback.format_exc()}")
+                        input('\n Press Enter to attempt to continue ..')
 
             else:
-                output(2,'\n [32]ERROR','<red>', f"Failed messages download. messages_req failed with response code: {messages_req.status_code}\n{messages_req.text}")
+                output(2,'\n [30]ERROR','<red>', f"Failed messages download. messages_req failed with response code: {messages_req.status_code}\n{messages_req.text}")
 
         elif group_id is None:
             output(2, ' WARNING', '<yellow>', f"Could not find a chat history with {config_username}; skipping messages download ..")
     else:
-        output(2,'\n [33]ERROR','<red>', f"Failed Messages download. Fetch Messages request, response code: {groups_req.status_code}\n{groups_req.text}")
-        input('\n Press any key to attempt to continue ..')
+        output(2,'\n [31]ERROR','<red>', f"Failed Messages download. Fetch Messages request, response code: {groups_req.status_code}\n{groups_req.text}")
+        input('\n Press Enter to attempt to continue ..')
 
 
 
@@ -1161,11 +1369,15 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
                 endpoint = "timelinenew" if itera == 0 else "timeline"
                 timeline_req = sess.get(f"https://apiv3.fansly.com/api/v1/{endpoint}/{creator_id}?before={timeline_cursor}&after=0&wallId=&contentSearch=&ngsw-bypass=true", headers=headers)
                 break  # break if no errors happened; which means we will try parsing & downloading contents of that timeline_cursor
-            except:
+            except Exception:
                 if itera == 0:
                     continue
                 elif itera == 1:
-                    output(2, '\n WARNING', '<yellow>', f"Uhm, looks like we\'ve hit a rate limit ..\n{20 * ' '}Using a VPN might fix this issue entirely.\n{20 * ' '}Regardless, will now try to continue the download infinitely, every 15 seconds.\n{20 * ' '}Let me know if this logic worked out at any point in time\n{20 * ' '}by opening an issue ticket, please!")
+                    output(2, '\n WARNING', '<yellow>', f"Uhm, looks like we\'ve hit a rate limit ..\
+                        \n{20 * ' '}Using a VPN might fix this issue entirely.\
+                        \n{20 * ' '}Regardless, will now try to continue the download infinitely, every 15 seconds.\
+                        \n{20 * ' '}Let me know if this logic worked out at any point in time\
+                        \n{20 * ' '}by opening an issue ticket, please!")
                     print('\n' + traceback.format_exc())
                 else:
                     print(f"Attempt {itera} ...")
@@ -1186,8 +1398,8 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
                             # add details into a list
                             contained_posts += [parse_media_info(obj)]
                         except Exception:
-                            output(2,'\n [34]ERROR','<red>', f"Unexpected error during parsing Timeline content; \n{traceback.format_exc()}")
-                            input('\n Press any key to attempt to continue ..')
+                            output(2,'\n [32]ERROR','<red>', f"Unexpected error during parsing Timeline content; \n{traceback.format_exc()}")
+                            input('\n Press Enter to attempt to continue ..')
         
                     # summarise all scrapable & wanted media
                     accessible_media = [item for item in contained_posts if item.get('download_url') and (item.get('is_preview') == download_media_previews or not item.get('is_preview'))]
@@ -1202,8 +1414,8 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
                         output(1,' Info','<light-blue>', f"Already downloaded all possible Timeline content! [Duplicate threshold exceeded {DUPLICATE_THRESHOLD}]")
                         break
                     except Exception:
-                        output(2,'\n [35]ERROR','<red>', f"Unexpected error during sorting Timeline download: \n{traceback.format_exc()}")
-                        input('\n Press any key to attempt to continue ..')
+                        output(2,'\n [33]ERROR','<red>', f"Unexpected error during sorting Timeline download: \n{traceback.format_exc()}")
+                        input('\n Press Enter to attempt to continue ..')
 
                 # get next timeline_cursor
                 try:
@@ -1212,16 +1424,18 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
                     break  # break the whole while loop, if end is reached
                 except Exception:
                     print('\n'+traceback.format_exc())
-                    output(2,'\n [36]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation.')
-                    input('\nPress any key to close ...')
+                    output(2,'\n [34]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation.')
+                    input('\nPress Enter to close ...')
                     exit()
 
         except KeyError:
-            output(2,'\n [37]ERROR','<red>', "Couldn\'t find any scrapable media at all!\n This most likely happend because you\'re not following the creator, your authorisation token is wrong\n or the creator is not providing unlocked content.")
-            input('\n Press any key to attempt to continue ..')
+            output(2,'\n [35]ERROR','<red>', "Couldn\'t find any scrapable media at all!\
+                \n This most likely happend because you\'re not following the creator, your authorisation token is wrong\
+                \n or the creator is not providing unlocked content.")
+            input('\n Press Enter to attempt to continue ..')
         except Exception:
-            output(2,'\n [38]ERROR','<red>', f"Unexpected error during Timeline download: \n{traceback.format_exc()}")
-            input('\n Press any key to attempt to continue ..')
+            output(2,'\n [36]ERROR','<red>', f"Unexpected error during Timeline download: \n{traceback.format_exc()}")
+            input('\n Press Enter to attempt to continue ..')
 
     # check if atleast 20% of timeline was scraped; exluding the case when all the media was declined as duplicates
     print('') # intentional empty print
@@ -1248,15 +1462,17 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
 
 # BASE_DIR_NAME doesn't always have to be set; e.g. user tried scraping Messages of someone, that never direct messaged him content before
 if BASE_DIR_NAME:
-    # hacky overwrite for BASE_DIR_NAME so it doesn't point to the sub-directories e.g. /Timeline 
+    # hacky overwrite for BASE_DIR_NAME so it doesn't point to the sub-directories e.g. /Timeline
     BASE_DIR_NAME = BASE_DIR_NAME.partition('_fansly')[0] + '_fansly'
 
-    print(f"\n╔═\n  Finished {download_mode} type, download of {pic_count} pictures & {vid_count} videos! Declined duplicates: {duplicate_count}\n  Saved content in directory: \'{BASE_DIR_NAME}\'\n  ✶ Please leave a Star on the GitHub Repository, if you are satisfied! ✶\n{74*' '}═╝")
+    print(f"\n╔═\n  Finished {download_mode} type, download of {pic_count} pictures & {vid_count} videos! Declined duplicates: {duplicate_count}\
+        \n  Saved content in directory: \'{BASE_DIR_NAME}\'\
+        \n  ✶ Please leave a Star on the GitHub Repository, if you are satisfied! ✶\n{74*' '}═╝")
 
     # open download folder
     if open_folder_when_finished:
-        open_file(BASE_DIR_NAME)
+        open_location(BASE_DIR_NAME)
 
 
-input('\n Press any key to close ..')
+input('\n Press Enter to close ..')
 exit()
