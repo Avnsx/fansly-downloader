@@ -128,7 +128,7 @@ Setting up fansly downloader is easy! It will interactively help you set its con
 
 **⚠️ If the interactive semi-automatic tutorial by fansly downloader doesn't work for you; please head over to [Get Started](https://github.com/Avnsx/fansly-downloader/wiki/Get-Started) instead ⚠️**
 
-After completing any of the configuration tutorials [Quick Start](https://github.com/Avnsx/fansly-downloader#-quick-start) / [Get Started](https://github.com/Avnsx/fansly-downloader/wiki/Get-Started); in the future you'll only need to change the creator name for Targeted Creator > Username in ``config.ini`` for every further use case on other creators.
+After configurating Fansly Downloader, in the future you'll only need to change the creator name for Targeted Creator > Username in ``config.ini`` for every further use case on other creators. Additional settings are located in config.ini, which are documented on [the Wiki](https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#4-configini).
 
 ## 🤔 FAQ
 Do you have any unanswered questions or want to know more about Fansly Downloader? Head over to the [Wiki](https://github.com/Avnsx/fansly-downloader/wiki) or check if your topic was mentioned in [Discussions](https://github.com/Avnsx/fansly-downloader/discussions) or [Issues](https://github.com/Avnsx/fansly-downloader/issues)
