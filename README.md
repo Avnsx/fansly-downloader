@@ -1,4 +1,4 @@
-### 👋 Introducing `Fansly Downloader`: The Ultimate Content Downloader
+### 👋 Introducing `Fansly Downloader`: The Ultimate Content Downloading Tool
 
 <div align="center">
   <a href="https://github.com/Avnsx/fansly-downloader/releases/latest">
@@ -13,9 +13,6 @@
   <a href="https://github.com/Avnsx/fansly-downloader/issues?q=is%3Aissue+is%3Aopen+label%3Abug">
     <img src="https://img.shields.io/github/issues-raw/Avnsx/fansly-downloader/bug?color=pink&label=%F0%9F%A6%84%20Active%20Bugs&style=flat-square" alt="Active Bugs" />
   </a>
-  <a href="https://www.python.org/downloads/">
-    <img src="https://img.shields.io/static/v1?style=flat-square&label=%F0%9F%90%8D%20Python&message=3.6%2B&color=3c8c50" alt="Compatibility" />
-  </a>
   <a href="https://github.com/Avnsx/fansly-downloader/stargazers">
     <img src="https://img.shields.io/github/stars/Avnsx/fansly-downloader?style=flat-square&label=%E2%AD%90%20Stars&color=ffc83d" alt="Stars" />
   </a>
@@ -24,6 +21,9 @@
 <div align="center">
   <a href="https://github.com/Avnsx/fansly-downloader#%EF%B8%8F-set-up">
     <img src="https://img.shields.io/badge/Compatible with-grey?style=flat-square" alt="Compatible with text" />
+  </a>
+  <a href="https://www.python.org/downloads/">
+    <img src="https://img.shields.io/static/v1?style=flat-square&label=%F0%9F%90%8D%20Python&message=3.7%2B&color=3c8c50" alt="Compatibility" />
   </a>
   <a href="https://github.com/Avnsx/fansly-downloader#%EF%B8%8F-set-up">
     <img src="https://img.shields.io/badge/%F0%9F%AA%9F-Windows-0078D6?style=flat-square" alt="Compatible with Windows" />
@@ -104,7 +104,7 @@ Fansly Downloader is the go-to app for all your bulk media downloading needs. Do
   </tr>
 </table>
 
-<img src="https://i.imgur.com/fj0sjQy.png" alt="Computer Mouse Icon" width="23" height="23">[Configuration Settings in detail](https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#4-configini)
+<img src="https://i.imgur.com/fj0sjQy.png" alt="Computer Mouse Icon" width="23" height="23">[Configuration Settings in detail](https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#explanation-of-configini)
 
 [Detailed description on each of the components of this software](https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality)<img src="https://i.imgur.com/iIsCcGU.png" alt="Computer Mouse Icon" width="20" height="20">
 
@@ -124,11 +124,13 @@ Alternatively you can use [``requirements.txt``](https://github.com/Avnsx/fansly
 On linux you might additionally need to install pythons tkinter module with ``sudo apt-get install python3-tk``
 
 ## 🚀 Quick Start
-Setting up fansly downloader is easy! It will interactively help you set its configuration file (``config.ini``) up, the first time you start the program.
+Getting started with fansly downloader is easy!
 
-**⚠️ If the interactive semi-automatic tutorial by fansly downloader doesn't work for you; please head over to [Get Started](https://github.com/Avnsx/fansly-downloader/wiki/Get-Started) instead ⚠️**
+If you've just recently logged into your fansly account and browsed the fansly website within the web browsers **Chrome, Firefox, Microsoft Edge, Brave, Opera or Opera GX** on the operating systems **Windows, Linux or MacOS** your system is eligible for & compatible with the interactive set up tutorial, which is launched the first time you start fansly-downloader up.
 
-After configurating Fansly Downloader, in the future you'll only need to change the creator name for Targeted Creator > Username in ``config.ini`` for every further use case on other creators. Additional settings are located in config.ini, which are documented on [the Wiki](https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#4-configini).
+**⚠️ If the interactive semi-automatic tutorial executed on the first run of fansly downloader, doesn't work for you; please head over to [Get Started](https://github.com/Avnsx/fansly-downloader/wiki/Get-Started) instead ⚠️**
+
+After initially configuring Fansly Downloader, for every further use case on other creators, you'll only need to manually modify & save the creator name for Targeted Creator > Username within the ``config.ini`` file, in a text editor of your choice. Additional settings are located in the ``config.ini`` file, which are documented on [the Wiki](https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#4-configini).
 
 ## 🤔 FAQ
 Do you have any unanswered questions or want to know more about Fansly Downloader? Head over to the [Wiki](https://github.com/Avnsx/fansly-downloader/wiki) or check if your topic was mentioned in [Discussions](https://github.com/Avnsx/fansly-downloader/discussions) or [Issues](https://github.com/Avnsx/fansly-downloader/issues)
