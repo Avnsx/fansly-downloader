@@ -1,5 +1,4 @@
 # fix in future: audio needs to be properly transcoded from mp4 to mp3, instead of just saved as
-# change url for update testing
 import requests, os, re, base64, hashlib, imagehash, io, traceback, sys, platform, subprocess, concurrent.futures, json, m3u8, av, time, mimetypes, configparser
 from random import randint
 from tkinter import Tk, filedialog
@@ -515,11 +514,12 @@ def open_location(filepath: str):
     
     if not os.path.isfile(filepath) and not os.path.isdir(filepath):
         return False
-
+    
+    # tested below and they work to open folder locations
     if plat == 'Windows':
-        subprocess.run(['start', filepath], shell=True)
+        os.startfile(filepath)
     elif plat == 'Linux':
-        subprocess.run([filepath], shell=True)
+        subprocess.run(['xdg-open', filepath], shell=False)
     elif plat == 'Darwin':
         subprocess.run(['open', filepath], shell=False)
     
