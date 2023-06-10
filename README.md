@@ -108,7 +108,7 @@ Fansly Downloader is the go-to app for all your bulk media downloading needs. Do
 
 [Detailed description on each of the components of this software](https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality)<img src="https://i.imgur.com/iIsCcGU.png" alt="Computer Mouse Icon" width="20" height="20">
 
-## Many Thanks to all the `Stargazers` who have supported this project with stars(⭐)
+## Many Thanks to all the `Stargazers`, supporting this project with stars(⭐)
 <html>
 <body>
   <div align="center" class="container">
@@ -141,7 +141,7 @@ To quickly get started with either the [python](https://github.com/Avnsx/fansly-
    - [Windows exclusive executable version](https://github.com/Avnsx/fansly-downloader/releases/latest) - "*Fansly_Downloader.exe*"
    - [Python code version](https://github.com/Avnsx/fansly-downloader/edit/main/README.md#python-version-requirements) - "*fansly_downloader.py*"
 
-   of Fansly Downloader and extract the files from the zip folder
+   and extract the files from the zip folder.
 
 2. Ensure that you have recently logged into your Fansly account and accessed the Fansly website using one of the following web browsers: **Chrome, Firefox, Microsoft Edge, Brave, Opera, or Opera GX** on the operating systems **Windows 10/11, macOS or Linux**.
 
