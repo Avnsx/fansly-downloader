@@ -130,16 +130,16 @@ Alternatively you can use [``requirements.txt``](https://github.com/Avnsx/fansly
 
 For Linux operating systems, you may need to install the Python Tkinter module separately by using the command ``sudo apt-get install python3-tk``. On Windows and macOS, the Tkinter module is typically included in the [Python installer itself](https://youtu.be/O2PzLeiBEuE?t=38).
 
-After all requirements are installed into your python environment; click on *fansly_downloader.py* and it'll open up & [behave similar](https://github.com/Avnsx/fansly-downloader/edit/main/README.md#-quick-start) to how the executable version would.
+After all requirements are installed into your python environment; click on *fansly_downloader.py* and it'll open up & [behave similar](https://github.com/Avnsx/fansly-downloader#-quick-start) to how the executable version would.
 
 Raw python code versions of Fansly Downloader do not receive automatic updates. If an update is available, you will be notified, but will need to manually [download the repository](https://github.com/Avnsx/fansly-downloader/archive/refs/heads/main.zip) as zip again, extract files and set-up the latest version of fansly downloader yourself.
 
 ## 🚀 Quick Start
-To quickly get started with either the [python](https://github.com/Avnsx/fansly-downloader/edit/main/README.md#python-version-requirements) or the [executable](https://github.com/Avnsx/fansly-downloader/releases/latest) version of Fansly Downloader, follow these steps:
+To quickly get started with either the [python](https://github.com/Avnsx/fansly-downloader#python-version-requirements) or the [executable](https://github.com/Avnsx/fansly-downloader/releases/latest) version of Fansly Downloader, follow these steps:
 
 1. Download the latest version of Fansly Downloader by choosing one of the options below:
    - [Windows exclusive executable version](https://github.com/Avnsx/fansly-downloader/releases/latest) - "*Fansly_Downloader.exe*"
-   - [Python code version](https://github.com/Avnsx/fansly-downloader/edit/main/README.md#python-version-requirements) - "*fansly_downloader.py*"
+   - [Python code version](https://github.com/Avnsx/fansly-downloader#python-version-requirements) - "*fansly_downloader.py*"
 
    and extract the files from the zip folder.
 
