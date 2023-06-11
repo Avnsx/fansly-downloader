@@ -70,7 +70,8 @@ if len(sys.argv) > 1 and sys.argv[1] == '--update':
         config['Options']['separate_messages'] = config['Options'].pop('seperate_messages')
     if 'seperate_previews' in config['Options']:
         config['Options']['separate_previews'] = config['Options'].pop('seperate_previews')
-    with open('config.ini', 'w', encoding='utf-8') as f:config.write(f)
+    with open('config.ini', 'w', encoding='utf-8') as f:
+        config.write(f)
     
     # config.ini backwards compatibility fix (≤ v0.4) -> config option "naming_convention" & "update_recent_download" removed entirely
     options_to_remove = ['naming_convention', 'update_recent_download']
@@ -474,7 +475,9 @@ def generate_base_dir(creator_name_to_create_for: str, module_requested_by: str)
         s(10) # give user time to realise instructions were given
         download_directory = ask_correct_dir() # ask user to select correct path using tkinters explorer dialog
         config.set('Options', 'download_directory', download_directory) # set corrected path inside the config
-        with open('config.ini', 'w', encoding='utf-8') as f:config.write(f) # save the config permanently into config.ini
+        # save the config permanently into config.ini
+        with open('config.ini', 'w', encoding='utf-8') as f:
+            config.write(f)
         if "Collection" in module_requested_by:
             BASE_DIR_NAME = join(download_directory, 'Collections')
         elif "Message" in module_requested_by and separate_messages:
@@ -517,11 +520,11 @@ def open_location(filepath: str):
     
     # tested below and they work to open folder locations
     if plat == 'Windows':
-        os.startfile(filepath)
+        os.startfile(filepath) # verified works
     elif plat == 'Linux':
-        subprocess.run(['xdg-open', filepath], shell=False)
+        subprocess.run(['xdg-open', filepath], shell=False) # verified works
     elif plat == 'Darwin':
-        subprocess.run(['open', filepath], shell=False)
+        subprocess.run(['open', filepath], shell=False) # verified works
     
     return True
 
