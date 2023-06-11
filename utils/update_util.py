@@ -155,7 +155,7 @@ def handle_update(current_version: str, release: dict):
 
     if plat == 'Windows':
         arguments = ['--update', release['release_version']] # i'm open for improvement suggestions, which will be insensitive to file paths & succeed passing start arguments to compiled executables
-        subprocess.run(['powershell', '-Command', f"Start-Process -FilePath '{filepath}' -ArgumentList {', '.join(arguments)}"], shell=True)
+        subprocess.run(['powershell', '-Command', f"Start-Process -FilePath \'{filepath}\' -ArgumentList {', '.join(arguments)}"], shell=True)
     elif plat == 'Linux':
         subprocess.run([filepath, '--update', release['release_version']], shell=True) # still sensitive to file paths?
     elif plat == 'Darwin':
