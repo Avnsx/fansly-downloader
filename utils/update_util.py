@@ -119,9 +119,9 @@ def handle_update(current_version: str, release: dict):
     # re-name current executable, so that the new version can delete it
     try:
         if platform.system() == 'Windows':
-            os.rename(join(getcwd(), 'Fansly_Downloader.exe'), join(getcwd(), 'deprecated_version.exe'))
+            os.rename(join(getcwd(), 'Fansly Downloader.exe'), join(getcwd(), 'deprecated_version.exe'))
         else:
-            os.rename(join(getcwd(), 'Fansly_Downloader'), join(getcwd(), 'deprecated_version'))
+            os.rename(join(getcwd(), 'Fansly Downloader'), join(getcwd(), 'deprecated_version'))
     except FileNotFoundError:
         pass
     
@@ -148,18 +148,20 @@ def handle_update(current_version: str, release: dict):
     # start executable from just downloaded latest platform compatible release, with a start argument
     # which instructs it to delete old executable & display release notes for newest version
     plat = platform.system()
-    filename = 'Fansly_Downloader' # from now on; executable always has to be called Fansly_Downloader
+    filename = 'Fansly Downloader' # from now on; executable always has to be called Fansly Downloader
     if plat == 'Windows':
         filename = filename+'.exe'
     filepath = join(getcwd(), filename)
+
     if plat == 'Windows':
-        subprocess.run(['start', filepath, '--update', release['release_version']], shell=True)
+        arguments = ['--update', release['release_version']] # i'm open for improvement suggestions, which will be insensitive to file paths & succeed passing start arguments to compiled executables
+        subprocess.run(['powershell', '-Command', f"Start-Process -FilePath '{filepath}' -ArgumentList {', '.join(arguments)}"], shell=True)
     elif plat == 'Linux':
-        subprocess.run([filepath, '--update', release['release_version']], shell=True)
+        subprocess.run([filepath, '--update', release['release_version']], shell=True) # still sensitive to file paths?
     elif plat == 'Darwin':
-        subprocess.run(['open', filepath, '--update', release['release_version']], shell=False)
+        subprocess.run(['open', filepath, '--update', release['release_version']], shell=False) # still sensitive to file paths?
     else:
-        input("Platform not supported for auto update, please manually update instead.")
+        input(f"Platform {plat} not supported for auto update, please manually update instead.")
     
     os._exit(0)
 
