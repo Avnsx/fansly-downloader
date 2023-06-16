@@ -706,7 +706,7 @@ def sort_download(accessible_media: dict):
             save_dir = join(BASE_DIR_NAME, filename) # compatibility for final "Download finished...!" print
 
             if not exists(BASE_DIR_NAME):
-                makedirs(BASE_DIR_NAME)
+                makedirs(BASE_DIR_NAME, exist_ok = True)
 
         # for every other type of download; we do want to determine the sub-directory to save the media file based on the mimetype
         else:
@@ -729,7 +729,7 @@ def sort_download(accessible_media: dict):
                 save_path = join(save_dir, filename)
 
             if not exists(save_dir):
-                makedirs(save_dir)
+                makedirs(save_dir, exist_ok = True)
         
         # if show_downloads is True / downloads should be shown
         if show_downloads:
@@ -932,7 +932,7 @@ def parse_media_info(media_info: dict, post_id = None):
     then right below, we will compare the values and decide which media has the higher resolution. (default populated content vs content from variants)
     or if variants didn't provide a higher resolution at all, we just fall back to the default content
     """
-    if all([default_normal_locations, highest_variants_resolution_url, default_normal_height, highest_variants_resolution_height]) and all([default_normal_height > highest_variants_resolution_height, default_normal_mimetype == mimetype]) or not download_url: # 167 videos before
+    if all([default_normal_locations, highest_variants_resolution_url, default_normal_height, highest_variants_resolution_height]) and all([default_normal_height > highest_variants_resolution_height, default_normal_mimetype == mimetype]) or not download_url:
         # overwrite default variable values, which we will finally return; with the ones from the default media
         media_id = default_normal_id
         created_at = default_normal_created_at
@@ -1003,6 +1003,7 @@ def hash_img(filepath: str):
             img = Image.open(filepath)
             file_hash = str(imagehash.phash(img, hash_size = 16))
             recent_photo_hashes.add(file_hash)
+            img.close() # close image
             
             new_filename = add_hash_to_filename(filename, file_hash)
             new_filepath = join(os.path.dirname(filepath), new_filename)
