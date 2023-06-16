@@ -14,6 +14,9 @@ from utils.update_util import delete_deprecated_files, check_latest_release, app
 # tell PIL to be tolerant of files that are truncated
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
+# turn off for our purpose unnecessary PIL safety features
+Image.MAX_IMAGE_PIXELS = None
+
 # define requests session
 sess = requests.Session()
 
@@ -929,7 +932,7 @@ def parse_media_info(media_info: dict, post_id = None):
     then right below, we will compare the values and decide which media has the higher resolution. (default populated content vs content from variants)
     or if variants didn't provide a higher resolution at all, we just fall back to the default content
     """
-    if all([default_normal_height, highest_variants_resolution_height]) and all([default_normal_height > highest_variants_resolution_height, default_normal_mimetype == mimetype]) or not download_url: # 167 videos before
+    if all([default_normal_locations, highest_variants_resolution_url, default_normal_height, highest_variants_resolution_height]) and all([default_normal_height > highest_variants_resolution_height, default_normal_mimetype == mimetype]) or not download_url: # 167 videos before
         # overwrite default variable values, which we will finally return; with the ones from the default media
         media_id = default_normal_id
         created_at = default_normal_created_at
