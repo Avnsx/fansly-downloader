@@ -6,6 +6,8 @@ from loguru import logger as log
 from functools import partialmethod
 from PIL import Image, ImageFile
 from time import sleep as s
+from rich.table import Column
+from rich.progress import Progress, BarColumn, TextColumn
 from configparser import RawConfigParser
 from os.path import join, exists
 from os import makedirs, getcwd
@@ -59,7 +61,8 @@ def open_url(url_to_open: str):
 
 output(1,'\n Info','<light-blue>','Reading config.ini file ...')
 config = RawConfigParser()
-if len(config.read('config.ini')) != 1:
+config_path = join(getcwd(), 'config.ini')
+if len(config.read(config_path)) != 1:
     output(2,'\n [1]ERROR','<red>', f"config.ini file not found or can not be read.\n{21*' '}Please download it & make sure it is in the same directory as fansly downloader")
     input('\nPress Enter to close ...')
     exit()
@@ -73,7 +76,7 @@ if len(sys.argv) > 1 and sys.argv[1] == '--update':
         config['Options']['separate_messages'] = config['Options'].pop('seperate_messages')
     if 'seperate_previews' in config['Options']:
         config['Options']['separate_previews'] = config['Options'].pop('seperate_previews')
-    with open('config.ini', 'w', encoding='utf-8') as f:
+    with open(config_path, 'w', encoding='utf-8') as f:
         config.write(f)
     
     # config.ini backwards compatibility fix (≤ v0.4) -> config option "naming_convention" & "update_recent_download" removed entirely
@@ -81,7 +84,7 @@ if len(sys.argv) > 1 and sys.argv[1] == '--update':
     for option in options_to_remove:
         if option in config['Options']:
             config['Options'].pop(option)
-            with open('config.ini', 'w', encoding='utf-8') as f:
+            with open(config_path, 'w', encoding='utf-8') as f:
                 config.write(f)
             output(3, '\n WARNING', '<yellow>', f"Just removed \'{option}\' from the config.ini file,\n\
                    {6*' '}as the whole option is no longer supported after version 0.3.5")
@@ -210,7 +213,7 @@ while True:
     if '@' in config_username and not usern_error:
         config_username = config_username.replace('@', '')
         config.set('TargetedCreator', 'username', config_username)
-        with open('config.ini', 'w') as config_file:
+        with open(config_path, 'w', encoding='utf-8') as config_file:
             config.write(config_file)
 
     # intentionally dont want to just .strip() spaces, because like this, it might give the user a food for thought, that he's supposed to enter the username tag after @ and not creators display name
@@ -219,8 +222,8 @@ while True:
         usern_error = True
 
     if not usern_error:
-        if len(config_username) < 4 or len(config_username) > 20:
-            output(3, ' WARNING', '<yellow>', f"{usern_base_text}must be between 4 and 20 characters long!\n")
+        if len(config_username) < 4 or len(config_username) > 30:
+            output(3, ' WARNING', '<yellow>', f"{usern_base_text}must be between 4 and 30 characters long!\n")
             usern_error = True
         else:
             invalid_chars = set(config_username) - set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
@@ -232,7 +235,7 @@ while True:
         output(1, '\n info', '<light-blue>', 'Username validation successful!')
         if config_username != config['TargetedCreator']['username']:
             config.set('TargetedCreator', 'username', config_username)
-            with open('config.ini', 'w') as config_file:
+            with open(config_path, 'w', encoding='utf-8') as config_file:
                 config.write(config_file)
         break
     else:
@@ -308,7 +311,7 @@ if plyvel_installed and any([not config_token, 'ReplaceMe' in config_token, conf
             if user_input_acc_verify == "yes" and all([processed_account, processed_token]):
                 config_token = processed_token
                 config.set('MyAccount', 'authorization_token', config_token)
-                with open('config.ini', 'w', encoding='utf-8') as f:
+                with open(config_path, 'w', encoding='utf-8') as f:
                     config.write(f)
                 output(1,'\n Info','<light-blue>', f"Success! Authorization token applied to config.ini file\n")
                 break # break whole loop
@@ -397,7 +400,7 @@ if not config_useragent or config_useragent and len(config_useragent) < 40 or 'R
 
     # save useragent modification to config file
     config.set('MyAccount', 'user_agent', config_useragent)
-    with open('config.ini', 'w') as config_file:
+    with open(config_path, 'w', encoding='utf-8') as config_file:
         config.write(config_file)
 
     output(1,'\n Info','<light-blue>', f"Success! Applied a browser user-agent to config.ini file\n")
@@ -479,7 +482,7 @@ def generate_base_dir(creator_name_to_create_for: str, module_requested_by: str)
         download_directory = ask_correct_dir() # ask user to select correct path using tkinters explorer dialog
         config.set('Options', 'download_directory', download_directory) # set corrected path inside the config
         # save the config permanently into config.ini
-        with open('config.ini', 'w', encoding='utf-8') as f:
+        with open(config_path, 'w', encoding='utf-8') as f:
             config.write(f)
         if "Collection" in module_requested_by:
             BASE_DIR_NAME = join(download_directory, 'Collections')
@@ -584,9 +587,6 @@ def download_m3u8(m3u8_url: str, save_path: str):
     # get a list of all the .ts files in the playlist
     ts_files = [segment.uri for segment in playlist_obj.segments if segment.uri.endswith('.ts')]
 
-    # define the output video stream
-    output_container = av.open(f"{save_path}.mp4", 'w') # add .mp4 file extension
-
     # define a nested function to download a single .ts file and return the content
     def download_ts(ts_file: str):
         ts_url = f"{split_m3u8_url}/{ts_file}"
@@ -597,46 +597,47 @@ def download_m3u8(m3u8_url: str, save_path: str):
         ts_content = buffer.getvalue()
         return ts_content
 
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        # download all the .ts files concurrently and store the content in a list
-        ts_contents = list(executor.map(download_ts, ts_files))
-
-    # take the first item of ts_contents, to create our output_stream from
-    input_container = av.open(io.BytesIO(ts_contents[0]), format='mpegts')
+    # if m3u8 seems like it might be bigger in total file size; display loading bar
+    text_column = TextColumn(f"", table_column=Column(ratio=0.355))
+    bar_column = BarColumn(bar_width=60, table_column=Column(ratio=2))
+    disable_loading_bar = False if len(ts_files) > 15 else True
+    progress = Progress(text_column, bar_column, expand=True, transient=True, disable = disable_loading_bar)
+    with progress:
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            ts_contents = [file for file in progress.track(executor.map(download_ts, ts_files), total=len(ts_files))]
+    
+    segment = bytearray()
+    for ts_content in ts_contents:
+        segment += ts_content
+    
+    input_container = av.open(io.BytesIO(segment), format='mpegts')
     video_stream = input_container.streams.video[0]
     audio_stream = input_container.streams.audio[0]
 
-    # define the output streams
-    output_video_stream = output_container.add_stream(template=video_stream)
-    output_audio_stream = output_container.add_stream(template=audio_stream)
+    # define output container and streams
+    output_container = av.open(f"{save_path}.mp4", 'w') # add .mp4 file extension
+    video_stream = output_container.add_stream(template=video_stream)
+    audio_stream = output_container.add_stream(template=audio_stream)
 
     start_pts = None
-    for ts_content in ts_contents:
-        # open the input video stream from the .ts file content
-        input_container = av.open(io.BytesIO(ts_content), format='mpegts')
-        input_video_stream = input_container.streams.video[0]
-        input_audio_stream = input_container.streams.audio[0]
-    
-        for packet in input_container.demux([input_video_stream, input_audio_stream]):
-            if packet.dts is None:
-                continue
-            
-            if start_pts is None:
-                start_pts  = packet.pts
+    for packet in input_container.demux():
+        if packet.dts is None:
+            continue
 
-            packet.pts -= start_pts
-            packet.dts -= start_pts
-            
-            if packet.stream == input_video_stream:
-                packet.stream = output_video_stream
-            elif packet.stream == input_audio_stream:
-                packet.stream = output_audio_stream
-            output_container.mux(packet)
+        if start_pts is None:
+            start_pts = packet.pts
 
-        # close the input container
-        input_container.close()
+        packet.pts -= start_pts
+        packet.dts -= start_pts
 
-    # close the output container
+        if packet.stream == input_container.streams.video[0]:
+            packet.stream = video_stream
+        elif packet.stream == input_container.streams.audio[0]:
+            packet.stream = audio_stream
+        output_container.mux(packet)
+
+    # close containers
+    input_container.close()
     output_container.close()
 
     return True
@@ -743,13 +744,29 @@ def sort_download(accessible_media: dict):
         else:
             # handle the download of a normal media file
             response = sess.get(download_url, stream=True, headers=headers)
+
             if response.ok:
+                text_column = TextColumn(f"", table_column=Column(ratio=0.355))
+                bar_column = BarColumn(bar_width=60, table_column=Column(ratio=2))
+                file_size = int(response.headers.get('content-length', 0))
+                disable_loading_bar = False if file_size and file_size >= 20000000 else True # if file size is above 20MB; display loading bar
+                progress = Progress(text_column, bar_column, expand=True, transient=True, disable = disable_loading_bar)
+                task_id = progress.add_task('', total=file_size)
+                progress.start()
+                # iterate over the response data in chunks
+                content = bytearray()
+                for chunk in response.iter_content(chunk_size=1024):
+                    if chunk:
+                        content += chunk
+                        progress.advance(task_id, len(chunk))
+                progress.refresh()
+                progress.stop()
                 
                 file_hash = None
                 # utilise hashing for images
                 if 'image' in mimetype:
                     # open the image
-                    img = Image.open(io.BytesIO(response.content))
+                    img = Image.open(io.BytesIO(content))
 
                     # calculate the hash of the resized image
                     photohash = str(imagehash.phash(img, hash_size = 16))
@@ -769,7 +786,7 @@ def sort_download(accessible_media: dict):
 
                 # utilise hashing for videos
                 elif 'video' in mimetype:
-                    videohash = hashlib.md5(response.content).hexdigest()
+                    videohash = hashlib.md5(content).hexdigest()
 
                     # deduplication - part 2.2: decide if this video is even worth further processing; by hashing
                     if videohash in recent_video_hashes:
@@ -783,7 +800,7 @@ def sort_download(accessible_media: dict):
                 
                 # utilise hashing for audio
                 elif 'audio' in mimetype:
-                    audiohash = hashlib.md5(response.content).hexdigest()
+                    audiohash = hashlib.md5(content).hexdigest()
 
                     # deduplication - part 2.2: decide if this audio is even worth further processing; by hashing
                     if audiohash in recent_audio_hashes:
@@ -798,16 +815,12 @@ def sort_download(accessible_media: dict):
                 # hacky overwrite for save_path to introduce file hash to filename
                 base_path, extension = os.path.splitext(save_path)
                 save_path = f"{base_path}_hash_{file_hash}{extension}"
-
-                # if the normal file made it this far, it's worth to be saved
-                with open(save_path, 'wb') as f:
-                    # iterate over the response data in chunks
-                    for chunk in response.iter_content(chunk_size=1024):
-                        if chunk:
-                            f.write(chunk)
                     
-                    # we only count them if the file was actually written
-                    pic_count += 1 if 'image' in mimetype else 0; vid_count += 1 if 'video' in mimetype else 0
+                with open(save_path, 'wb') as f:
+                    f.write(content)
+
+                # we only count them if the file was actually written
+                pic_count += 1 if 'image' in mimetype else 0; vid_count += 1 if 'video' in mimetype else 0
             else:
                 output(2,'\n [13]ERROR','<red>', f"Download failed on filename: {filename} - due to an network error --> status_code: {response.status_code} | content: \n{response.content}")
                 input()
@@ -1258,10 +1271,18 @@ if any(['Message' in download_mode, 'Timeline' in download_mode, 'Normal' in dow
         exit()
 
     # below only needed by timeline; but wouldn't work without acc_req so it's here
-    try:following = acc_req['following']
-    except KeyError:following = False
-    try:subscribed = acc_req['subscribed']
-    except KeyError:subscribed = False
+    # determine if followed
+    try:
+        following = acc_req['following']
+    except KeyError:
+        following = False
+
+    # determine if subscribed
+    try:
+        subscribed = acc_req['subscribed']
+    except KeyError:
+        subscribed = False
+    
     # intentionally only put pictures into try / except block - its enough
     try:
         total_timeline_pictures = acc_req['timelineStats']['imageCount']
@@ -1300,52 +1321,57 @@ if any(['Message' in download_mode, 'Normal' in download_mode]):
 
         # only if we do have a message ("group") with the creator
         if group_id:
-            # may 2023; I just noticed fansly has now removed / drastically increased the max int for "limit", which invalidates the usage of repetetive msg_cursor 50-step iterating.
             msg_cursor = 0
-            messages_req = sess.get('https://apiv3.fansly.com/api/v1/message', headers=headers, params={'groupId': group_id, 'before': msg_cursor, 'limit': '9999'} if msg_cursor else {'groupId': group_id, 'limit': '9999'})
+            while True:
+                messages_req = sess.get('https://apiv3.fansly.com/api/v1/message', headers = headers, params = {'groupId': group_id, 'before': msg_cursor, 'limit': '25', 'ngsw-bypass': 'true'} if msg_cursor else {'groupId': group_id, 'limit': '25', 'ngsw-bypass': 'true'})
 
-            if messages_req.status_code == 200:
-                accessible_media = None
-                contained_posts = []
-        
-                # post object contains: messages, accountMedia, accountMediaBundles, tips, tipGoals, stories
-                post_object = messages_req.json()['response']
-        
-                # parse relevant details about the post
-                if not accessible_media:
-                    # loop through the list of dictionaries and find the highest quality media URL for each one
-                    for obj in post_object['accountMedia']:
+                if messages_req.status_code == 200:
+                    accessible_media = None
+                    contained_posts = []
+                
+                    # post object contains: messages, accountMedia, accountMediaBundles, tips, tipGoals, stories
+                    post_object = messages_req.json()['response']
+
+                    # parse relevant details about the post
+                    if not accessible_media:
+                        # loop through the list of dictionaries and find the highest quality media URL for each one
+                        for obj in post_object['accountMedia']:
+                            try:
+                                # add details into a list
+                                contained_posts += [parse_media_info(obj)]
+                            except Exception:
+                                output(2,'\n [28]ERROR','<red>', f"Unexpected error during parsing Messages content; \n{traceback.format_exc()}")
+                                input('\n Press Enter to attempt to continue ..')
+                
+                        # summarise all scrapable & wanted media
+                        accessible_media = [item for item in contained_posts if item.get('download_url') and (item.get('is_preview') == download_media_previews or not item.get('is_preview'))]
+
+                        total_accessible_messages_content = len(accessible_media)
+
+                        # overwrite base dup threshold with 20% of total accessible content in messages
+                        DUPLICATE_THRESHOLD = int(0.2 * total_accessible_messages_content)
+
+                        # at this point we have already parsed the whole post object and determined what is scrapable with the code above
+                        output(1,' Info','<light-blue>', f"Amount of Media in Messages with {config_username}: {len(post_object['accountMedia'])} (scrapable: {total_accessible_messages_content})")
+
+                        generate_base_dir(config_username, module_requested_by = 'Messages')
+
                         try:
-                            # add details into a list
-                            contained_posts += [parse_media_info(obj)]
+                            # download it
+                            sort_download(accessible_media)
+                        except DuplicateCountError:
+                            output(1,' Info','<light-blue>', f"Already downloaded all possible Messages content! [Duplicate threshold exceeded {DUPLICATE_THRESHOLD}]")
                         except Exception:
-                            output(2,'\n [28]ERROR','<red>', f"Unexpected error during parsing Messages content; \n{traceback.format_exc()}")
+                            output(2,'\n [29]ERROR','<red>', f"Unexpected error during sorting Messages download; \n{traceback.format_exc()}")
                             input('\n Press Enter to attempt to continue ..')
-        
-                    # summarise all scrapable & wanted media
-                    accessible_media = [item for item in contained_posts if item.get('download_url') and (item.get('is_preview') == download_media_previews or not item.get('is_preview'))]
 
-                    total_accessible_messages_content = len(accessible_media)
-
-                    # overwrite base dup threshold with 20% of total accessible content in messages
-                    DUPLICATE_THRESHOLD = int(0.2 * total_accessible_messages_content)
-
-                    # at this point we have already parsed the whole post object and determined what is scrapable with the code above
-                    output(1,' Info','<light-blue>', f"Amount of Media in Messages with {config_username}: {len(post_object['accountMedia'])} (scrapable: {total_accessible_messages_content})")
-
-                    generate_base_dir(config_username, module_requested_by = 'Messages')
-
-                    try:
-                        # download it
-                        sort_download(accessible_media)
-                    except DuplicateCountError:
-                        output(1,' Info','<light-blue>', f"Already downloaded all possible Messages content! [Duplicate threshold exceeded {DUPLICATE_THRESHOLD}]")
-                    except Exception:
-                        output(2,'\n [29]ERROR','<red>', f"Unexpected error during sorting Messages download; \n{traceback.format_exc()}")
-                        input('\n Press Enter to attempt to continue ..')
-
-            else:
-                output(2,'\n [30]ERROR','<red>', f"Failed messages download. messages_req failed with response code: {messages_req.status_code}\n{messages_req.text}")
+                        # get next cursor
+                        try:
+                            msg_cursor = post_object['messages'][-1]['id']
+                        except IndexError:
+                            break # break if end is reached
+                else:
+                    output(2,'\n [30]ERROR','<red>', f"Failed messages download. messages_req failed with response code: {messages_req.status_code}\n{messages_req.text}")
 
         elif group_id is None:
             output(2, ' WARNING', '<yellow>', f"Could not find a chat history with {config_username}; skipping messages download ..")
