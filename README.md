@@ -40,7 +40,7 @@
 
 ![Fansly Downloader UI Banner](https://i.imgur.com/9VaUh2v.gif)
 
-Fansly Downloader is the go-to app for all your bulk media downloading needs. Download photos, videos or any other media from Fansly, this powerful tool has got you covered! Say goodbye to the hassle of individually downloading each piece of media – now you can download them all or just some, with just a few clicks.
+Fansly Downloader is the go-to app for all your bulk media downloading needs. Download photos, videos, audio or any other media from Fansly, this powerful tool has got you covered! Say goodbye to the hassle of individually downloading each piece of media – now you can download them all or just some, with just a few clicks.
 
 ## ✨ Features
 
@@ -125,7 +125,7 @@ On windows you can just install the [Executable version](https://github.com/Avns
 #### Python Version Requirements
 If your operating system is not compatible with **executable versions** of Fansly Downloader (only Windows supported for ``.exe``) or you just generally intend to use the Python source directly, please [download the repository](https://github.com/Avnsx/fansly-downloader/archive/refs/heads/main.zip), extract the files from the folder and ensure that [Python is installed](https://www.python.org/downloads/) on your system. Once Python is installed, you can proceed by installing the following requirements using [Python's package manager](https://realpython.com/what-is-pip/) (``"pip"``), within your systems terminal copy & paste:
 
-	pip3 install requests loguru python-dateutil plyvel-ci psutil imagehash m3u8 av pillow
+	pip3 install requests loguru python-dateutil plyvel-ci psutil imagehash m3u8 av pillow rich
 Alternatively you can use [``requirements.txt``](https://github.com/Avnsx/fansly-downloader/blob/main/requirements.txt) through opening your system's terminal (e.g.: ``cmd.exe`` on windows), [navigating to the project's download folder](https://youtu.be/8-mYKkNzjU4?t=5) and executing the following command: ``pip3 install --user -r requirements.txt``
 
 For Linux operating systems, you may need to install the Python Tkinter module separately by using the command ``sudo apt-get install python3-tk``. On Windows and macOS, the Tkinter module is typically included in the [Python installer itself](https://youtu.be/O2PzLeiBEuE?t=38).
