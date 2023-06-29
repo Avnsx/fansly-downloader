@@ -100,6 +100,9 @@ if len(sys.argv) > 1 and sys.argv[1] == '--update':
 
     # get release description and if existent; display it in terminal
     check_latest_release(update_version = version_string, intend = 'update')
+
+    # read the config.ini file for a last time
+    config.read(config_path)
 else:
     # check if a new version is available
     check_latest_release(current_version = config.get('Other', 'version'), intend = 'check')
