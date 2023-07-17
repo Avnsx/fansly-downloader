@@ -126,7 +126,7 @@ try:
     separate_previews = config.getboolean('Options', 'separate_previews') # True, False -> boolean
     separate_timeline = config.getboolean('Options', 'separate_timeline') # True, False -> boolean
     utilise_duplicate_threshold = config.getboolean('Options', 'utilise_duplicate_threshold') # True, False -> boolean
-    download_directory = config.get('Options', 'download_directory').capitalize() # Local_directory, C:\MyCustomFolderFilePath -> str
+    download_directory = config.get('Options', 'download_directory') # Local_directory, C:\MyCustomFolderFilePath -> str
 
     # Other
     current_version = config.get('Other', 'version') # str
