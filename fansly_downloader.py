@@ -129,7 +129,6 @@ try:
         config_username = config.get('TargetedCreator', 'Username') # string
     else:
         config_username = args.creator
-        prompt_exit = False
 
     # MyAccount
     config_token = config.get('MyAccount', 'Authorization_Token') # string
