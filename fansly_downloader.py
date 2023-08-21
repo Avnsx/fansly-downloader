@@ -33,9 +33,9 @@ parser = argparse.ArgumentParser(
     allow_abbrev=False
 )
 parser.add_argument("-c","--creator", action="store", help="The Name of the Creator to Download")
-parser.add_argument("-u","--upgrade", action="store_true", help="update to the new version")
+parser.add_argument("-u","--upgrade", action="store_true", help="Upgrade config file to the new version")
 parser.add_argument("-d","--download", action="store", help="Download Mode. One of Normal, Timeline, Messages, Single (Single by post id) or Collections")
-parser.add_argument("-p","--prompt_on_exit", action="store_false", help="Prompt on Exit, default is true")
+parser.add_argument("-b","--batch", action="store_false", help="Batch mode, do not prompt on Exit")
 args = parser.parse_args()
 
 # cross-platform compatible, re-name downloaders terminal output window title
@@ -49,7 +49,7 @@ set_window_title('Fansly Downloader')
 
 # for pyinstaller compatibility
 def exit(msg):
-    if args.prompt_on_exit:
+    if args.batch:
         input(msg)
     os._exit(0)
 
@@ -86,7 +86,7 @@ if len(config.read(config_path)) != 1:
 
 ## starting here: self updating functionality
 # if started with --update start argument
-if args.update:
+if args.upgrade:
     # config.ini backwards compatibility fix (≤ v0.4) -> fix spelling mistake "seperate" to "separate"
     if 'seperate_messages' in config['Options']:
         config['Options']['separate_messages'] = config['Options'].pop('seperate_messages')
