@@ -1,5 +1,5 @@
 # fix in future: audio needs to be properly transcoded from mp4 to mp3, instead of just saved as
-import requests, os, re, base64, hashlib, imagehash, io, traceback, sys, platform, subprocess, concurrent.futures, json, m3u8, av, time, mimetypes, configparser
+import requests, os, re, base64, hashlib, imagehash, io, traceback, sys, platform, subprocess, concurrent.futures, json, m3u8, av, time, mimetypes, configparser, argparse
 from random import randint
 from tkinter import Tk, filedialog
 from loguru import logger as log
@@ -13,6 +13,7 @@ from os.path import join, exists
 from os import makedirs, getcwd
 from utils.update_util import delete_deprecated_files, check_latest_release, apply_old_config_values
 
+
 # tell PIL to be tolerant of files that are truncated
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -22,6 +23,20 @@ Image.MAX_IMAGE_PIXELS = None
 # define requests session
 sess = requests.Session()
 
+# CLI Arg setup
+parser = argparse.ArgumentParser(
+    prog="fansly_downloader",
+    description='''Download a creator's picures and videos from fansly.
+    Confiuration is read from config.ini, and can be
+    overridden by the following options''',
+    epilog="Thanks for using %(prog)s! :)",
+    allow_abbrev=False
+)
+parser.add_argument("-c","--creator", action="store", help="The Name of the Creator to Download")
+parser.add_argument("-u","--upgrade", action="store_true", help="update to the new version")
+parser.add_argument("-d","--download", action="store", help="Download Mode. One of Normal, Timeline, Messages, Single (Single by post id) or Collections")
+parser.add_argument("-p","--prompt_on_exit", action="store_false", help="Prompt on Exit, default is true")
+args = parser.parse_args()
 
 # cross-platform compatible, re-name downloaders terminal output window title
 def set_window_title(title):
@@ -33,7 +48,9 @@ def set_window_title(title):
 set_window_title('Fansly Downloader')
 
 # for pyinstaller compatibility
-def exit():
+def exit(msg):
+    if args.prompt_on_exit:
+        input(msg)
     os._exit(0)
 
 # base64 code to display logo in console
@@ -64,13 +81,12 @@ config = RawConfigParser()
 config_path = join(getcwd(), 'config.ini')
 if len(config.read(config_path)) != 1:
     output(2,'\n [1]ERROR','<red>', f"config.ini file not found or can not be read.\n{21*' '}Please download it & make sure it is in the same directory as fansly downloader")
-    input('\nPress Enter to close ...')
-    exit()
+    exit('\nPress Enter to close ...')
 
 
 ## starting here: self updating functionality
 # if started with --update start argument
-if len(sys.argv) > 1 and sys.argv[1] == '--update':
+if args.update:
     # config.ini backwards compatibility fix (≤ v0.4) -> fix spelling mistake "seperate" to "separate"
     if 'seperate_messages' in config['Options']:
         config['Options']['separate_messages'] = config['Options'].pop('seperate_messages')
@@ -104,21 +120,26 @@ if len(sys.argv) > 1 and sys.argv[1] == '--update':
     # read the config.ini file for a last time
     config.read(config_path)
 else:
-    # check if a new version is available
     check_latest_release(current_version = config.get('Other', 'version'), intend = 'check')
-
 
 ## read & verify config values
 try:
     # TargetedCreator
-    config_username = config.get('TargetedCreator', 'Username') # string
+    if args.creator == "":
+        config_username = config.get('TargetedCreator', 'Username') # string
+    else:
+        config_username = args.creator
+        prompt_exit = False
 
     # MyAccount
     config_token = config.get('MyAccount', 'Authorization_Token') # string
     config_useragent = config.get('MyAccount', 'User_Agent') # string
 
     # Options
-    download_mode = config.get('Options', 'download_mode').capitalize() # Normal (Timeline & Messages), Timeline, Messages, Single (Single by post id) or Collections -> str
+    if args.download == "": 
+        download_mode = config.get('Options', 'download_mode').capitalize() # Normal (Timeline & Messages), Timeline, Messages, Single (Single by post id) or Collections -> str
+    else:
+        download_mode = args.download
     show_downloads = config.getboolean('Options', 'show_downloads') # True, False -> boolean
     download_media_previews = config.getboolean('Options', 'download_media_previews') # True, False -> boolean
     open_folder_when_finished = config.getboolean('Options', 'open_folder_when_finished') # True, False -> boolean
@@ -133,28 +154,24 @@ try:
 except configparser.NoOptionError as e:
     error_string = str(e)
     output(2,'\n ERROR','<red>', f"Your config.ini file is very malformed, please download a fresh version of it from GitHub.\n{error_string}")
-    input('\nPress Enter to close ...')
-    exit()
+    exit('\nPress Enter to close ...')
 except ValueError as e:
     error_string = str(e)
     if 'a boolean' in error_string:
         output(2,'\n [1]ERROR','<red>', f"\'{error_string.rsplit('boolean: ')[1]}\' is malformed in the configuration file! This value can only be True or False\n\
             {6*' '}Read the Wiki > Explanation of provided programs & their functionality > config.ini")
         open_url('https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#4-configini')
-        input('\nPress Enter to close ...')
-        exit()
+        exit('\nPress Enter to close ...')
     else:
         output(2,'\n [2]ERROR','<red>', f"You have entered a wrong value in the config.ini file -> \'{error_string}\'\n\
             {6*' '}Read the Wiki > Explanation of provided programs & their functionality > config.ini")
         open_url('https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#4-configini')
-        input('\nPress Enter to close ...')
-        exit()
+        exit('\nPress Enter to close ...')
 except (KeyError, NameError) as key:
     output(2,'\n [3]ERROR','<red>', f"\'{key}\' is missing or malformed in the configuration file!\n\
         {6*' '}Read the Wiki > Explanation of provided programs & their functionality > config.ini")
     open_url('https://github.com/Avnsx/fansly-downloader/wiki/Explanation-of-provided-programs-&-their-functionality#4-configini')
-    input('\nPress Enter to close ...')
-    exit()
+    exit('\nPress Enter to close ...')
 
 
 # update window title with specific downloader version
@@ -325,16 +342,14 @@ if plyvel_installed and any([not config_token, 'ReplaceMe' in config_token, conf
         {10*' '}Did you not recently browse Fansly with an authenticated session?\
         {10*' '}Please read & apply the \'Get-Started\' tutorial instead.")
         open_url('https://github.com/Avnsx/fansly-downloader/wiki/Get-Started')
-        input('\n Press Enter to close ..')
-        exit()
+        exit('\n Press Enter to close ..')
     
     # if users decisions have led to auth token still being invalid
     elif any([not config_token, 'ReplaceMe' in config_token]) or config_token and len(config_token) < 50:
         output(2,'\n ERROR','<red>', f"Reached the end and the authentication token in config.ini file is still invalid!\n\
         {10*' '}Please read & apply the \'Get-Started\' tutorial instead.")
         open_url('https://github.com/Avnsx/fansly-downloader/wiki/Get-Started')
-        input('\n Press Enter to close ..')
-        exit()
+        exit('\n Press Enter to close ..')
 
 
 # validate input value for "user_agent" in config.ini
@@ -1264,14 +1279,12 @@ if any(['Message' in download_mode, 'Timeline' in download_mode, 'Normal' in dow
             output(2,'\n [25]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed.')
         print('\n'+str(e))
         print(raw_req.text)
-        input('\nPress Enter to close ...')
-        exit()
+        exit('\nPress Enter to close ...')
     except IndexError as e:
         output(2,'\n [26]ERROR','<red>', 'Bad response from fansly API. Please make sure your configuration file is not malformed; most likely misspelled the creator name.')
         print('\n'+str(e))
         print(raw_req.text)
-        input('\nPress Enter to close ...')
-        exit()
+        exit('\nPress Enter to close ...')
 
     # below only needed by timeline; but wouldn't work without acc_req so it's here
     # determine if followed
@@ -1291,8 +1304,7 @@ if any(['Message' in download_mode, 'Timeline' in download_mode, 'Normal' in dow
         total_timeline_pictures = acc_req['timelineStats']['imageCount']
     except KeyError:
         output(2,'\n [27]ERROR','<red>', f"Can not get timelineStats for creator username \'{config_username}\'; most likely misspelled it!")
-        input('\nPress Enter to close ...')
-        exit()
+        exit('\nPress Enter to close ...')
     total_timeline_videos = acc_req['timelineStats']['videoCount']
 
     # overwrite base dup threshold with custom 20% of total timeline content
@@ -1461,8 +1473,7 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
                 except Exception:
                     print('\n'+traceback.format_exc())
                     output(2,'\n [34]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation.')
-                    input('\nPress Enter to close ...')
-                    exit()
+                    exit('\nPress Enter to close ...')
 
         except KeyError:
             output(2,'\n [35]ERROR','<red>', "Couldn\'t find any scrapable media at all!\
@@ -1510,5 +1521,4 @@ if BASE_DIR_NAME:
         open_location(BASE_DIR_NAME)
 
 
-input('\n Press Enter to close ..')
-exit()
+exit('\n Press Enter to close ..')
