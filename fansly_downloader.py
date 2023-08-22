@@ -925,7 +925,7 @@ def parse_media_info(media_info: dict, post_id = None):
                 """
                 try:
                     created_at = int(content['updatedAt'])
-                except KeyError:
+                except Exception:
                     created_at = int(media_info[content_type]['createdAt'])
         download_url = highest_variants_resolution_url
 
