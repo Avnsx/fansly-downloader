@@ -10,7 +10,6 @@ __authors__: list[str] = []
 __credits__: list[str] = []
 
 # TODO: Fix in future: audio needs to be properly transcoded from mp4 to mp3, instead of just saved as
-# TODO: Maybe write a log file?
 
 
 import base64

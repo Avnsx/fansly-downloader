@@ -153,7 +153,6 @@ def parse_media_info(
         variants = media_info['media']['variants']
 
         for content in variants:
-            # TODO: Check for pass by value/reference error, should this return?
             parse_variants(item, content=content, content_type='media', media_info=media_info)
 
     # previews: if media location is not found, we work with the preview media info instead
@@ -161,7 +160,6 @@ def parse_media_info(
         variants = media_info['preview']['variants']
 
         for content in variants:
-            # TODO: Check for pass by value/reference error, should this return?
             parse_variants(item, content=content, content_type='preview', media_info=media_info)
 
     """
