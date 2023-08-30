@@ -33,9 +33,9 @@ parser = argparse.ArgumentParser(
     allow_abbrev=False
 )
 parser.add_argument("-c","--creator", action="store", help="The Name of the Creator to Download")
-parser.add_argument("-u","--upgrade", action="store_true", help="update to the new version")
+parser.add_argument("-u","--upgrade", action="store_true", help="Upgrade config file to the new version")
 parser.add_argument("-d","--download", action="store", help="Download Mode. One of Normal, Timeline, Messages, Single (Single by post id) or Collections")
-parser.add_argument("-p","--prompt_on_exit", action="store_false", help="Prompt on Exit, default is true")
+parser.add_argument("-b","--batch", action="store_false", help="Batch mode, do not prompt on Exit")
 args = parser.parse_args()
 
 # cross-platform compatible, re-name downloaders terminal output window title
@@ -49,7 +49,7 @@ set_window_title('Fansly Downloader')
 
 # for pyinstaller compatibility
 def exit(msg):
-    if args.prompt_on_exit:
+    if args.batch:
         input(msg)
     os._exit(0)
 
@@ -86,7 +86,7 @@ if len(config.read(config_path)) != 1:
 
 ## starting here: self updating functionality
 # if started with --update start argument
-if args.update:
+if args.upgrade:
     # config.ini backwards compatibility fix (≤ v0.4) -> fix spelling mistake "seperate" to "separate"
     if 'seperate_messages' in config['Options']:
         config['Options']['separate_messages'] = config['Options'].pop('seperate_messages')
@@ -129,7 +129,6 @@ try:
         config_username = config.get('TargetedCreator', 'Username') # string
     else:
         config_username = args.creator
-        prompt_exit = False
 
     # MyAccount
     config_token = config.get('MyAccount', 'Authorization_Token') # string
@@ -474,20 +473,20 @@ def generate_base_dir(creator_name_to_create_for: str, module_requested_by: str)
         if "Collection" in module_requested_by:
             BASE_DIR_NAME = join(getcwd(), 'Collections')
         elif "Message" in module_requested_by and separate_messages:
-            BASE_DIR_NAME = join(getcwd(), creator_name_to_create_for+'_fansly', 'Messages')
+            BASE_DIR_NAME = join(getcwd(), creator_name_to_create_for, 'Messages')
         elif "Timeline" in module_requested_by and separate_timeline:
-            BASE_DIR_NAME = join(getcwd(), creator_name_to_create_for+'_fansly', 'Timeline')
+            BASE_DIR_NAME = join(getcwd(), creator_name_to_create_for, 'Timeline')
         else:
-            BASE_DIR_NAME = join(getcwd(), creator_name_to_create_for+'_fansly') # use local directory
+            BASE_DIR_NAME = join(getcwd(), creator_name_to_create_for) # use local directory
     elif os.path.isdir(download_directory): # if user specified a correct custom downloads path
         if "Collection" in module_requested_by:
             BASE_DIR_NAME = join(download_directory, 'Collections')
         elif "Message" in module_requested_by and separate_messages:
-            BASE_DIR_NAME = join(download_directory, creator_name_to_create_for+'_fansly', 'Messages')
+            BASE_DIR_NAME = join(download_directory, creator_name_to_create_for, 'Messages')
         elif "Timeline" in module_requested_by and separate_timeline:
-            BASE_DIR_NAME = join(download_directory, creator_name_to_create_for+'_fansly', 'Timeline')
+            BASE_DIR_NAME = join(download_directory, creator_name_to_create_for, 'Timeline')
         else:
-            BASE_DIR_NAME = join(download_directory, creator_name_to_create_for+'_fansly') # use their custom path & specify new folder for the current creator in it
+            BASE_DIR_NAME = join(download_directory, creator_name_to_create_for) # use their custom path & specify new folder for the current creator in it
         output(1,' Info','<light-blue>', f"Acknowledging custom basis download directory: \'{download_directory}\'")
     else: # if their set directory, can't be found by the OS
         output(3,'\n WARNING','<yellow>', f"The custom basis download directory file path: \'{download_directory}\'; seems to be invalid!\
@@ -505,14 +504,14 @@ def generate_base_dir(creator_name_to_create_for: str, module_requested_by: str)
         if "Collection" in module_requested_by:
             BASE_DIR_NAME = join(download_directory, 'Collections')
         elif "Message" in module_requested_by and separate_messages:
-            BASE_DIR_NAME = join(download_directory, creator_name_to_create_for+'_fansly', 'Messages')
+            BASE_DIR_NAME = join(download_directory, creator_name_to_create_for, 'Messages')
         elif "Timeline" in module_requested_by and separate_timeline:
-            BASE_DIR_NAME = join(download_directory, creator_name_to_create_for+'_fansly', 'Timeline')
+            BASE_DIR_NAME = join(download_directory, creator_name_to_create_for, 'Timeline')
         else:
-            BASE_DIR_NAME = join(download_directory, creator_name_to_create_for+'_fansly') # use their custom path & specify new folder for the current creator in it
+            BASE_DIR_NAME = join(download_directory, creator_name_to_create_for) # use their custom path & specify new folder for the current creator in it
 
     # validate BASE_DIR_NAME; if current download folder wasn't created with content separation, disable it for this download session too
-    correct_File_Hierarchy, tmp_BDR = True, BASE_DIR_NAME.partition('_fansly')[0] + '_fansly'
+    correct_File_Hierarchy, tmp_BDR = True, BASE_DIR_NAME.partition('_fansly')[0]
     if os.path.isdir(tmp_BDR):
         for directory in os.listdir(tmp_BDR):
             if os.path.isdir(join(tmp_BDR, directory)):
