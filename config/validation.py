@@ -245,7 +245,7 @@ def validate_adjust_user_agent(config: FanslyConfig) -> None:
     """    
 
     # if no matches / error just set random UA
-    ua_if_failed = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+    ua_if_failed = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36'
 
     based_on_browser = config.token_from_browser_name or 'Chrome'
 
