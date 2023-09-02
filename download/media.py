@@ -1,23 +1,21 @@
 """Fansly Download Functionality"""
 
-from pathlib import Path
 
+from pathlib import Path
+from PIL import Image, ImageFile
 from rich.progress import Progress, BarColumn, TextColumn
 from rich.table import Column
-from PIL import Image, ImageFile
 
 from .downloadstate import DownloadState
 from .m3u8 import download_m3u8
 from .types import DownloadType
 
 from config import FanslyConfig
-from errors import DownloadError
+from errors import DownloadError, DuplicateCountError, MediaError
 from fileio.dedupe import dedupe_media_content
 from media import MediaItem
 from pathio import set_create_directory_for_download
-from textio import input_enter_close, print_info, print_error, print_warning
-from utils.common import exit
-from errors import DuplicateCountError, MediaError
+from textio import print_info, print_warning
 
 
 # tell PIL to be tolerant of files that are truncated
