@@ -1,8 +1,8 @@
 [TargetedCreator]
-username = marsymartian
+username = CREATOR HERE
 
 [MyAccount]
-authorization_token = NTMyMzkzMjQxODYxOTU1NTg1OjE6Mjo1MDc3NWZjMDJhMmRiZjI4NmQwM2I4YWM1ZDM3Y2M
+authorization_token = YOUR TOKEN HERE
 user_agent = Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36
 
 [Options]
@@ -10,7 +10,7 @@ download_mode = Normal
 show_downloads = True
 download_media_previews = True
 open_folder_when_finished = False
-download_directory = /srv/dev-disk-by-uuid-38e4e13f-0ff1-4ec7-a34e-473267413623/ofdl/data/fansly
+download_directory = YOUR DIRECTORY HERE
 separate_messages = True
 separate_previews = True
 separate_timeline = True
