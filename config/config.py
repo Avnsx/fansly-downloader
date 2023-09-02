@@ -10,6 +10,7 @@ from os.path import join
 from pathlib import Path
 
 from .fanslyconfig import FanslyConfig
+from .metadatahandling import MetadataHandling
 from .modes import DownloadMode
 
 from errors import ConfigError
@@ -207,6 +208,10 @@ def load_config(config: FanslyConfig) -> None:
         # Normal (Timeline & Messages), Timeline, Messages, Single (Single by post id) or Collections -> str
         download_mode = config._parser.get(options_section, 'download_mode', fallback='Normal')
         config.download_mode = DownloadMode(download_mode.lower())
+
+        # Advanced, Simple -> str
+        metadata_handling = config._parser.get(options_section, 'metadata_handling', fallback='Advanced')
+        config.metadata_handling = MetadataHandling(metadata_handling.lower())
 
         config.download_media_previews = config._parser.getboolean(options_section, 'download_media_previews', fallback=True)
         config.open_folder_when_finished = config._parser.getboolean(options_section, 'open_folder_when_finished', fallback=True)

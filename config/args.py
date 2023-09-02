@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .config import parse_items_from_line, sanitize_creator_names
 from .fanslyconfig import FanslyConfig
+from .metadatahandling import MetadataHandling
 from .modes import DownloadMode
 
 from errors import ConfigError
@@ -205,6 +206,15 @@ def parse_args() -> argparse.Namespace:
         help="Use an internal de-deduplication threshold to not download "
             "already downloaded media again.",
     )
+    parser.add_argument(
+        '-mh', '--metadata-handling',
+        required=False,
+        default=None,
+        type=str,
+        dest='metadata_handling',
+        help="How to handle media EXIF metadata. "
+            "Supported strategies: Advanced (Default), Simple",
+    )
 
     #endregion
 
@@ -324,6 +334,18 @@ def map_args_to_config(args: argparse.Namespace, config: FanslyConfig) -> None:
 
         config.post_id = post_id
         config_overridden = True
+
+    if args.metadata_handling is not None:
+        handling = args.metadata_handling.strip().lower()
+
+        try:
+            config.metadata_handling = MetadataHandling(handling)
+            config_overridden = True
+        
+        except ValueError:
+               raise ConfigError(
+                f"Argument error - '{handling}' is not a valid metadata handling strategy."
+            )         
 
     # The code following avoids code duplication of checking an
     # argument and setting the override flag for each argument.

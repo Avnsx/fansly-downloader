@@ -7,6 +7,7 @@ from configparser import ConfigParser
 from dataclasses import dataclass
 from pathlib import Path
 
+from .metadatahandling import MetadataHandling
 from .modes import DownloadMode
 
 
@@ -55,6 +56,8 @@ class FanslyConfig(object):
     download_mode: DownloadMode = DownloadMode.NORMAL
     download_directory: (None | Path) = None
     download_media_previews: bool = True
+    # "Advanced" | "Simple"
+    metadata_handling: MetadataHandling = MetadataHandling.ADVANCED
     open_folder_when_finished: bool = True
     separate_messages: bool = True
     separate_previews: bool = False
@@ -94,6 +97,11 @@ class FanslyConfig(object):
         """Gets `download_mod` as a string representation."""
         return str(self.download_mode).capitalize()
 
+
+    def metadata_handling_str(self) -> str:
+        """Gets the string representation of `metadata_handling`."""
+        return str(self.metadata_handling).capitalize()
+
     
     def _sync_settings(self) -> None:
         """Syncs the settings of the config object
@@ -112,6 +120,7 @@ class FanslyConfig(object):
             self._parser.set('Options', 'download_directory', str(self.download_directory))
 
         self._parser.set('Options', 'download_mode', self.download_mode_str())
+        self._parser.set('Options', 'metadata_handling', self.metadata_handling_str())
         
         # Booleans
         self._parser.set('Options', 'show_downloads', str(self.show_downloads))
