@@ -9,7 +9,7 @@
   <a href="https://github.com/Avnsx/fansly-downloader/releases/latest">
     <img src="https://img.shields.io/github/v/release/Avnsx/fansly-downloader?color=%23b02d4a&display_name=tag&label=%F0%9F%9A%80%20Latest%20Compiled%20Release&style=flat-square" alt="Latest Release" />
   </a>
-  <a href="https://github.com/Avnsx/fansly-downloader/commits/main">
+  <a href="https://github.com/Avnsx/fansly-downloader/commits/master">
     <img src="https://img.shields.io/github/commits-since/Avnsx/fansly-downloader/latest?color=orange&label=%F0%9F%92%81%20Uncompiled%20Commits&style=flat-square" alt="Commits since latest release" />
   </a>
   <a href="https://github.com/Avnsx/fansly-downloader/issues?q=is%3Aissue+is%3Aopen+label%3Abug">
@@ -123,22 +123,22 @@ Fansly Downloader is the go-to app for all your bulk media downloading needs. Do
 On windows you can just install the [Executable version](https://github.com/Avnsx/fansly-downloader/releases/latest), skip the entire set up section & go to [Quick Start](https://github.com/Avnsx/fansly-downloader#-quick-start)
 
 #### Python Version Requirements
-If your operating system is not compatible with **executable versions** of Fansly Downloader (only Windows supported for ``.exe``) or you just generally intend to use the Python source directly, please [download the repository](https://github.com/Avnsx/fansly-downloader/archive/refs/heads/main.zip), extract the files from the folder and ensure that [Python is installed](https://www.python.org/downloads/) on your system. Once Python is installed, you can proceed by installing the following requirements using [Python's package manager](https://realpython.com/what-is-pip/) (``"pip"``), within your systems terminal copy & paste:
+If your operating system is not compatible with **executable versions** of Fansly Downloader (only Windows supported for ``.exe``) or you just generally intend to use the Python source directly, please [download the repository](https://github.com/Avnsx/fansly-downloader/archive/refs/heads/master.zip), extract the files from the folder and ensure that [Python is installed](https://www.python.org/downloads/) on your system. Once Python is installed, you can proceed by installing the following requirements using [Python's package manager](https://realpython.com/what-is-pip/) (``"pip"``), within your systems terminal copy & paste:
 
-	pip3 install requests loguru python-dateutil plyvel-ci psutil imagehash m3u8 av pillow rich
-Alternatively you can use [``requirements.txt``](https://github.com/Avnsx/fansly-downloader/blob/main/requirements.txt) through opening your system's terminal (e.g.: ``cmd.exe`` on windows), [navigating to the project's download folder](https://youtu.be/8-mYKkNzjU4?t=5) and executing the following command: ``pip3 install --user -r requirements.txt``
+	pip3 install requests loguru python-dateutil plyvel-ci psutil imagehash m3u8 av pillow rich pyexiv2 mutagen
+Alternatively you can use [``requirements.txt``](https://github.com/Avnsx/fansly-downloader/blob/master/requirements.txt) through opening your system's terminal (e.g.: ``cmd.exe`` on windows), [navigating to the project's download folder](https://youtu.be/8-mYKkNzjU4?t=5) and executing the following command: ``pip3 install --user -r requirements.txt``
 
 For Linux operating systems, you may need to install the Python Tkinter module separately by using the command ``sudo apt-get install python3-tk``. On Windows and macOS, the Tkinter module is typically included in the [Python installer itself](https://youtu.be/O2PzLeiBEuE?t=38).
 
 After all requirements are installed into your python environment; click on *fansly_downloader.py* and it'll open up & [behave similar](https://github.com/Avnsx/fansly-downloader#-quick-start) to how the executable version would.
 
-Raw python code versions of Fansly Downloader do not receive automatic updates. If an update is available, you will be notified, but will need to manually [download the repository](https://github.com/Avnsx/fansly-downloader/archive/refs/heads/main.zip) as zip again, extract files and set-up the latest version of fansly downloader yourself.
+Raw python code versions of Fansly Downloader do not receive automatic updates. If an update is available, you will be notified, but will need to manually [download the repository](https://github.com/Avnsx/fansly-downloader/archive/refs/heads/master.zip) as zip again, extract files and set-up the latest version of fansly downloader yourself.
 
 ## 🚀 Quick Start
 To quickly get started with either the [python](https://github.com/Avnsx/fansly-downloader#python-version-requirements) or the [executable](https://github.com/Avnsx/fansly-downloader/releases/latest) version of Fansly Downloader, follow these steps:
 
 1. Download the latest version of Fansly Downloader by choosing one of the options below:
-   - [Windows exclusive executable version](https://github.com/Avnsx/fansly-downloader/releases/latest) - "*Fansly_Downloader.exe*"
+   - [Windows exclusive executable version](https://github.com/Avnsx/fansly-downloader/releases/latest) - "*Fansly Downloader.exe*"
    - [Python code version](https://github.com/Avnsx/fansly-downloader#python-version-requirements) - "*fansly_downloader.py*"
 
    and extract the files from the zip folder.
@@ -176,8 +176,6 @@ If you still need help with something open up a [New Discussion](https://github.
 
 ## 🤝 Contributing to `Fansly Downloader`
 Any kind of positive contribution is welcome! Please help the project improve by [opening a pull request](https://github.com/Avnsx/fansly-downloader/pulls) with your suggested changes!
-
-Currently greatly appreciated would be the integration of a cross-platform compatible download progress bar or some kind of visual display for monitoring the current download speed in Mb/s within the terminal or in another concise visually appealing way. Furthermore propper transcoding of mp4 audio to the mp3 format using [pyav](https://github.com/PyAV-Org/PyAV), similar of how it is handled with m3u8 to mp4 within fansly-downloader already, would be a required addition to future versions of fansly downloader.
 
 ### Special Thanks
 A heartfelt thank you goes out to [@liviaerxin](https://github.com/liviaerxin) for their invaluable contribution in providing cross-platform [plyvel](https://github.com/wbolster/plyvel) (python module) builds. It is due to [these builds](https://github.com/liviaerxin/plyvel/releases/latest) that fansly downloaders initial interactive set-up configuration functionality, has become a cross-platform reality.
