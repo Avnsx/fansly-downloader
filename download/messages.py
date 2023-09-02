@@ -1,6 +1,10 @@
 """Message Downloading"""
 
 
+import random
+
+from time import sleep
+
 from .common import process_download_accessible_media
 from .downloadstate import DownloadState
 from .types import DownloadType
@@ -63,6 +67,9 @@ def download_messages(config: FanslyConfig, state: DownloadState):
 
                     # get next cursor
                     try:
+                        # Fansly rate-limiting fix
+                        # (don't know if messages were affected at all)
+                        sleep(random.uniform(2, 4))
                         msg_cursor = post_object['messages'][-1]['id']
 
                     except IndexError:
