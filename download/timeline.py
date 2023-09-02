@@ -1,6 +1,7 @@
 """Timeline Downloads"""
 
 
+import random
 import traceback
 
 from requests import Response
@@ -34,43 +35,13 @@ def download_timeline(config: FanslyConfig, state: DownloadState) -> None:
             print_info(f"Inspecting Timeline cursor: {timeline_cursor}")
     
         timeline_response = Response()
-
-        # Simple attempt to deal with rate limiting
-        for attempt in range(9999):
-            try:
-                # People with a high enough internet download speed & hardware specification will manage to hit a rate limit here
-                endpoint = "timelinenew" if attempt == 0 else "timeline"
-
-                if config.debug:
-                    print_debug(f'HTTP headers: {config.http_headers()}')
-
-                timeline_response = config.http_session.get(
-                    f"https://apiv3.fansly.com/api/v1/{endpoint}/{state.creator_id}?before={timeline_cursor}&after=0&wallId=&contentSearch=&ngsw-bypass=true",
-                    headers=config.http_headers()
-                )
-
-                break  # break if no errors happened; which means we will try parsing & downloading contents of that timeline_cursor
-
-            except Exception:
-                if attempt == 0:
-                    continue
-
-                elif attempt == 1:
-                    print_warning(
-                        f"Uhm, looks like we've hit a rate limit ..."
-                        f"\n{20 * ' '}Using a VPN might fix this issue entirely."
-                        f"\n{20 * ' '}Regardless, will now try to continue the download infinitely, every 15 seconds."
-                        f"\n{20 * ' '}Let me know if this logic worked out at any point in time"
-                        f"\n{20 * ' '}by opening an issue ticket, please!"
-                    )
-                    print('\n' + traceback.format_exc())
-
-                else:
-                    print(f"Attempt {attempt} ...")
-
-                sleep(15)
     
         try:
+            timeline_response = config.http_session.get(
+                f"https://apiv3.fansly.com/api/v1/timeline/{state.creator_id}?before={timeline_cursor}&after=0&wallId=&contentSearch=&ngsw-bypass=true",
+                headers=config.http_headers(),
+            )
+
             timeline_response.raise_for_status()
 
             if timeline_response.status_code == 200:
@@ -88,6 +59,8 @@ def download_timeline(config: FanslyConfig, state: DownloadState) -> None:
 
                 # get next timeline_cursor
                 try:
+                    # Slow down to avoid the Fansly rate-limit which was introduced in late August 2023
+                    sleep(random.uniform(2, 4))
                     timeline_cursor = post_object['posts'][-1]['id']
 
                 except IndexError:
