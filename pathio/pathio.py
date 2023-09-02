@@ -1,7 +1,9 @@
 """Work Directory Manipulation"""
 
 
-import traceback
+import os
+import sys
+import time
 
 from pathlib import Path
 from tkinter import Tk, filedialog
@@ -9,7 +11,6 @@ from tkinter import Tk, filedialog
 from config import FanslyConfig
 from download.downloadstate import DownloadState
 from download.types import DownloadType
-from errors import ConfigError
 from textio import print_info, print_warning, print_error
 
 
@@ -106,3 +107,39 @@ def set_create_directory_for_download(config: FanslyConfig, state: DownloadState
         download_directory.mkdir(exist_ok=True)
 
         return download_directory
+
+
+def delete_temporary_pyinstaller_files():
+    """Delete old files from the PyInstaller temporary folder.
+    
+    Files older than an hour will be deleted.
+    """
+    try:
+        base_path = sys._MEIPASS
+
+    except Exception:
+        return
+
+    temp_dir = os.path.abspath(os.path.join(base_path, '..'))
+    current_time = time.time()
+
+    for folder in os.listdir(temp_dir):
+        try:
+            item = os.path.join(temp_dir, folder)
+
+            if folder.startswith('_MEI') \
+                and os.path.isdir(item) \
+                    and (current_time - os.path.getctime(item)) > 3600:
+
+                for root, dirs, files in os.walk(item, topdown=False):
+
+                    for file in files:
+                        os.remove(os.path.join(root, file))
+
+                    for dir in dirs:
+                        os.rmdir(os.path.join(root, dir))
+
+                os.rmdir(item)
+
+        except Exception:
+            pass
