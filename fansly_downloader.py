@@ -1,6 +1,6 @@
-# fix in future: audio needs to be properly transcoded from mp4 to mp3, instead of just saved as
+# fix in future: audio needs to be properly transcoded pre-saving from mp4 to mp3 & sort_download() needs to first parse what filesize a image is before trying to add pyexvi2 metadata to it
 import requests, os, re, base64, hashlib, imagehash, io, traceback, sys, platform, subprocess, concurrent.futures, json, m3u8, av, time, mimetypes, configparser
-from random import randint
+from random import randint, uniform
 from tkinter import Tk, filedialog
 from loguru import logger as log
 from functools import partialmethod
@@ -12,6 +12,7 @@ from configparser import RawConfigParser
 from os.path import join, exists
 from os import makedirs, getcwd
 from utils.update_util import delete_deprecated_files, check_latest_release, apply_old_config_values
+from utils.metadata_manager import MetadataManager
 
 # tell PIL to be tolerant of files that are truncated
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -31,10 +32,6 @@ def set_window_title(title):
     elif current_platform == 'Linux' or current_platform == 'Darwin':
         subprocess.call(['printf', r'\33]0;{}\a'.format(title)])
 set_window_title('Fansly Downloader')
-
-# for pyinstaller compatibility
-def exit():
-    os._exit(0)
 
 # base64 code to display logo in console
 print(base64.b64decode('CiAg4paI4paI4paI4paI4paI4paI4paI4pWXIOKWiOKWiOKWiOKWiOKWiOKVlyDilojilojilojilZcgICDilojilojilZfilojilojilojilojilojilojilojilZfilojilojilZcgIOKWiOKWiOKVlyAgIOKWiOKWiOKVlyAgICDilojilojilojilojilojilojilZcg4paI4paI4pWXICAgICAgICAgIOKWiOKWiOKWiOKWiOKWiOKVlyDilojilojilojilojilojilojilZcg4paI4paI4paI4paI4paI4paI4pWXIAogIOKWiOKWiOKVlOKVkOKVkOKVkOKVkOKVneKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVl+KWiOKWiOKWiOKWiOKVlyAg4paI4paI4pWR4paI4paI4pWU4pWQ4pWQ4pWQ4pWQ4pWd4paI4paI4pWRICDilZrilojilojilZcg4paI4paI4pWU4pWdICAgIOKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVl+KWiOKWiOKVkSAgICAgICAgIOKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVl+KWiOKWiOKVlOKVkOKVkOKWiOKWiOKVl+KWiOKWiOKVlOKVkOKVkOKWiOKWiOKVlwogIOKWiOKWiOKWiOKWiOKWiOKVlyAg4paI4paI4paI4paI4paI4paI4paI4pWR4paI4paI4pWU4paI4paI4pWXIOKWiOKWiOKVkeKWiOKWiOKWiOKWiOKWiOKWiOKWiOKVl+KWiOKWiOKVkSAgIOKVmuKWiOKWiOKWiOKWiOKVlOKVnSAgICAg4paI4paI4pWRICDilojilojilZHilojilojilZEgICAgICAgICDilojilojilojilojilojilojilojilZHilojilojilojilojilojilojilZTilZ3ilojilojilojilojilojilojilZTilZ0KICDilojilojilZTilZDilZDilZ0gIOKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVkeKWiOKWiOKVkeKVmuKWiOKWiOKVl+KWiOKWiOKVkeKVmuKVkOKVkOKVkOKVkOKWiOKWiOKVkeKWiOKWiOKVkSAgICDilZrilojilojilZTilZ0gICAgICDilojilojilZEgIOKWiOKWiOKVkeKWiOKWiOKVkSAgICAgICAgIOKWiOKWiOKVlOKVkOKVkOKWiOKWiOKVkeKWiOKWiOKVlOKVkOKVkOKVkOKVnSDilojilojilZTilZDilZDilZDilZ0gCiAg4paI4paI4pWRICAgICDilojilojilZEgIOKWiOKWiOKVkeKWiOKWiOKVkSDilZrilojilojilojilojilZHilojilojilojilojilojilojilojilZHilojilojilojilojilojilojilojilZfilojilojilZEgICAgICAg4paI4paI4paI4paI4paI4paI4pWU4pWd4paI4paI4paI4paI4paI4paI4paI4pWXICAgIOKWiOKWiOKVkSAg4paI4paI4pWR4paI4paI4pWRICAgICDilojilojilZEgICAgIAogIOKVmuKVkOKVnSAgICAg4pWa4pWQ4pWdICDilZrilZDilZ3ilZrilZDilZ0gIOKVmuKVkOKVkOKVkOKVneKVmuKVkOKVkOKVkOKVkOKVkOKVkOKVneKVmuKVkOKVkOKVkOKVkOKVkOKVkOKVneKVmuKVkOKVnSAgICAgICDilZrilZDilZDilZDilZDilZDilZ0g4pWa4pWQ4pWQ4pWQ4pWQ4pWQ4pWQ4pWdICAgIOKVmuKVkOKVnSAg4pWa4pWQ4pWd4pWa4pWQ4pWdICAgICDilZrilZDilZ0gICAgIAogICAgICAgICAgICAgICAgICAgICAgICBkZXZlbG9wZWQgb24gZ2l0aHViLmNvbS9Bdm5zeC9mYW5zbHktZG93bmxvYWRlcgo=').decode('utf-8'))
@@ -127,6 +124,7 @@ try:
     separate_timeline = config.getboolean('Options', 'separate_timeline') # True, False -> boolean
     utilise_duplicate_threshold = config.getboolean('Options', 'utilise_duplicate_threshold') # True, False -> boolean
     download_directory = config.get('Options', 'download_directory') # Local_directory, C:\MyCustomFolderFilePath -> str
+    metadata_handling = config.get('Options', 'metadata_handling').capitalize() # Advanced, Simple -> str
 
     # Other
     current_version = config.get('Other', 'version') # str
@@ -159,6 +157,31 @@ except (KeyError, NameError) as key:
 
 # update window title with specific downloader version
 set_window_title(f"Fansly Downloader v{current_version}")
+
+
+# delete previous redundant pyinstaller folders, older then an hour
+def del_redudant_pyinstaller_files():
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        return
+
+    temp_dir = os.path.abspath(os.path.join(base_path, '..'))
+    current_time = time.time()
+
+    for folder in os.listdir(temp_dir):
+        try:
+            item = os.path.join(temp_dir, folder)
+            if folder.startswith('_MEI') and os.path.isdir(item) and (current_time - os.path.getctime(item)) > 3600:
+                for root, dirs, files in os.walk(item, topdown=False):
+                    for file in files:
+                        os.remove(os.path.join(root, file))
+                    for dir in dirs:
+                        os.rmdir(os.path.join(root, dir))
+                os.rmdir(item)
+        except Exception:
+            pass
+del_redudant_pyinstaller_files()
 
 
 # occasionally notfiy user to star repository
@@ -338,7 +361,7 @@ if plyvel_installed and any([not config_token, 'ReplaceMe' in config_token, conf
 
 
 # validate input value for "user_agent" in config.ini
-ua_if_failed = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36' # if no matches / error just set random UA
+ua_if_failed = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36' # if no matches / error just set random UA
 def guess_user_agent(user_agents: dict, based_on_browser: str = processed_from_path or 'Chrome'):
 
     if processed_from_path == 'Microsoft Edge':
@@ -421,7 +444,7 @@ def compute_timezone_offset():
 # compute timezone offset and hours in seconds once
 diff_from_utc, hours_in_seconds = compute_timezone_offset()
 
-# detect 12 vs 24 hour time format usage
+# detect 12 vs 24 hour time format usage (not sure if this properly works)
 time_format = 12 if ('AM' in time.strftime('%X') or 'PM' in time.strftime('%X')) else 24
 
 # convert every epoch timestamp passed, to the time it was for the local computers timezone
@@ -569,7 +592,7 @@ def download_m3u8(m3u8_url: str, save_path: str):
     signature = parsed_url.get('Signature')
     m3u8_url = m3u8_url.split('.m3u8')[0] + '.m3u8' # re-construct original .m3u8 base link
     split_m3u8_url = m3u8_url.rsplit('/', 1)[0] # used for constructing .ts chunk links
-    save_path = save_path.rsplit('.m3u8')[0] #  remove file_extension from save_path
+    save_path = save_path.rsplit('.m3u8')[0] # remove file_extension from save_path
 
     cookies = {
         'CloudFront-Key-Pair-Id': key_pair_id,
@@ -683,13 +706,21 @@ def sort_download(accessible_media: dict):
         download_url = post['download_url']
         file_extension = post['file_extension']
         is_preview = post['is_preview']
+        metadata_manager = MetadataManager()
+        ext_sup = metadata_manager.is_file_supported('mp4' if file_extension == 'm3u8' else file_extension)
+        append_metadata = metadata_handling == 'Advanced' and ext_sup if metadata_handling == 'Advanced' and ext_sup else False
 
         # verify that the duplicate count has not drastically spiked and in-case it did; verify that the spiked amount is significant enough to cancel scraping
         if utilise_duplicate_threshold and duplicate_count > DUPLICATE_THRESHOLD and DUPLICATE_THRESHOLD > 50:
             raise DuplicateCountError(duplicate_count)
 
-        # general filename construction & if content is a preview; add that into its filename
-        filename = f"{created_at}_preview_id_{media_id}.{file_extension}" if is_preview else f"{created_at}_id_{media_id}.{file_extension}"
+        if append_metadata:
+            filename = f"{created_at}_preview.{file_extension}" if is_preview else f"{created_at}.{file_extension}"
+            metadata_manager.set_filepath(filename) # set basic filename, so the class can tell its file extension already
+            metadata_manager.set_custom_metadata("ID", media_id)
+        else:
+            # general filename construction & if content is a preview; add that into its filename
+            filename = f"{created_at}_preview_id_{media_id}.{file_extension}" if is_preview else f"{created_at}_id_{media_id}.{file_extension}"
 
         # deduplication - part 1: decide if this media is even worth further processing; by media id
         if any([media_id in recent_photo_media_ids, media_id in recent_video_media_ids]):
@@ -743,6 +774,16 @@ def sort_download(accessible_media: dict):
             # handle the download of a m3u8 file
             file_downloaded = download_m3u8(m3u8_url = download_url, save_path = save_path)
             if file_downloaded:
+                # after being transcoded, the file is now a mp4
+                save_path = save_path.replace('.m3u8', '.mp4')
+                file_extension = 'mp4'
+                if append_metadata:
+                    # add the temp-stored media_id to the now transcoded mp4 file, as Exif metadata
+                    metadata_manager.set_filepath(save_path)
+                    metadata_manager.add_metadata()
+                    metadata_manager.save()
+                    # add filehash to the transcoded mp4 file
+                    hash_audio_video(save_path, content_format = 'video')
                 pic_count += 1 if 'image' in mimetype else 0; vid_count += 1 if 'video' in mimetype else 0
         else:
             # handle the download of a normal media file
@@ -814,13 +855,22 @@ def sort_download(accessible_media: dict):
                         recent_audio_hashes.add(audiohash)
 
                     file_hash = audiohash
-                
-                # hacky overwrite for save_path to introduce file hash to filename
-                base_path, extension = os.path.splitext(save_path)
-                save_path = f"{base_path}_hash_{file_hash}{extension}"
-                    
-                with open(save_path, 'wb') as f:
-                    f.write(content)
+
+                if append_metadata:
+                    metadata_manager.set_custom_metadata("HSH", file_hash)
+                    # finally write the full file to disk
+                    with open(save_path, 'wb') as f:
+                        f.write(content)
+                    # set finalized filepath instead of dummy filename and write the previously temp-stored metadata
+                    metadata_manager.set_filepath(save_path)
+                    metadata_manager.add_metadata()
+                    metadata_manager.save()
+                else:
+                    # hacky overwrite for save_path to introduce file hash to filename
+                    base_path, extension = os.path.splitext(save_path)
+                    save_path = f"{base_path}_hash_{file_hash}{extension}"
+                    with open(save_path, 'wb') as f:
+                        f.write(content)
 
                 # we only count them if the file was actually written
                 pic_count += 1 if 'image' in mimetype else 0; vid_count += 1 if 'video' in mimetype else 0
@@ -828,6 +878,7 @@ def sort_download(accessible_media: dict):
                 output(2,'\n [13]ERROR','<red>', f"Download failed on filename: {filename} - due to an network error --> status_code: {response.status_code} | content: \n{response.content}")
                 input()
                 exit()
+    s(uniform(2, 4)) # slow down to avoid the fansly rate-limit, which was introduced in late august 2023
 
     # all functions call sort_download at the end; which means we leave this function open ended, so that the python executor can get back into executing in global space @ the end of the global space code / loop this function repetetively as seen in timeline code
 
@@ -861,7 +912,7 @@ def parse_media_info(media_info: dict, post_id = None):
         
         default_details = media_info['media']
         default_normal_id = int(default_details['id'])
-        default_normal_created_at = int(default_details['createdAt'])
+        default_normal_created_at = int(default_details['createdAt']) + randint(-1800, 1800)
         default_normal_mimetype = simplify_mimetype(default_details['mimetype'])
         default_normal_height = default_details['height'] or 0
 
@@ -871,7 +922,7 @@ def parse_media_info(media_info: dict, post_id = None):
 
         default_details = media_info['preview']
         default_normal_id = int(media_info['preview']['id'])
-        default_normal_created_at = int(default_details['createdAt'])
+        default_normal_created_at = int(default_details['createdAt']) + randint(-1800, 1800)
         default_normal_mimetype = simplify_mimetype(default_details['mimetype'])
         default_normal_height = default_details['height'] or 0
 
@@ -913,20 +964,16 @@ def parse_media_info(media_info: dict, post_id = None):
                     except KeyError:pass # we pass here and catch below
 
                 """
-                it seems like the date parsed here is actually the correct date,
-                which is directly attached to the content. but posts that could be uploaded
-                8 hours ago, can contain images from 3 months ago. so the date we are parsing here,
-                might be the date, that the fansly CDN has first seen that specific content and the
-                content creator, just attaches that old content to a public post after e.g. 3 months.
+                parse fanslys date feature called "scheduled post" dates, these might greatly differ from actual post dates.
+                just google it for better understanding, they have a whole FAQ about it.
+                in the future we might just change this to actual post publishing dates, so users can better cross-reference the posts on the website.
 
-                or createdAt & updatedAt are also just bugged out idk..
-                note: images would be overwriting each other by filename, if hashing didnt provide uniqueness
-                else we would be forced to add randint(-1800, 1800) to epoch timestamps
+                note: images would be overwriting each other due to uniqueness of filenames, so we are forced to add randint(-1800, 1800) to epoch timestamps
                 """
                 try:
-                    created_at = int(content['updatedAt'])
+                    created_at = int(content['updatedAt']) + randint(-1800, 1800)
                 except Exception:
-                    created_at = int(media_info[content_type]['createdAt'])
+                    created_at = int(media_info[content_type]['createdAt']) + randint(-1800, 1800)
         download_url = highest_variants_resolution_url
 
 
@@ -974,22 +1021,36 @@ def parse_media_info(media_info: dict, post_id = None):
 
 
 ## starting here: deduplication functionality
-# variables used: recent_photo_media_ids, recent_video_media_ids recent_audio_media_ids,, recent_photo_hashes, recent_video_hashes, recent_audio_hashes
+# variables used: recent_photo_media_ids, recent_video_media_ids recent_audio_media_ids, recent_photo_hashes, recent_video_hashes, recent_audio_hashes
 # these are defined globally above sort_download() though
 
 # exclusively used for extracting media_id from pre-existing filenames
-def extract_media_id(filename: str):
+def extract_media_id(filename: str, filepath: str):
+    # if media_id in filename
     match = re.search(r'_id_(\d+)', filename)
     if match:
         return int(match.group(1))
-    return None
+    # if media_id within Exif metadata
+    metadata_manager = MetadataManager()
+    metadata_manager.read_metadata(filepath=filepath)
+    file_metadata = metadata_manager.formatted_metadata()
+    if 'ID' in file_metadata:
+        return file_metadata['ID']
+    return
 
 # exclusively used for extracting hash from pre-existing filenames
-def extract_hash_from_filename(filename: str):
+def extract_file_hash(filename: str, filepath: str):
+    # if filehash in filename
     match = re.search(r'_hash_([a-fA-F0-9]+)', filename)
     if match:
         return match.group(1)
-    return None
+    # if filehash within Exif metadata
+    metadata_manager = MetadataManager()
+    metadata_manager.read_metadata(filepath=filepath)
+    file_metadata = metadata_manager.formatted_metadata()
+    if 'HSH' in file_metadata:
+        return file_metadata['HSH']
+    return
 
 # exclusively used for adding hash to pre-existing filenames
 def add_hash_to_filename(filename: str, file_hash: str):
@@ -1004,52 +1065,66 @@ def add_hash_to_filename(filename: str, file_hash: str):
     return f"{base_name}{hash_suffix}"
 
 # exclusively used for hashing images from pre-existing download directories
-def hash_img(filepath: str):
+def hash_image(filepath: str):
     try:
         filename = os.path.basename(filepath)
+        file_extension = filename.rsplit('.')[1]
 
-        media_id = extract_media_id(filename)
+        media_id = extract_media_id(filename, filepath)
         if media_id:
             recent_photo_media_ids.add(media_id)
 
-        existing_hash = extract_hash_from_filename(filename)
+        existing_hash = extract_file_hash(filename, filepath)
         if existing_hash:
             recent_photo_hashes.add(existing_hash)
         else:
+            # if image hash doesn't pre-exist, generate one using imagehash
             img = Image.open(filepath)
             file_hash = str(imagehash.phash(img, hash_size = 16))
             recent_photo_hashes.add(file_hash)
-            img.close() # close image
+            img.close()
             
-            new_filename = add_hash_to_filename(filename, file_hash)
-            new_filepath = join(os.path.dirname(filepath), new_filename)
-            os.rename(filepath, new_filepath)
-            filepath = new_filepath
+            metadata_manager = MetadataManager()
+            ext_sup = metadata_manager.is_file_supported(file_extension)
+            if ext_sup:
+                # if Exif metadata adding is supported for file extension
+                metadata_manager.set_filepath(filepath)
+                metadata_manager.set_custom_metadata("HSH", file_hash)
+                metadata_manager.add_metadata()
+                metadata_manager.save()
+            else:
+                # else fall back to adding filehash to filename
+                new_filename = add_hash_to_filename(filename, file_hash)
+                new_filepath = join(os.path.dirname(filepath), new_filename)
+                os.rename(filepath, new_filepath)
+                filepath = new_filepath
     except FileExistsError:
         os.remove(filepath)
     except Exception:
         output(2,'\n [15]ERROR','<red>', f"\nError processing image \'{filepath}\': {traceback.format_exc()}")
 
 # exclusively used for hashing videos & audio from pre-existing download directories
-def hash_content(filepath: str, content_format: str): # former known as hash_video
+def hash_audio_video(filepath: str, content_format: str):
     global recent_video_hashes, recent_audio_hashes, recent_video_media_ids, recent_audio_media_ids
     try:
         filename = os.path.basename(filepath)
+        file_extension = filename.rsplit('.')[1]
 
-        media_id = extract_media_id(filename)
+        media_id = extract_media_id(filename, filepath)
         if media_id:
             if content_format == 'video':
                 recent_video_media_ids.add(media_id)
             elif content_format == 'audio':
                 recent_audio_media_ids.add(media_id)
 
-        existing_hash = extract_hash_from_filename(filename)
+        existing_hash = extract_file_hash(filename, filepath)
         if existing_hash:
             if content_format == 'video':
                 recent_video_hashes.add(existing_hash)
             elif content_format == 'audio':
                 recent_audio_hashes.add(existing_hash)
         else:
+            # utilise md5 hashing for videos and audio
             h = hashlib.md5()
             with open(filepath, 'rb') as f:
                 while (part := f.read(1_048_576)):
@@ -1060,10 +1135,20 @@ def hash_content(filepath: str, content_format: str): # former known as hash_vid
             elif content_format == 'audio':
                 recent_audio_hashes.add(file_hash)
             
-            new_filename = add_hash_to_filename(filename, file_hash)
-            new_filepath = join(os.path.dirname(filepath), new_filename)
-            os.rename(filepath, new_filepath)
-            filepath = new_filepath
+            metadata_manager = MetadataManager()
+            ext_sup = metadata_manager.is_file_supported(file_extension)
+            if ext_sup:
+                # if Exif metadata adding is supported for file extension
+                metadata_manager.set_filepath(filepath)
+                metadata_manager.set_custom_metadata("HSH", file_hash)
+                metadata_manager.add_metadata()
+                metadata_manager.save()
+            else:
+                # else fall back to adding filehash to filename
+                new_filename = add_hash_to_filename(filename, file_hash)
+                new_filepath = join(os.path.dirname(filepath), new_filename)
+                os.rename(filepath, new_filepath)
+                filepath = new_filepath
     except FileExistsError:
         os.remove(filepath)
     except Exception:
@@ -1074,11 +1159,11 @@ def process_file(file_path: str):
     mimetype, _ = mimetypes.guess_type(file_path)
     if mimetype is not None:
         if mimetype.startswith('image'):
-            hash_img(file_path)
+            hash_image(file_path)
         elif mimetype.startswith('video'):
-            hash_content(file_path, content_format = 'video')
+            hash_audio_video(file_path, content_format = 'video')
         elif mimetype.startswith('audio'):
-            hash_content(file_path, content_format = 'audio')
+            hash_audio_video(file_path, content_format = 'audio')
 
 # exclusively used for processing pre-existing folders from previous downloads
 def process_folder(folder_path: str):
@@ -1103,10 +1188,8 @@ if os.path.isdir(generate_base_dir(config_username, download_mode)):
 
     if randint(1,100) <= 19:
         output(3, '\n WARNING', '<yellow>', f"Reminder; If you remove id_NUMBERS or hash_STRING from filenames of previously downloaded files,\
-            \n{20*' '}they will no longer be compatible with fansly downloaders deduplication algorithm")
-    # because adding information as metadata; requires specific configuration for each file type through PIL and that's too complex due to file types. maybe in the future I might decide to just save every image as .png and every video as .mp4 and add/read it as metadata
-    # or if someone contributes a function actually perfectly adding metadata to all common file types, that would be nice
-
+            \n{20*' '}they will no longer be compatible with fansly downloaders deduplication algorithm. Generally modifying the filename,\
+            \n{20*' '}is not advised and might cause unexpected behaviour.")
 
 
 ## starting here: stuff that literally every download mode uses, which should be executed at the very first everytime
@@ -1397,29 +1480,9 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
             output(1, '\n Info', '<light-blue>', "Inspecting most recent Timeline cursor")
         else:
             output(1, '\n Info', '<light-blue>', f"Inspecting Timeline cursor: {timeline_cursor}")
-    
-        # Simple attempt to deal with rate limiting
-        for itera in range(9999):
-            try:
-                # People with a high enough internet download speed & hardware specification will manage to hit a rate limit here
-                endpoint = "timelinenew" if itera == 0 else "timeline"
-                timeline_req = sess.get(f"https://apiv3.fansly.com/api/v1/{endpoint}/{creator_id}?before={timeline_cursor}&after=0&wallId=&contentSearch=&ngsw-bypass=true", headers=headers)
-                break  # break if no errors happened; which means we will try parsing & downloading contents of that timeline_cursor
-            except Exception:
-                if itera == 0:
-                    continue
-                elif itera == 1:
-                    output(2, '\n WARNING', '<yellow>', f"Uhm, looks like we\'ve hit a rate limit ..\
-                        \n{20 * ' '}Using a VPN might fix this issue entirely.\
-                        \n{20 * ' '}Regardless, will now try to continue the download infinitely, every 15 seconds.\
-                        \n{20 * ' '}Let me know if this logic worked out at any point in time\
-                        \n{20 * ' '}by opening an issue ticket, please!")
-                    print('\n' + traceback.format_exc())
-                else:
-                    print(f"Attempt {itera} ...")
-                s(15)
-    
+
         try:
+            timeline_req = sess.get(f"https://apiv3.fansly.com/api/v1/timeline/{creator_id}?before={timeline_cursor}&after=0&wallId=&contentSearch=&ngsw-bypass=true", headers=headers)
             if timeline_req.status_code == 200:
                 accessible_media = None
                 contained_posts = []
