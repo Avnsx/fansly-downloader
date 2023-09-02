@@ -94,7 +94,7 @@ class FanslyConfig(object):
 
 
     def download_mode_str(self) -> str:
-        """Gets `download_mod` as a string representation."""
+        """Gets the string representation of `download_mode`."""
         return str(self.download_mode).capitalize()
 
 
