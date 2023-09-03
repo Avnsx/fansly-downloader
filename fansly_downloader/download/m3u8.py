@@ -11,8 +11,8 @@ from pathlib import Path
 from rich.table import Column
 from rich.progress import BarColumn, TextColumn, Progress
 
-from config.fanslyconfig import FanslyConfig
-from textio import print_error
+from fansly_downloader.config.fanslyconfig import FanslyConfig
+from fansly_downloader.textio import print_error
 
 
 def download_m3u8(config: FanslyConfig, m3u8_url: str, save_path: Path) -> bool:

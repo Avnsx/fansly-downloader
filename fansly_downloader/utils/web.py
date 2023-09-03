@@ -8,8 +8,8 @@ import traceback
 
 from time import sleep
 
-from config.fanslyconfig import FanslyConfig
-from textio import print_error, print_info_highlight, print_warning
+from fansly_downloader.config.fanslyconfig import FanslyConfig
+from fansly_downloader.textio import print_error, print_info_highlight, print_warning
 
 
 # mostly used to attempt to open fansly downloaders documentation

@@ -1,15 +1,12 @@
 """Self-Updating Functionality"""
 
 
-import sys
-
-from utils.web import get_release_info_from_github
-
 from .utils import check_for_update, delete_deprecated_files, post_update_steps
 
-from config import FanslyConfig, copy_old_config_values
-from textio import print_warning
-from utils.common import save_config_or_raise
+from fansly_downloader.config import FanslyConfig, copy_old_config_values
+from fansly_downloader.textio import print_warning
+from fansly_downloader.utils.common import save_config_or_raise
+from fansly_downloader.utils.web import get_release_info_from_github
 
 
 def self_update(config: FanslyConfig):

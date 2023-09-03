@@ -8,10 +8,10 @@ import time
 from pathlib import Path
 from tkinter import Tk, filedialog
 
-from config import FanslyConfig
-from download.downloadstate import DownloadState
-from download.types import DownloadType
-from textio import print_info, print_warning, print_error
+from fansly_downloader.config import FanslyConfig
+from fansly_downloader.download.downloadstate import DownloadState
+from fansly_downloader.download.types import DownloadType
+from fansly_downloader.textio import print_info, print_warning, print_error
 
 
 # if the users custom provided filepath is invalid; a tkinter dialog will open during runtime, asking to adjust download path

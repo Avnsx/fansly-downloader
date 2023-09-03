@@ -8,11 +8,11 @@ from requests.exceptions import RequestException
 from .config import username_has_valid_chars, username_has_valid_length
 from .fanslyconfig import FanslyConfig
 
-from errors import ConfigError
-from pathio.pathio import ask_correct_dir
-from textio import print_config, print_error, print_info, print_warning
-from utils.common import save_config_or_raise
-from utils.web import guess_user_agent, open_get_started_url
+from fansly_downloader.errors import ConfigError
+from fansly_downloader.pathio.pathio import ask_correct_dir
+from fansly_downloader.textio import print_config, print_error, print_info, print_warning
+from fansly_downloader.utils.common import save_config_or_raise
+from fansly_downloader.utils.web import guess_user_agent, open_get_started_url
 
 
 def validate_creator_names(config: FanslyConfig) -> bool:
@@ -139,7 +139,7 @@ def validate_adjust_token(config: FanslyConfig) -> None:
     if plyvel_installed and not config.token_is_valid():
         
         # fansly-downloader plyvel dependant package imports
-        from config.browser import (
+        from fansly_downloader.config.browser import (
             find_leveldb_folders,
             get_auth_token_from_leveldb_folder,
             get_browser_config_paths,
@@ -147,7 +147,7 @@ def validate_adjust_token(config: FanslyConfig) -> None:
             parse_browser_from_string,
         )
 
-        from utils.web import get_fansly_account_for_token
+        from fansly_downloader.utils.web import get_fansly_account_for_token
 
         print_warning(
             f"Authorization token '{config.token}' is unmodified, missing or malformed"

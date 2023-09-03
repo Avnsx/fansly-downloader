@@ -10,12 +10,12 @@ from .downloadstate import DownloadState
 from .m3u8 import download_m3u8
 from .types import DownloadType
 
-from config import FanslyConfig
-from errors import DownloadError, DuplicateCountError, MediaError
-from fileio.dedupe import dedupe_media_content
-from media import MediaItem
-from pathio import set_create_directory_for_download
-from textio import print_info, print_warning
+from fansly_downloader.config import FanslyConfig
+from fansly_downloader.errors import DownloadError, DuplicateCountError, MediaError
+from fansly_downloader.fileio.dedupe import dedupe_media_content
+from fansly_downloader.media import MediaItem
+from fansly_downloader.pathio import set_create_directory_for_download
+from fansly_downloader.textio import print_info, print_warning
 
 
 # tell PIL to be tolerant of files that are truncated

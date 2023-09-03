@@ -9,8 +9,8 @@ from .common import process_download_accessible_media
 from .downloadstate import DownloadState
 from .types import DownloadType
 
-from config import FanslyConfig
-from textio import input_enter_continue, print_error, print_info, print_warning
+from fansly_downloader.config import FanslyConfig
+from fansly_downloader.textio import input_enter_continue, print_error, print_info, print_warning
 
 
 def download_messages(config: FanslyConfig, state: DownloadState):

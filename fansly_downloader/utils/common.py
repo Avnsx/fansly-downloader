@@ -7,8 +7,8 @@ import subprocess
 
 from pathlib import Path
 
-from config.fanslyconfig import FanslyConfig
-from errors import ConfigError
+from fansly_downloader.config.fanslyconfig import FanslyConfig
+from fansly_downloader.errors import ConfigError
 
 
 def exit(status: int=0) -> None:

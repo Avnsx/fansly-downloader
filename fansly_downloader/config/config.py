@@ -13,10 +13,10 @@ from .fanslyconfig import FanslyConfig
 from .metadatahandling import MetadataHandling
 from .modes import DownloadMode
 
-from errors import ConfigError
-from textio import print_info, print_config, print_warning
-from utils.common import save_config_or_raise
-from utils.web import open_url
+from fansly_downloader.errors import ConfigError
+from fansly_downloader.textio import print_info, print_config, print_warning
+from fansly_downloader.utils.common import save_config_or_raise
+from fansly_downloader.utils.web import open_url
 
 
 def parse_items_from_line(line: str) -> list[str]:

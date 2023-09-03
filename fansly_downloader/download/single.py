@@ -1,14 +1,14 @@
 """Single Post Downloading"""
 
 
-from fileio.dedupe import dedupe_init
 from .common import process_download_accessible_media
 from .core import DownloadState
 from .types import DownloadType
 
-from config import FanslyConfig
-from textio import input_enter_continue, print_error, print_info, print_warning
-from utils.common import is_valid_post_id
+from fansly_downloader.config import FanslyConfig
+from fansly_downloader.fileio.dedupe import dedupe_init
+from fansly_downloader.textio import input_enter_continue, print_error, print_info, print_warning
+from fansly_downloader.utils.common import is_valid_post_id
 
 
 def download_single_post(config: FanslyConfig, state: DownloadState):

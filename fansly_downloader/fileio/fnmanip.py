@@ -12,9 +12,9 @@ import traceback
 from pathlib import Path
 from PIL import Image
 
-from config import FanslyConfig
-from download.downloadstate import DownloadState
-from textio import print_debug, print_error
+from fansly_downloader.config import FanslyConfig
+from fansly_downloader.download.downloadstate import DownloadState
+from fansly_downloader.textio import print_debug, print_error
 
 
 # turn off for our purpose unnecessary PIL safety features

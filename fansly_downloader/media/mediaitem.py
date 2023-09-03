@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-from utils.datetime import get_adjusted_datetime
+from fansly_downloader.utils.datetime import get_adjusted_datetime
 
 
 @dataclass

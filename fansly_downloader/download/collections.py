@@ -5,8 +5,8 @@ from .common import process_download_accessible_media
 from .downloadstate import DownloadState
 from .types import DownloadType
 
-from config import FanslyConfig
-from textio import input_enter_continue, print_error, print_info
+from fansly_downloader.config import FanslyConfig
+from fansly_downloader.textio import input_enter_continue, print_error, print_info
 
 
 def download_collections(config: FanslyConfig, state: DownloadState):

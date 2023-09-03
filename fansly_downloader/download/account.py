@@ -7,10 +7,10 @@ from typing import Any
 
 from .downloadstate import DownloadState
 
-from config import FanslyConfig
-from config.modes import DownloadMode
-from errors import ApiAccountInfoError, ApiAuthenticationError, ApiError
-from textio import print_info
+from fansly_downloader.config.fanslyconfig import FanslyConfig
+from fansly_downloader.config.modes import DownloadMode
+from fansly_downloader.errors import ApiAccountInfoError, ApiAuthenticationError, ApiError
+from fansly_downloader.textio import print_info
 
 
 def get_creator_account_info(config: FanslyConfig, state: DownloadState) -> None:

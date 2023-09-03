@@ -8,12 +8,11 @@ import io
 from PIL import Image, ImageFile
 from random import randint
 
-from fileio.fnmanip import add_hash_to_folder_items
-
-from config import FanslyConfig
-from download.downloadstate import DownloadState
-from pathio import set_create_directory_for_download
-from textio import print_info, print_warning
+from .fnmanip import add_hash_to_folder_items
+from fansly_downloader.config import FanslyConfig
+from fansly_downloader.download.downloadstate import DownloadState
+from fansly_downloader.pathio import set_create_directory_for_download
+from fansly_downloader.textio import print_info, print_warning
 
 
 # tell PIL to be tolerant of files that are truncated

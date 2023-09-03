@@ -9,15 +9,15 @@ import requests
 import subprocess
 import sys
 
-import errors
+import fansly_downloader.errors as errors
 
 from pathlib import Path
 from pkg_resources._vendor.packaging.version import parse as parse_version
 from shutil import unpack_archive
 
-from config import FanslyConfig
-from textio import clear_terminal, print_error, print_info, print_update, print_warning
-from utils.web import get_release_info_from_github
+from fansly_downloader.config import FanslyConfig
+from fansly_downloader.textio import clear_terminal, print_error, print_info, print_update, print_warning
+from fansly_downloader.utils.web import get_release_info_from_github
 
 
 def delete_deprecated_files() -> None:

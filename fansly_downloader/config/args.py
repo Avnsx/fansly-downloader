@@ -11,9 +11,9 @@ from .fanslyconfig import FanslyConfig
 from .metadatahandling import MetadataHandling
 from .modes import DownloadMode
 
-from errors import ConfigError
-from textio import print_debug, print_warning
-from utils.common import is_valid_post_id, save_config_or_raise
+from fansly_downloader.errors import ConfigError
+from fansly_downloader.textio import print_debug, print_warning
+from fansly_downloader.utils.common import is_valid_post_id, save_config_or_raise
 
 
 def parse_args() -> argparse.Namespace:

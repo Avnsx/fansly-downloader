@@ -12,7 +12,7 @@ import traceback
 
 from time import sleep
 
-from textio import print_config
+from fansly_downloader.textio import print_config
 
 
 # Function to recursively search for "storage" folders and process SQLite files

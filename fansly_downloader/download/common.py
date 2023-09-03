@@ -7,11 +7,11 @@ from .downloadstate import DownloadState
 from .media import download_media
 from .types import DownloadType
 
-from config import FanslyConfig
-from errors import DuplicateCountError
-from media import MediaItem, parse_media_info
-from pathio import set_create_directory_for_download
-from textio import print_error, print_info, print_warning, input_enter_continue
+from fansly_downloader.config import FanslyConfig
+from fansly_downloader.errors import DuplicateCountError
+from fansly_downloader.media import MediaItem, parse_media_info
+from fansly_downloader.pathio import set_create_directory_for_download
+from fansly_downloader.textio import print_error, print_info, print_warning, input_enter_continue
 
 
 def print_download_info(config: FanslyConfig) -> None:

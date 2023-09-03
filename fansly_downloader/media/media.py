@@ -5,8 +5,8 @@ import json
 
 from . import MediaItem
 
-from download.downloadstate import DownloadState
-from textio import print_error
+from fansly_downloader.download.downloadstate import DownloadState
+from fansly_downloader.textio import print_error
 
 
 def simplify_mimetype(mimetype: str):

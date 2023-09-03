@@ -2,8 +2,8 @@
 
 """Fansly Downloader"""
 
-__version__ = '0.5.1'
-__date__ = '2023-09-02T16:20:00+02'
+__version__ = '0.5.2'
+__date__ = '2023-09-03T14:40:00+02'
 __maintainer__ = 'Avnsx (Mika C.)'
 __copyright__ = f'Copyright (C) 2021-2023 by {__maintainer__}'
 __authors__: list[str] = []
@@ -18,14 +18,14 @@ import traceback
 from random import randint
 from time import sleep
 
-from config import FanslyConfig, load_config, validate_adjust_config
-from config.args import parse_args, map_args_to_config
-from config.modes import DownloadMode
-from download.core import *
-from errors import *
-from fileio.dedupe import dedupe_init
-from pathio import delete_temporary_pyinstaller_files
-from textio import (
+from fansly_downloader.config import FanslyConfig, load_config, validate_adjust_config
+from fansly_downloader.config.args import parse_args, map_args_to_config
+from fansly_downloader.config.modes import DownloadMode
+from fansly_downloader.download.core import *
+from fansly_downloader.errors import *
+from fansly_downloader.fileio.dedupe import dedupe_init
+from fansly_downloader.pathio import delete_temporary_pyinstaller_files
+from fansly_downloader.textio import (
     input_enter_close,
     input_enter_continue,
     print_error,
@@ -33,9 +33,9 @@ from textio import (
     print_warning,
     set_window_title,
 )
-from updater import self_update
-from utils.common import exit, open_location
-from utils.web import remind_stargazing
+from fansly_downloader.updater import self_update
+from fansly_downloader.utils.common import exit, open_location
+from fansly_downloader.utils.web import remind_stargazing
 
 
 # tell PIL to be tolerant of files that are truncated
