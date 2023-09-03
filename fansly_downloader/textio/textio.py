@@ -87,7 +87,6 @@ def input_enter_close(interactive: bool=True) -> None:
         print('\nExiting in 15 seconds ...')
         sleep(15)
 
-    from utils.common import exit
     exit()
 
 

@@ -2,8 +2,8 @@
 
 """Fansly Downloader"""
 
-__version__ = '0.5.2'
-__date__ = '2023-09-03T14:40:00+02'
+__version__ = '0.5.3'
+__date__ = '2023-09-03T15:17:00+02'
 __maintainer__ = 'Avnsx (Mika C.)'
 __copyright__ = f'Copyright (C) 2021-2023 by {__maintainer__}'
 __authors__: list[str] = []
@@ -34,7 +34,7 @@ from fansly_downloader.textio import (
     set_window_title,
 )
 from fansly_downloader.updater import self_update
-from fansly_downloader.utils.common import exit, open_location
+from fansly_downloader.utils.common import open_location
 from fansly_downloader.utils.web import remind_stargazing
 
 
