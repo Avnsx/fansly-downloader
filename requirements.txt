@@ -10,3 +10,5 @@ pyexiv2>=2.8.2
 python-dateutil>=2.8.2
 requests>=2.26.0
 rich>=13.0.0
+mutagen>=1.46.0
+pyexiv2>=2.8.2
