@@ -7,9 +7,9 @@ import subprocess
 import sys
 
 from functools import partialmethod
-from time import sleep
 from loguru import logger
 from pathlib import Path
+from time import sleep
 
 
 LOG_FILE_NAME: str = 'fansly_downloader.log'
@@ -87,7 +87,7 @@ def input_enter_close(interactive: bool=True) -> None:
         print('\nExiting in 15 seconds ...')
         sleep(15)
 
-    exit()
+    sys.exit()
 
 
 def input_enter_continue(interactive: bool=True) -> None:
