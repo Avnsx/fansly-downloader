@@ -878,7 +878,7 @@ def sort_download(accessible_media: dict):
                 output(2,'\n [13]ERROR','<red>', f"Download failed on filename: {filename} - due to an network error --> status_code: {response.status_code} | content: \n{response.content}")
                 input()
                 exit()
-    s(uniform(2, 4)) # slow down to avoid the fansly rate-limit, which was introduced in late august 2023
+    s(uniform(5, 6)) # slow down to avoid the fansly rate-limit, which was introduced in late september 2023
 
     # all functions call sort_download at the end; which means we leave this function open ended, so that the python executor can get back into executing in global space @ the end of the global space code / loop this function repetetively as seen in timeline code
 
@@ -1482,7 +1482,7 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
             output(1, '\n Info', '<light-blue>', f"Inspecting Timeline cursor: {timeline_cursor}")
 
         try:
-            timeline_req = sess.get(f"https://apiv3.fansly.com/api/v1/timeline/{creator_id}?before={timeline_cursor}&after=0&wallId=&contentSearch=&ngsw-bypass=true", headers=headers)
+            timeline_req = sess.get(f"https://apiv3.fansly.com/api/v1/timelinenew/{creator_id}?before={timeline_cursor}&after=0&wallId=&contentSearch=&ngsw-bypass=true", headers=headers)
             if timeline_req.status_code == 200:
                 accessible_media = None
                 contained_posts = []
