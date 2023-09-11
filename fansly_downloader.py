@@ -125,6 +125,12 @@ try:
     utilise_duplicate_threshold = config.getboolean('Options', 'utilise_duplicate_threshold') # True, False -> boolean
     download_directory = config.get('Options', 'download_directory') # Local_directory, C:\MyCustomFolderFilePath -> str
     metadata_handling = config.get('Options', 'metadata_handling').capitalize() # Advanced, Simple -> str
+    
+    # Rate Limiting Options
+    min_seconds_between_attempts = config.getint('RateLimitingOptions', 'min_seconds_between_attempts') # Must be smaller than max_seconds_between_attempts -> int
+    max_seconds_between_attempts = config.getint('RateLimitingOptions', 'max_seconds_between_attempts') # Must be larger than min_seconds_between_attempts -> int
+    number_of_retry_attempts = config.getint('RateLimitingOptions', 'number_of_retry_attempts') # The number of attempts made to pull timeline posts before the program stops, greater than -1 -> int
+
 
     # Other
     current_version = config.get('Other', 'version') # str
@@ -878,7 +884,10 @@ def sort_download(accessible_media: dict):
                 output(2,'\n [13]ERROR','<red>', f"Download failed on filename: {filename} - due to an network error --> status_code: {response.status_code} | content: \n{response.content}")
                 input()
                 exit()
-    s(uniform(5, 6)) # slow down to avoid the fansly rate-limit, which was introduced in late september 2023
+
+    sleepTime = round(uniform(min_seconds_between_attempts, max_seconds_between_attempts), 2)
+    output(1, '\n Info', '<light-blue>', f"Sleeping for {sleepTime} seconds. Zzz...")
+    s(sleepTime) # slow down to avoid the fansly rate-limit, which was introduced in late september 2023
 
     # all functions call sort_download at the end; which means we leave this function open ended, so that the python executor can get back into executing in global space @ the end of the global space code / loop this function repetetively as seen in timeline code
 
@@ -1476,10 +1485,11 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
 
     timeline_cursor = 0
     while True:
+        output(1, '\n Info', '<light-blue>', f"{number_of_retry_attempts} attempts remaining.")
         if timeline_cursor == 0:
-            output(1, '\n Info', '<light-blue>', "Inspecting most recent Timeline cursor")
+            output(1, ' Info', '<light-blue>', "Inspecting most recent Timeline cursor")
         else:
-            output(1, '\n Info', '<light-blue>', f"Inspecting Timeline cursor: {timeline_cursor}")
+            output(1, ' Info', '<light-blue>', f"Inspecting Timeline cursor: {timeline_cursor}")
 
         try:
             timeline_req = sess.get(f"https://apiv3.fansly.com/api/v1/timelinenew/{creator_id}?before={timeline_cursor}&after=0&wallId=&contentSearch=&ngsw-bypass=true", headers=headers)
@@ -1519,8 +1529,12 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
                 # get next timeline_cursor
                 try:
                     timeline_cursor = post_object['posts'][-1]['id']
+                    number_of_retry_attempts  = 10 # Reset attempts to 10 before continuing the loop
                 except IndexError:
-                    break  # break the whole while loop, if end is reached
+                    if number_of_retry_attempts  > 0: # Decrease the number of attempts remaining by 1
+                        number_of_retry_attempts  -= 1
+                    elif number_of_retry_attempts  == 0:
+                        break  # break the whole while loop, if end is reached
                 except Exception:
                     print('\n'+traceback.format_exc())
                     output(2,'\n [34]ERROR','<red>', 'Please copy & paste this on GitHub > Issues & provide a short explanation.')
