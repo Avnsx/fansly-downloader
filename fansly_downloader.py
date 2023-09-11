@@ -885,7 +885,13 @@ def sort_download(accessible_media: dict):
                 input()
                 exit()
 
-    sleepTime = round(uniform(min_seconds_between_attempts, max_seconds_between_attempts), 2)
+    # If there are less than half of the attempts remaining, double the sleep time. This increases the chances of the timeline pulling correctly.
+    if number_of_retry_attempts < (config.getint('RateLimitingOptions', 'number_of_retry_attempts')/2):
+        output(1, '\n Info', '<light-blue>', f"Doubling sleep time for the last half of attempts.")
+        sleepTime = round(uniform(min_seconds_between_attempts, max_seconds_between_attempts), 2) * 2 # Set random sleep time between min and max value, multiply by 2
+    else:
+        sleepTime = round(uniform(min_seconds_between_attempts, max_seconds_between_attempts), 2) # Set random sleep time between min and max value
+    
     output(1, '\n Info', '<light-blue>', f"Sleeping for {sleepTime} seconds. Zzz...")
     s(sleepTime) # slow down to avoid the fansly rate-limit, which was introduced in late september 2023
 
