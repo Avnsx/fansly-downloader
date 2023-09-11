@@ -1529,7 +1529,7 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
                 # get next timeline_cursor
                 try:
                     timeline_cursor = post_object['posts'][-1]['id']
-                    number_of_retry_attempts  = 10 # Reset attempts to 10 before continuing the loop
+                    number_of_retry_attempts  = config.getint('RateLimitingOptions', 'number_of_retry_attempts') # Reset attempts to the config.ini value before continuing the loop
                 except IndexError:
                     if number_of_retry_attempts  > 0: # Decrease the number of attempts remaining by 1
                         number_of_retry_attempts  -= 1
