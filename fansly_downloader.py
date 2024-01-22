@@ -1482,7 +1482,7 @@ if any(['Timeline' in download_mode, 'Normal' in download_mode]):
             output(1, '\n Info', '<light-blue>', f"Inspecting Timeline cursor: {timeline_cursor}")
 
         try:
-            timeline_req = sess.get(f"https://apiv3.fansly.com/api/v1/timeline/{creator_id}?before={timeline_cursor}&after=0&wallId=&contentSearch=&ngsw-bypass=true", headers=headers)
+            timeline_req = sess.get(f"https://apiv3.fansly.com/api/v1/timelinenew/{creator_id}?before={timeline_cursor}&after=0&wallId=&contentSearch=&ngsw-bypass=true", headers=headers)
             if timeline_req.status_code == 200:
                 accessible_media = None
                 contained_posts = []
